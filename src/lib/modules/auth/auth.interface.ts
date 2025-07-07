@@ -14,7 +14,39 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string;
-  token: string;
+  token: number;
 }
 
 export type RegisterResponse = APIResponse<null>;
+
+// Send email verification
+export interface SendEmailVerificationRequest {
+  email: string;
+}
+export type SendEmailVerificationResponse = APIResponse<null>;
+
+// Logout
+export type LogoutResponse = APIResponse<null>;
+
+// Refresh token
+export type RefreshTokenResponse = APIResponse<null>;
+
+// Forgot password
+export interface ForgotPasswordRequest {
+  email: string;
+}
+export type ForgotPasswordResponse = APIResponse<null>;
+
+// Reset password
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+export type ResetPasswordResponse = APIResponse<null>;
+
+// Change password
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+export type ChangePasswordResponse = APIResponse<null>;
