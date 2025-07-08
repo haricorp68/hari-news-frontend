@@ -40,7 +40,6 @@ export function useAuth() {
     queryKey: ["profile"],
     queryFn: getProfileApi,
     retry: false,
-    enabled: !!user,
   });
 
   // Đăng nhập

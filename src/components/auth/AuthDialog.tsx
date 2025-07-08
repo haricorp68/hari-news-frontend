@@ -10,8 +10,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/modules/auth/useAuth";
-import { useQueryClient } from "@tanstack/react-query";
+import { useLoginMutation } from "@/lib/modules/auth/hooks/useLoginMutation";
+import { useRegisterMutation } from "@/lib/modules/auth/hooks/useRegisterMutation";
+import { useSendEmailVerificationMutation } from "@/lib/modules/auth/hooks/useSendEmailVerificationMutation";
 import Image from "next/image";
 import { LucideApple, LucideCircleUser } from "lucide-react";
 
@@ -26,32 +27,19 @@ export function AuthDialog({ trigger }: { trigger?: React.ReactNode }) {
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [token, setToken] = useState("");
 
-  const {
-    login,
-    loginLoading,
-    register,
-    registerLoading,
-    checkExist,
-    existError,
-  } = useAuth();
-
-  const { sendEmailVerification, sendEmailVerificationLoading } = useAuth();
-
-  const queryClient = useQueryClient();
+  const loginMutation = useLoginMutation();
+  const registerMutation = useRegisterMutation();
+  const sendEmailVerificationMutation = useSendEmailVerificationMutation();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    login({ email: loginEmail, password: loginPassword }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-      },
-    });
+    loginMutation.mutate({ email: loginEmail, password: loginPassword });
   };
 
   const handleSendOtp = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!registerEmail) return;
-    sendEmailVerification({ email: registerEmail });
+    sendEmailVerificationMutation.mutate({ email: registerEmail });
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -61,7 +49,7 @@ export function AuthDialog({ trigger }: { trigger?: React.ReactNode }) {
       setRegisterError("Mật khẩu xác nhận không khớp");
       return;
     }
-    register({
+    registerMutation.mutate({
       email: registerEmail,
       password: registerPassword,
       name: registerName,
@@ -118,9 +106,9 @@ export function AuthDialog({ trigger }: { trigger?: React.ReactNode }) {
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={loginLoading}
+                    disabled={loginMutation.isPending}
                   >
-                    {loginLoading ? "Signing in..." : "Sign in"}
+                    {loginMutation.isPending ? "Signing in..." : "Sign in"}
                   </Button>
                 </form>
                 <div className="flex items-center my-4">
@@ -149,20 +137,9 @@ export function AuthDialog({ trigger }: { trigger?: React.ReactNode }) {
                         value={registerName}
                         onChange={(e) => {
                           setRegisterName(e.target.value);
-                          checkExist({ name: e.target.value });
                         }}
                         required
-                        className={
-                          existError.name
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
                       />
-                      {existError.name && (
-                        <div className="text-xs text-destructive mt-1">
-                          {existError.name}
-                        </div>
-                      )}
                     </div>
                     {/* Có thể thêm trường last name nếu muốn */}
                   </div>
@@ -173,20 +150,9 @@ export function AuthDialog({ trigger }: { trigger?: React.ReactNode }) {
                       value={registerEmail}
                       onChange={(e) => {
                         setRegisterEmail(e.target.value);
-                        checkExist({ email: e.target.value });
                       }}
                       required
-                      className={
-                        existError.email
-                          ? "border-destructive focus-visible:ring-destructive"
-                          : ""
-                      }
                     />
-                    {existError.email && (
-                      <div className="text-xs text-destructive mt-1">
-                        {existError.email}
-                      </div>
-                    )}
                   </div>
                   <Input
                     type="password"
@@ -232,21 +198,17 @@ export function AuthDialog({ trigger }: { trigger?: React.ReactNode }) {
                     <Button
                       type="button"
                       onClick={handleSendOtp}
-                      disabled={sendEmailVerificationLoading || !registerEmail}
+                      disabled={sendEmailVerificationMutation.isPending || !registerEmail}
                     >
-                      {sendEmailVerificationLoading ? "Đang gửi mã" : "Gửi mã"}
+                      {sendEmailVerificationMutation.isPending ? "Đang gửi mã" : "Gửi mã"}
                     </Button>
                   </div>
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={
-                      registerLoading || !!existError.email || !!existError.name
-                    }
+                    disabled={registerMutation.isPending}
                   >
-                    {registerLoading
-                      ? "Đang tạo tài khoản..."
-                      : "Tạo tài khoản"}
+                    {registerMutation.isPending ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
                   </Button>
                 </form>
                 <div className="flex items-center my-4">

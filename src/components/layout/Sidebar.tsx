@@ -176,19 +176,33 @@ function SidebarWithContext({
             ) : user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton className="w-full h-14">
-                    <Avatar className="mr-2 rounded-lg">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
-                    </Avatar>
-                    <span className="truncate flex-1">{user.name}</span>
-                    <ChevronUp className="ml-auto" />
-                  </SidebarMenuButton>
+                  {state === "collapsed" ? (
+                    <div className="flex items-center justify-center py-2">
+                      <SidebarMenuButton className="p-0 w-8 h-8 flex justify-center items-center bg-transparent shadow-none hover:bg-muted" style={{ borderRadius: 8 }}>
+                        <Image
+                          src={user.avatar || "https://picsum.photos/40"}
+                          alt={user.name}
+                          className="h-8 w-8 rounded-lg object-cover"
+                          width={32}
+                          height={32}
+                        />
+                      </SidebarMenuButton>
+                    </div>
+                  ) : (
+                    <SidebarMenuButton className="w-full h-14">
+                      <Avatar className="mr-2 rounded-lg">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
+                      </Avatar>
+                      <span className="truncate flex-1">{user.name}</span>
+                      <ChevronUp className="ml-auto" />
+                    </SidebarMenuButton>
+                  )}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  side="top"
-                  className="w-full min-w-0"
-                  style={{ width: "var(--radix-popper-anchor-width)" }}
+                  side={state === "collapsed" ? "right" : "top"}
+                  className={state === "collapsed" ? "min-w-[180px]" : "w-full min-w-0"}
+                  style={state === "collapsed" ? {} : { width: "var(--radix-popper-anchor-width)" }}
                 >
                   <DropdownMenuItem asChild>
                     <Link href="/profile">
