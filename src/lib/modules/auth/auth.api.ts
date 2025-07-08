@@ -15,7 +15,10 @@ import {
   ResetPasswordResponse,
   ChangePasswordRequest,
   ChangePasswordResponse,
+  CheckExistRequest,
+  CheckExistResponse,
 } from "./auth.interface";
+import type { APIResponse } from "@/lib/types/api-response";
 
 export async function loginApi(body: LoginRequest): Promise<LoginResponse> {
   return postApi<null>("/auth/login", body);
@@ -59,4 +62,8 @@ export async function changePasswordApi(
   body: ChangePasswordRequest
 ): Promise<ChangePasswordResponse> {
   return postApi<null>("/auth/change-password", body);
+}
+
+export async function checkExistApi(body: CheckExistRequest): Promise<APIResponse<CheckExistResponse>> {
+  return postApi<CheckExistResponse>("/auth/check-exist", body);
 }

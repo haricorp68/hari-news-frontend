@@ -14,7 +14,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string;
-  token: number;
+  token: string;
 }
 
 export type RegisterResponse = APIResponse<null>;
@@ -50,3 +50,13 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 export type ChangePasswordResponse = APIResponse<null>;
+
+// Kiểm tra tồn tại email/name
+export interface CheckExistRequest {
+  email?: string;
+  name?: string;
+}
+export interface CheckExistResponse {
+  emailExists?: boolean;
+  nameExists?: boolean;
+}
