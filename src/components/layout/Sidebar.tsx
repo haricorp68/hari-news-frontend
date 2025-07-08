@@ -53,6 +53,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 function SidebarWithContext({
   user,
@@ -63,8 +69,30 @@ function SidebarWithContext({
   handleLogout: () => void;
   profileLoading: boolean;
 }) {
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
+  const [prevSidebarState, setPrevSidebarState] = React.useState<'expanded' | 'collapsed'>('expanded');
   const [openConfirmLogout, setOpenConfirmLogout] = React.useState(false);
+  const [openSearch, setOpenSearch] = React.useState(false);
+  const [openNotification, setOpenNotification] = React.useState(false);
+
+  // Khi mở search/notification, collapse sidebar
+  const handleOpenSearch = () => {
+    setPrevSidebarState(state);
+    setOpen(false);
+    setOpenSearch(true);
+  };
+  const handleOpenNotification = () => {
+    setPrevSidebarState(state);
+    setOpen(false);
+    setOpenNotification(true);
+  };
+  // Khi đóng sheet, trả lại trạng thái sidebar trước đó
+  const handleCloseSheet = (setOpenSheet: (v: boolean) => void) => (open: boolean) => {
+    setOpenSheet(open);
+    if (!open && prevSidebarState === 'expanded') {
+      setOpen(true);
+    }
+  };
 
   // Loại bỏ useEffect set CSS custom - không cần thiết
   return (
@@ -110,7 +138,21 @@ function SidebarWithContext({
                 <SidebarMenuButton asChild>
                   <Link href="/">
                     <Home className="h-4 w-4" />
-                    {state === "expanded" && <span>Home</span>}
+                    {state === "expanded" && <span>Trang chủ</span>}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleOpenSearch}>
+                  <Search className="h-4 w-4" />
+                  {state === "expanded" && <span>Tìm kiếm</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/explore">
+                    <TrendingUp className="h-4 w-4" />
+                    {state === "expanded" && <span>Khám phá</span>}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -118,24 +160,22 @@ function SidebarWithContext({
                 <SidebarMenuButton asChild>
                   <Link href="/news">
                     <Newspaper className="h-4 w-4" />
-                    {state === "expanded" && <span>News</span>}
+                    {state === "expanded" && <span>Tin tức</span>}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/trending">
-                    <TrendingUp className="h-4 w-4" />
-                    {state === "expanded" && <span>Trending</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/categories">
+                  <Link href="/messages">
                     <FileText className="h-4 w-4" />
-                    {state === "expanded" && <span>Categories</span>}
+                    {state === "expanded" && <span>Tin nhắn</span>}
                   </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleOpenNotification}>
+                  <Bell className="h-4 w-4" />
+                  {state === "expanded" && <span>Thông báo</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -269,6 +309,59 @@ function SidebarWithContext({
           </SidebarMenu>
         )}
       </SidebarFooter>
+      {/* Sheet cho Search */}
+      <Sheet open={openSearch} onOpenChange={handleCloseSheet(setOpenSearch)}>
+        <SheetContent
+          side="left"
+          hideOverlay={true}
+          className="max-w-lg w-full p-0 rounded-2xl overflow-hidden fixed top-0 left-0 h-full"
+          zIndex={20}
+          style={{
+            transform: openSearch
+              ? `translateX(${state === 'expanded' ? 'var(--sidebar-width)' : 'var(--sidebar-width-icon)'})`
+              : 'translateX(-100%)',
+            transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+          }}
+        >
+          <SheetHeader>
+            <SheetTitle>Tìm kiếm</SheetTitle>
+          </SheetHeader>
+          <div className="p-4">
+            <input
+              className="w-full p-2 rounded bg-muted"
+              placeholder="Tìm kiếm"
+              autoFocus
+            />
+            <div className="mt-4 text-muted-foreground text-sm">Mới đây</div>
+            {/* ... có thể render danh sách lịch sử tìm kiếm ở đây ... */}
+          </div>
+        </SheetContent>
+      </Sheet>
+      {/* Sheet cho Notification */}
+      <Sheet open={openNotification} onOpenChange={handleCloseSheet(setOpenNotification)}>
+        <SheetContent
+          side="left"
+          hideOverlay={true}
+          className="max-w-lg w-full p-0 rounded-2xl overflow-hidden fixed top-0 left-0 h-full"
+          zIndex={20}
+          style={{
+            transform: openNotification
+              ? `translateX(${state === 'expanded' ? 'var(--sidebar-width)' : 'var(--sidebar-width-icon)'})`
+              : 'translateX(-100%)',
+            transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+          }}
+        >
+          <SheetHeader>
+            <SheetTitle>Thông báo</SheetTitle>
+          </SheetHeader>
+          <div className="p-4">
+            {/* ... render danh sách thông báo ở đây ... */}
+            <div className="text-muted-foreground text-sm">
+              Chưa có thông báo mới.
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
       <AlertDialog open={openConfirmLogout} onOpenChange={setOpenConfirmLogout}>
         <AlertDialogContent>
           <AlertDialogHeader>
