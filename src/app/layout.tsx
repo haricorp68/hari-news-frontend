@@ -31,8 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
-          <AppSidebar />
-          {children}
+          <AppSidebar>{children}</AppSidebar>
         </QueryProvider>
         <Toaster position="top-right" />
       </body>

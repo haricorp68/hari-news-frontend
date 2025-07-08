@@ -8,13 +8,13 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger,
   useSidebar,
+  SidebarTrigger,
+  SidebarInset,
 } from "@/components/ui/sidebar";
 import {
   Home,
@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
+
 function SidebarWithContext({
   user,
   handleLogout,
@@ -64,6 +65,8 @@ function SidebarWithContext({
 }) {
   const { state } = useSidebar();
   const [openConfirmLogout, setOpenConfirmLogout] = React.useState(false);
+
+  // Loại bỏ useEffect set CSS custom - không cần thiết
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -78,20 +81,23 @@ function SidebarWithContext({
             />
           </div>
         ) : (
-          <div className="flex items-center gap-2 px-4 py-2">
-            <Image
-              src="https://picsum.photos/40"
-              alt="Logo"
-              className="h-8 w-8 rounded-lg object-cover"
-              width={32}
-              height={32}
-            />
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold">Hari News</span>
-              <span className="text-xs text-muted-foreground">
-                Latest Updates
-              </span>
+          <div className="flex items-center gap-2 px-4 py-2 justify-between">
+            <div className="flex items-center gap-2">
+              <Image
+                src="https://picsum.photos/40"
+                alt="Logo"
+                className="h-8 w-8 rounded-lg object-cover"
+                width={32}
+                height={32}
+              />
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold">Hari News</span>
+                <span className="text-xs text-muted-foreground">
+                  Latest Updates
+                </span>
+              </div>
             </div>
+            <SidebarTrigger className="ml-auto" />
           </div>
         )}
       </SidebarHeader>
@@ -175,7 +181,7 @@ function SidebarWithContext({
               <DropdownMenuTrigger asChild>
                 <button className="p-0 w-8 h-8 flex justify-center items-center bg-transparent shadow-none hover:bg-muted rounded-lg">
                   <Image
-                    src={user?.avatar || "https://picsum.photos/40"}
+                    src={user?.avatar || "https://picsum.photos/32"}
                     alt={user?.name || "User"}
                     className="h-8 w-8 rounded-lg object-cover"
                     width={32}
@@ -183,7 +189,7 @@ function SidebarWithContext({
                   />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" className="min-w-[180px]">
+              <DropdownMenuContent side="top" className="min-w-[180px]">
                 <DropdownMenuItem asChild>
                   <Link href="/profile">
                     <UserIcon className="h-4 w-4 mr-2" />
@@ -198,7 +204,7 @@ function SidebarWithContext({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setOpenConfirmLogout(true)}
-                  variant="destructive"
+                  className="text-red-600 hover:text-red-700"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
@@ -242,7 +248,7 @@ function SidebarWithContext({
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setOpenConfirmLogout(true)}
-                      variant="destructive"
+                      className="text-red-600 hover:text-red-700"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Logout
@@ -252,7 +258,7 @@ function SidebarWithContext({
               ) : (
                 <AuthDialog
                   trigger={
-                    <Button className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ">
+                    <Button className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium">
                       <UserIcon className="h-4 w-4 mr-2" />
                       <span>Login</span>
                     </Button>
@@ -283,7 +289,7 @@ function SidebarWithContext({
   );
 }
 
-export function AppSidebar() {
+export function AppSidebar({ children }: { children?: React.ReactNode }) {
   const { user, logout, profileLoading } = useAuth();
   const handleLogout = () => {
     logout();
@@ -293,13 +299,16 @@ export function AppSidebar() {
   if (profileLoading && !user) {
     return (
       <SidebarProvider>
-        <Sidebar collapsible="icon">
+        <Sidebar variant="inset" collapsible="icon">
           <SidebarHeader />
           <SidebarContent />
           <SidebarFooter className="p-4">
             <Skeleton className="h-8 w-full rounded-md" />
           </SidebarFooter>
         </Sidebar>
+        <SidebarInset>
+          <main>{children}</main>
+        </SidebarInset>
       </SidebarProvider>
     );
   }
@@ -312,23 +321,7 @@ export function AppSidebar() {
         profileLoading={profileLoading}
       />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <div className="flex items-center gap-2 px-4">
-            <span className="text-lg font-semibold">Dashboard</span>
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {/* Main content goes here */}
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold">Welcome to Hari News</h1>
-              <p className="text-muted-foreground">
-                Select a menu item to get started
-              </p>
-            </div>
-          </div>
-        </div>
+        <main>{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
