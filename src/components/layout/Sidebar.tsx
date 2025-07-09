@@ -67,6 +67,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuAction,
 } from "@/components/ui/sidebar";
+import { SettingsDialog } from "@/components/settings-dialog";
 
 // Data cho navigation
 const navData = {
@@ -279,44 +280,18 @@ function NavUser({
   setOpenConfirmLogout: (open: boolean) => void;
 }) {
   const { isMobile } = useSidebar();
+  const [openSettings, setOpenSettings] = React.useState(false);
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage
-                  src={user?.avatar || "https://picsum.photos/32"}
-                  alt={user?.name || "User"}
-                />
-                <AvatarFallback className="rounded-lg">
-                  {user?.name?.[0] || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {user?.name || "Guest"}
-                </span>
-                <span className="truncate text-xs">
-                  {user?.email || "Chưa đăng nhập"}
-                </span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+    <>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              >
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
                     src={user?.avatar || "https://picsum.photos/32"}
@@ -334,35 +309,63 @@ function NavUser({
                     {user?.email || "Chưa đăng nhập"}
                   </span>
                 </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <Link href="/profile">
-                  <UserIcon />
-                  Hồ sơ
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/settings">
+                <ChevronsUpDown className="ml-auto size-4" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+              side={isMobile ? "bottom" : "right"}
+              align="end"
+              sideOffset={4}
+            >
+              <DropdownMenuLabel className="p-0 font-normal">
+                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarImage
+                      src={user?.avatar || "https://picsum.photos/32"}
+                      alt={user?.name || "User"}
+                    />
+                    <AvatarFallback className="rounded-lg">
+                      {user?.name?.[0] || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">
+                      {user?.name || "Guest"}
+                    </span>
+                    <span className="truncate text-xs">
+                      {user?.email || "Chưa đăng nhập"}
+                    </span>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <UserIcon />
+                    Hồ sơ
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpenSettings(true)}>
                   <Settings />
                   Cài đặt
-                </Link>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setOpenConfirmLogout(true)}
+                className="text-red-600 hover:text-red-700"
+              >
+                <LogOut />
+                Đăng xuất
               </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => setOpenConfirmLogout(true)}
-              className="text-red-600 hover:text-red-700"
-            >
-              <LogOut />
-              Đăng xuất
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+      <SettingsDialog open={openSettings} setOpen={setOpenSettings} />
+    </>
   );
 }
 
