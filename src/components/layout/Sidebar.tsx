@@ -6,7 +6,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -23,7 +22,6 @@ import {
   LogOut,
   Search,
   Bell,
-  Bookmark,
   TrendingUp,
   FileText,
   ChevronUp,
@@ -70,7 +68,9 @@ function SidebarWithContext({
   profileLoading: boolean;
 }) {
   const { state, setOpen } = useSidebar();
-  const [prevSidebarState, setPrevSidebarState] = React.useState<'expanded' | 'collapsed'>('expanded');
+  const [prevSidebarState, setPrevSidebarState] = React.useState<
+    "expanded" | "collapsed"
+  >("expanded");
   const [openConfirmLogout, setOpenConfirmLogout] = React.useState(false);
   const [openSearch, setOpenSearch] = React.useState(false);
   const [openNotification, setOpenNotification] = React.useState(false);
@@ -87,12 +87,13 @@ function SidebarWithContext({
     setOpenNotification(true);
   };
   // Khi đóng sheet, trả lại trạng thái sidebar trước đó
-  const handleCloseSheet = (setOpenSheet: (v: boolean) => void) => (open: boolean) => {
-    setOpenSheet(open);
-    if (!open && prevSidebarState === 'expanded') {
-      setOpen(true);
-    }
-  };
+  const handleCloseSheet =
+    (setOpenSheet: (v: boolean) => void) => (open: boolean) => {
+      setOpenSheet(open);
+      if (!open && prevSidebarState === "expanded") {
+        setOpen(true);
+      }
+    };
 
   // Loại bỏ useEffect set CSS custom - không cần thiết
   return (
@@ -120,9 +121,6 @@ function SidebarWithContext({
               />
               <div className="flex flex-col">
                 <span className="text-sm font-semibold">Hari News</span>
-                <span className="text-xs text-muted-foreground">
-                  Latest Updates
-                </span>
               </div>
             </div>
             <SidebarTrigger className="ml-auto" />
@@ -131,7 +129,6 @@ function SidebarWithContext({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -176,38 +173,6 @@ function SidebarWithContext({
                 <SidebarMenuButton onClick={handleOpenNotification}>
                   <Bell className="h-4 w-4" />
                   {state === "expanded" && <span>Thông báo</span>}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Personal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/bookmarks">
-                    <Bookmark className="h-4 w-4" />
-                    {state === "expanded" && <span>Bookmarks</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/notifications">
-                    <Bell className="h-4 w-4" />
-                    {state === "expanded" && <span>Notifications</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/search">
-                    <Search className="h-4 w-4" />
-                    {state === "expanded" && <span>Search</span>}
-                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -318,9 +283,13 @@ function SidebarWithContext({
           zIndex={20}
           style={{
             transform: openSearch
-              ? `translateX(${state === 'expanded' ? 'var(--sidebar-width)' : 'var(--sidebar-width-icon)'})`
-              : 'translateX(-100%)',
-            transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+              ? `translateX(${
+                  state === "expanded"
+                    ? "var(--sidebar-width)"
+                    : "var(--sidebar-width-icon)"
+                })`
+              : "translateX(-100%)",
+            transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
           }}
         >
           <SheetHeader>
@@ -338,7 +307,10 @@ function SidebarWithContext({
         </SheetContent>
       </Sheet>
       {/* Sheet cho Notification */}
-      <Sheet open={openNotification} onOpenChange={handleCloseSheet(setOpenNotification)}>
+      <Sheet
+        open={openNotification}
+        onOpenChange={handleCloseSheet(setOpenNotification)}
+      >
         <SheetContent
           side="left"
           hideOverlay={true}
@@ -346,9 +318,13 @@ function SidebarWithContext({
           zIndex={20}
           style={{
             transform: openNotification
-              ? `translateX(${state === 'expanded' ? 'var(--sidebar-width)' : 'var(--sidebar-width-icon)'})`
-              : 'translateX(-100%)',
-            transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+              ? `translateX(${
+                  state === "expanded"
+                    ? "var(--sidebar-width)"
+                    : "var(--sidebar-width-icon)"
+                })`
+              : "translateX(-100%)",
+            transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
           }}
         >
           <SheetHeader>
