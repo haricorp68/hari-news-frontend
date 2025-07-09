@@ -25,7 +25,7 @@ export async function loginApi(body: LoginRequest): Promise<LoginResponse> {
 }
 
 export async function getProfileApi(): Promise<MeResponse> {
-  return getApi<{ user: MeResponse["data"]["user"] }>("/auth/me");
+  return getApi<{ user: MeResponse["data"]["user"] }>("/auth/me", { disableToast: true });
 }
 
 export async function registerApi(body: RegisterRequest): Promise<RegisterResponse> {

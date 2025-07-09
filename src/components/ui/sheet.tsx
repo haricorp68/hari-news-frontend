@@ -6,7 +6,7 @@ import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-function Sheet(props: React.ComponentProps<typeof SheetPrimitive.Root>) {
+function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
@@ -48,23 +48,17 @@ function SheetContent({
   className,
   children,
   side = "right",
-  hideOverlay = false,
-  zIndex,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
-  side?: "top" | "right" | "bottom" | "left";
-  hideOverlay?: boolean;
-  zIndex?: number;
+  side?: "top" | "right" | "bottom" | "left"
 }) {
   return (
     <SheetPortal>
-      {!hideOverlay && <SheetOverlay />}
+      <SheetOverlay />
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
-          // Bỏ z-50 mặc định, chỉ dùng nếu không truyền zIndex
-          !zIndex && "z-50",
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
           side === "right" &&
             "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
           side === "left" &&
@@ -75,7 +69,6 @@ function SheetContent({
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
           className
         )}
-        style={zIndex ? { ...(props.style || {}), zIndex } : props.style}
         {...props}
       >
         {children}

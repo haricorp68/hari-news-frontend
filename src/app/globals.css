@@ -118,5 +118,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior: none;
+  }
+  html {
+    overscroll-behavior: none;
   }
 }

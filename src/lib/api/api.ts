@@ -2,6 +2,13 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import type { APIResponse } from "../types/api-response";
 import { toast } from "sonner";
 
+// Extend AxiosRequestConfig to support disableToast
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    disableToast?: boolean;
+  }
+}
+
 const API_BASE_URL = "http://localhost:3000/api";
 
 const api: AxiosInstance = axios.create({
@@ -23,8 +30,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error) => {
-    // Tự động xử lý lỗi chuẩn APIErrorResponse
-    if (error.response && error.response.data) {
+    // Lấy config từ error
+    const config = error.config || {};
+    // Nếu có disableToast thì bỏ qua toast
+    if (!config.disableToast && error.response && error.response.data) {
       const errData = error.response.data;
       // Có thể kiểm tra và xử lý tuỳ ý, ví dụ log, toast, redirect...
       if (typeof window !== "undefined") {

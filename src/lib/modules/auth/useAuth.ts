@@ -107,7 +107,7 @@ export function useAuth() {
     mutationFn: logoutApi,
     onSuccess: () => {
       logout();
-      // KHÔNG invalidateQueries ở đây để tránh lặp vô hạn
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 
@@ -154,7 +154,7 @@ export function useAuth() {
     if (profileQuery.data?.data?.user) setUser(profileQuery.data.data.user);
     // Chỉ gọi logout nếu đã từng có user (tránh lặp vô hạn khi chưa đăng nhập)
     if (profileQuery.isError && user) logout();
-  }, [profileQuery.data, profileQuery.isError, user]);
+  }, [profileQuery.data, profileQuery.isError]);
 
   return {
     user,
