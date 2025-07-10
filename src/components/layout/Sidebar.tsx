@@ -12,7 +12,6 @@ import {
   SidebarProvider,
   useSidebar,
   SidebarInset,
-  SidebarRail,
 } from "@/components/ui/sidebar";
 import {
   Home,
@@ -70,6 +69,7 @@ import {
 } from "@/components/ui/sidebar";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { PostCreateDialog } from "@/components/common/PostCreateDialog";
+import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
 
 // Data cho navigation
 const navData = {
@@ -417,13 +417,23 @@ function SidebarWithContext({
   user,
   handleLogout,
   profileLoading,
-}: // collapsible = "offcanvas",
-{
+}: {
   user: any;
   handleLogout: () => void;
   profileLoading: boolean;
   collapsible?: "offcanvas" | "icon" | "none";
 }) {
+  const { setOpen } = useSidebar();
+  const isTablet = useIsTablet();
+  const isMobile = useIsMobile();
+  React.useEffect(() => {
+    if (isTablet && !isMobile) {
+      setOpen(false);
+    } else if (!isTablet && !isMobile) {
+      setOpen(true);
+    }
+  }, [isTablet, isMobile, setOpen]);
+
   const [openConfirmLogout, setOpenConfirmLogout] = React.useState(false);
   const [openPostFeed, setOpenPostFeed] = React.useState(false);
 
@@ -501,7 +511,6 @@ function SidebarWithContext({
           <LoginButton />
         )}
       </SidebarFooter>
-      <SidebarRail />
       <AlertDialog open={openConfirmLogout} onOpenChange={setOpenConfirmLogout}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -523,17 +532,64 @@ function SidebarWithContext({
   );
 }
 
+// BottomNavBar cho mobile
+function BottomNavBar() {
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 bg-sidebar text-sidebar-foreground border-t border-border md:hidden">
+      <Link
+        href="/"
+        className="flex-1 flex flex-col items-center justify-center"
+      >
+        <Home className="h-5 w-5" />
+        <span className="text-xs">Trang chủ</span>
+      </Link>
+      <Link
+        href="/news"
+        className="flex-1 flex flex-col items-center justify-center"
+      >
+        <Newspaper className="h-5 w-5" />
+        <span className="text-xs">Tin tức</span>
+      </Link>
+      <Link
+        href="/explore"
+        className="flex-1 flex flex-col items-center justify-center"
+      >
+        <TrendingUp className="h-5 w-5" />
+        <span className="text-xs">Khám phá</span>
+      </Link>
+      <Link
+        href="/messages"
+        className="flex-1 flex flex-col items-center justify-center"
+      >
+        <FileText className="h-5 w-5" />
+        <span className="text-xs">Tin nhắn</span>
+      </Link>
+      <AuthDialog
+        trigger={
+          <button className="flex-1 flex flex-col items-center justify-center">
+            <UserIcon className="h-5 w-5" />
+            <span className="text-xs">Tài khoản</span>
+          </button>
+        }
+      />
+    </nav>
+  );
+}
+
 export function AppSidebar({ children }: { children?: React.ReactNode }) {
   const { user, logout, profileLoading } = useAuth();
   const handleLogout = () => {
     logout();
   };
+  const isTablet = useIsTablet();
+  const isMobile = useIsMobile();
+  const collapsible = isMobile ? "offcanvas" : isTablet ? "icon" : "offcanvas";
 
   // Nếu đang loading profile lần đầu, chỉ render skeleton hoặc null để tránh render SidebarWithContext sớm
   if (profileLoading && !user) {
     return (
       <SidebarProvider>
-        <Sidebar variant="inset" collapsible="icon">
+        <Sidebar variant="inset" collapsible={collapsible}>
           <SidebarHeader />
           <SidebarContent />
           <SidebarFooter className="p-4">
@@ -544,6 +600,7 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
           <Header />
           <main>{children}</main>
         </SidebarInset>
+        <BottomNavBar />
       </SidebarProvider>
     );
   }
@@ -554,11 +611,13 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
         user={user}
         handleLogout={handleLogout}
         profileLoading={profileLoading}
+        collapsible={collapsible}
       />
       <SidebarInset>
         <Header />
         <main>{children}</main>
       </SidebarInset>
+      <BottomNavBar />
     </SidebarProvider>
   );
 }
