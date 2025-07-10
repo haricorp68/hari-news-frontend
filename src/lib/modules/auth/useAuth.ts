@@ -15,6 +15,7 @@ import {
   ChangePasswordResponse,
 } from "./auth.interface";
 import { useAuthStore } from "./auth.store";
+import { useUserStore } from "@/lib/modules/user/user.store";
 import {
   getProfileApi,
   loginApi,
@@ -32,7 +33,8 @@ import type { CheckExistRequest } from "./auth.interface";
 import { toast } from "sonner";
 
 export function useAuth() {
-  const { user, setUser, logout } = useAuthStore();
+  const { logout } = useAuthStore();
+  const { user, setUser } = useUserStore();
   const queryClient = useQueryClient();
 
   // Lấy profile nếu đã login (cookie đã có token)
@@ -107,6 +109,7 @@ export function useAuth() {
     mutationFn: logoutApi,
     onSuccess: () => {
       logout();
+      setUser(null);
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
@@ -151,9 +154,12 @@ export function useAuth() {
   };
 
   useEffect(() => {
-    if (profileQuery.data?.data?.user) setUser(profileQuery.data.data.user);
-    // Chỉ gọi logout nếu đã từng có user (tránh lặp vô hạn khi chưa đăng nhập)
-    if (profileQuery.isError && user) logout();
+    if (profileQuery.isError) {
+      setUser(null);
+      // Nếu muốn, có thể gọi logout() ở đây nếu cần clear token
+    } else if (profileQuery.data?.data?.user) {
+      setUser(profileQuery.data.data.user);
+    }
   }, [profileQuery.data, profileQuery.isError]);
 
   return {

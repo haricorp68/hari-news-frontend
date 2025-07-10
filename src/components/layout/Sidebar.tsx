@@ -26,6 +26,7 @@ import {
   MoreHorizontal,
   ChevronsUpDown,
   type LucideIcon,
+  SquarePlus,
 } from "lucide-react";
 import { useAuth } from "@/lib/modules/auth/useAuth";
 import Link from "next/link";
@@ -68,6 +69,7 @@ import {
   SidebarMenuAction,
 } from "@/components/ui/sidebar";
 import { SettingsDialog } from "@/components/settings-dialog";
+import { PostCreateDialog } from "@/components/common/PostCreateDialog";
 
 // Data cho navigation
 const navData = {
@@ -123,6 +125,21 @@ const navData = {
       ],
     },
     {
+      title: "Đăng bài",
+      url: "/post",
+      icon: SquarePlus,
+      items: [
+        {
+          title: "Bài viết (Feed)",
+          url: "/post/feed",
+        },
+        {
+          title: "Bài báo (News)",
+          url: "/post/news",
+        },
+      ],
+    },
+    {
       title: "Tin nhắn",
       url: "/messages",
       icon: FileText,
@@ -156,61 +173,6 @@ const navData = {
     },
   ],
 };
-
-// Component NavMain
-function NavMain({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-    items?: {
-      title: string;
-      url: string;
-    }[];
-  }[];
-}) {
-  return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-      <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <Link href={subItem.url}>
-                          <span>{subItem.title}</span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>
-  );
-}
 
 // Component NavProjects
 function NavProjects({
@@ -450,16 +412,76 @@ function TeamSwitcher() {
   );
 }
 
+// Thêm state mở dialog post feed ở SidebarWithContext
 function SidebarWithContext({
   user,
   handleLogout,
   profileLoading,
-}: {
+}: // collapsible = "offcanvas",
+{
   user: any;
   handleLogout: () => void;
   profileLoading: boolean;
+  collapsible?: "offcanvas" | "icon" | "none";
 }) {
   const [openConfirmLogout, setOpenConfirmLogout] = React.useState(false);
+  const [openPostFeed, setOpenPostFeed] = React.useState(false);
+
+  // Custom NavMain để handle click "Bài viết (Feed)"
+  function NavMainWithPostDialog({ items }: { items: typeof navData.navMain }) {
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+        <SidebarMenu>
+          {items.map((item) => (
+            <Collapsible
+              key={item.title}
+              asChild
+              defaultOpen={item.isActive}
+              className="group/collapsible"
+            >
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton tooltip={item.title}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {item.items?.map((subItem) =>
+                      subItem.title === "Bài viết (Feed)" ? (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton asChild>
+                            <button
+                              type="button"
+                              onClick={() => setOpenPostFeed(true)}
+                              className="w-full text-left"
+                            >
+                              <span>{subItem.title}</span>
+                            </button>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ) : (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton asChild>
+                            <Link href={subItem.url}>
+                              <span>{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      )
+                    )}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          ))}
+        </SidebarMenu>
+      </SidebarGroup>
+    );
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -467,7 +489,7 @@ function SidebarWithContext({
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navData.navMain} />
+        <NavMainWithPostDialog items={navData.navMain} />
         <NavProjects projects={navData.projects} />
       </SidebarContent>
       <SidebarFooter>
@@ -496,6 +518,7 @@ function SidebarWithContext({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <PostCreateDialog open={openPostFeed} setOpen={setOpenPostFeed} />
     </Sidebar>
   );
 }
