@@ -1,12 +1,2 @@
-import { create } from "zustand";
-import type { User } from "@/lib/modules/user/user.interface";
-
-interface UserState {
-  user: User | null;
-  setUser: (user: User | null) => void;
-}
-
-export const useUserStore = create<UserState>((set) => ({
-  user: null,
-  setUser: (user) => set({ user }),
-}));
+// Nếu cần state cho user module (ví dụ: filter, pagination), định nghĩa ở đây.
+// Nếu không, có thể xoá toàn bộ file này nếu không dùng đến store cho user module.

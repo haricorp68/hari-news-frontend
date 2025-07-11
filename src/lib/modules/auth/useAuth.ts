@@ -15,7 +15,6 @@ import {
   ChangePasswordResponse,
 } from "./auth.interface";
 import { useAuthStore } from "./auth.store";
-import { useUserStore } from "@/lib/modules/user/user.store";
 import {
   getProfileApi,
   loginApi,
@@ -33,8 +32,7 @@ import type { CheckExistRequest } from "./auth.interface";
 import { toast } from "sonner";
 
 export function useAuth() {
-  const { logout } = useAuthStore();
-  const { user, setUser } = useUserStore();
+  const { setProfile, logout, profile } = useAuthStore();
   const queryClient = useQueryClient();
 
   // Lấy profile nếu đã login (cookie đã có token)
@@ -109,7 +107,7 @@ export function useAuth() {
     mutationFn: logoutApi,
     onSuccess: () => {
       logout();
-      setUser(null);
+      setProfile(null);
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
@@ -155,16 +153,14 @@ export function useAuth() {
 
   useEffect(() => {
     if (profileQuery.isError) {
-      setUser(null);
-      // Nếu muốn, có thể gọi logout() ở đây nếu cần clear token
-    } else if (profileQuery.data) {
-      setUser(profileQuery.data.data);
+      setProfile(null);
+    } else if (profileQuery.data?.data) {
+      setProfile(profileQuery.data.data);
     }
-  }, [profileQuery.data, profileQuery.isError]);
+  }, [profileQuery.data, profileQuery.isError, setProfile]);
 
   return {
-    user,
-    profile: profileQuery.data?.data,
+    profile,
     profileLoading: profileQuery.isLoading,
     login: loginMutation.mutate,
     loginLoading: loginMutation.isPending,
@@ -184,5 +180,6 @@ export function useAuth() {
     refreshTokenLoading: refreshTokenMutation.isPending,
     checkExist,
     existError,
+    setProfile,
   };
 }

@@ -40,6 +40,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { useUserConfig } from "@/lib/modules/user/hooks/useUserConfig";
 
 const data = {
   nav: [
@@ -59,6 +60,7 @@ const data = {
 }
 
 export function SettingsDialog({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
+  const { data: userConfig, isLoading: userConfigLoading } = useUserConfig();
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="overflow-hidden p-0 md:max-h-[500px] md:max-w-[700px] lg:max-w-[800px]">
@@ -107,6 +109,24 @@ export function SettingsDialog({ open, setOpen }: { open: boolean; setOpen: (ope
               </div>
             </header>
             <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
+              {/* Hiển thị user config */}
+              <div className="bg-muted/50 max-w-3xl rounded-xl p-4">
+                <h3 className="font-semibold mb-2">Cài đặt của bạn</h3>
+                {userConfigLoading ? (
+                  <div>Đang tải...</div>
+                ) : userConfig?.data ? (
+                  <>
+                    <div className="mb-2">
+                      <b>Email Notifications:</b> {userConfig.data.emailNotifications ? "Bật" : "Tắt"}
+                    </div>
+                    <div className="mb-2">
+                      <b>Privacy:</b> {userConfig.data.privacy}
+                    </div>
+                  </>
+                ) : (
+                  <div>Không có dữ liệu cấu hình.</div>
+                )}
+              </div>
               {Array.from({ length: 10 }).map((_, i) => (
                 <div
                   key={i}

@@ -577,7 +577,7 @@ function BottomNavBar() {
 }
 
 export function AppSidebar({ children }: { children?: React.ReactNode }) {
-  const { user, logout, profileLoading } = useAuth();
+  const { profile, logout, profileLoading } = useAuth();
   const handleLogout = () => {
     logout();
   };
@@ -586,7 +586,7 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
   const collapsible = isMobile ? "offcanvas" : isTablet ? "icon" : "offcanvas";
 
   // Nếu đang loading profile lần đầu, chỉ render skeleton hoặc null để tránh render SidebarWithContext sớm
-  if (profileLoading && !user) {
+  if (profileLoading && !profile) {
     return (
       <SidebarProvider>
         <Sidebar variant="inset" collapsible={collapsible}>
@@ -608,7 +608,7 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
   return (
     <SidebarProvider>
       <SidebarWithContext
-        user={user}
+        user={profile}
         handleLogout={handleLogout}
         profileLoading={profileLoading}
         collapsible={collapsible}

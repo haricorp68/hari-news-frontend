@@ -25,6 +25,15 @@ export interface User {
   updated_at: string;
 }
 
-export type FindAllUsersResponse = APIResponse<User[], PaginationMetadata>;
+export type FindAllUsersResponse = APIResponse<User[], PaginationMetadata | undefined>;
 
-export type FindUserResponse = APIResponse<User>;
+export type FindUserResponse = APIResponse<User, undefined>;
+
+export interface UserConfig {
+  id: string;
+  userId: string;
+  emailNotifications: boolean;
+  privacy: string;
+}
+
+export type GetSelfUserConfigResponse = APIResponse<UserConfig, undefined>;

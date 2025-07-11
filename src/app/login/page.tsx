@@ -4,7 +4,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 
 const LoginPage = () => {
-  const { login, loginLoading, user, profileLoading } = useAuth();
+  const { login, loginLoading, profile, profileLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -43,18 +43,18 @@ const LoginPage = () => {
       <h3>Thông tin người dùng</h3>
       {profileLoading ? (
         <p>Đang tải thông tin...</p>
-      ) : user ? (
+      ) : profile ? (
         <div>
           <p>
-            <b>ID:</b> {user.id}
+            <b>ID:</b> {profile.id}
           </p>
           <p>
-            <b>Email:</b> {user.email}
+            <b>Email:</b> {profile.email}
           </p>
           <p>
-            <b>Tên:</b> {user.name}
+            <b>Tên:</b> {profile.name}
           </p>
-          <Image src={user.avatar} alt="avatar" width={80} height={80} />
+          <Image src={profile.avatar} alt="avatar" width={80} height={80} />
         </div>
       ) : (
         <p>Chưa đăng nhập</p>

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useUserFeedPosts } from "@/lib/modules/post/hooks/useUserFeedPosts";
+import { useCreateUserFeedPost } from "@/lib/modules/post/hooks/useCreateUserFeedPost";
 
 type PostCreateDialogProps = {
   open?: boolean;
@@ -16,7 +16,7 @@ export function PostCreateDialog({ open: controlledOpen, setOpen: controlledSetO
   const setOpen = controlledSetOpen !== undefined ? controlledSetOpen : setUncontrolledOpen;
   const [caption, setCaption] = useState("");
   const [media, setMedia] = useState<File[]>([]);
-  const { createUserFeedPost, createLoading } = useUserFeedPosts();
+  const { mutate: createUserFeedPost, isPending: createLoading } = useCreateUserFeedPost();
 
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
