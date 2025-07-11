@@ -7,7 +7,7 @@ export interface LoginRequest {
 }
 
 export type LoginResponse = APIResponse<null>;
-export type MeResponse = APIResponse<{ user: User }>;
+export type MeResponse = APIResponse<User>;
 
 // Thêm cho register
 export interface RegisterRequest {

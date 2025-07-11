@@ -157,14 +157,14 @@ export function useAuth() {
     if (profileQuery.isError) {
       setUser(null);
       // Nếu muốn, có thể gọi logout() ở đây nếu cần clear token
-    } else if (profileQuery.data?.data?.user) {
-      setUser(profileQuery.data.data.user);
+    } else if (profileQuery.data) {
+      setUser(profileQuery.data.data);
     }
   }, [profileQuery.data, profileQuery.isError]);
 
   return {
     user,
-    profile: profileQuery.data?.data?.user,
+    profile: profileQuery.data?.data,
     profileLoading: profileQuery.isLoading,
     login: loginMutation.mutate,
     loginLoading: loginMutation.isPending,

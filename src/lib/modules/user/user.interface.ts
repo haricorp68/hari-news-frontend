@@ -1,3 +1,5 @@
+import type { APIResponse, PaginationMetadata } from "@/lib/types/api-response";
+
 export interface User {
   id: number;
   email: string;
@@ -21,4 +23,8 @@ export interface User {
   deletedAt: string | null;
   created_at: string;
   updated_at: string;
-} 
+}
+
+export type FindAllUsersResponse = APIResponse<User[], PaginationMetadata>;
+
+export type FindUserResponse = APIResponse<User>;

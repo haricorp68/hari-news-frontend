@@ -2,7 +2,6 @@ import { getApi, postApi } from "@/lib/api/api";
 import {
   LoginRequest,
   LoginResponse,
-  MeResponse,
   RegisterRequest,
   RegisterResponse,
   SendEmailVerificationRequest,
@@ -19,16 +18,19 @@ import {
   CheckExistResponse,
 } from "./auth.interface";
 import type { APIResponse } from "@/lib/types/api-response";
+import type { User } from "@/lib/modules/user/user.interface";
 
 export async function loginApi(body: LoginRequest): Promise<LoginResponse> {
   return postApi<null>("/auth/login", body);
 }
 
-export async function getProfileApi(): Promise<MeResponse> {
-  return getApi<{ user: MeResponse["data"]["user"] }>("/auth/me", { disableToast: true });
+export async function getProfileApi(): Promise<APIResponse<User>> {
+  return getApi<User>("/auth/me", { disableToast: true });
 }
 
-export async function registerApi(body: RegisterRequest): Promise<RegisterResponse> {
+export async function registerApi(
+  body: RegisterRequest
+): Promise<RegisterResponse> {
   return postApi<null>("/auth/register", body);
 }
 
@@ -64,6 +66,8 @@ export async function changePasswordApi(
   return postApi<null>("/auth/change-password", body);
 }
 
-export async function checkExistApi(body: CheckExistRequest): Promise<APIResponse<CheckExistResponse>> {
+export async function checkExistApi(
+  body: CheckExistRequest
+): Promise<APIResponse<CheckExistResponse>> {
   return postApi<CheckExistResponse>("/auth/check-exist", body);
 }
