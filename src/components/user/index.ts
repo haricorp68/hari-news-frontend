@@ -1,0 +1,7 @@
+export { UserProfile } from "./user-profile"
+export { UserAvatar } from "./user-avatar"
+export { UserCoverImage } from "./user-cover-image"
+export { UserInfo } from "./user-info"
+export { UserStats } from "./user-stats"
+export { UserDetails } from "./user-details"
+export { UserActions } from "./user-actions" 

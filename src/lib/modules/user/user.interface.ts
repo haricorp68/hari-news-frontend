@@ -1,10 +1,11 @@
 import type { APIResponse, PaginationMetadata } from "@/lib/types/api-response";
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
   name: string;
-  avatar: string;
+  avatar: string | null;
+  coverImage: string | null;
   bio: string | null;
   phone: string | null;
   dateOfBirth: string | null;
@@ -23,6 +24,8 @@ export interface User {
   deletedAt: string | null;
   created_at: string;
   updated_at: string;
+  followersCount: number;
+  followingCount: number;
 }
 
 export type FindAllUsersResponse = APIResponse<User[], PaginationMetadata | undefined>;

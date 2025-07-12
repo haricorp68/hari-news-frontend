@@ -54,7 +54,12 @@ const LoginPage = () => {
           <p>
             <b>Tên:</b> {profile.name}
           </p>
-          <Image src={profile.avatar} alt="avatar" width={80} height={80} />
+          <Image
+            src={profile.avatar || "https://picsum.photos/80"}
+            alt="avatar"
+            width={80}
+            height={80}
+          />
         </div>
       ) : (
         <p>Chưa đăng nhập</p>
