@@ -30,6 +30,8 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import ReactionIcons, { ReactionType } from "@/components/ui/reaction-icons";
+import Link from "next/link";
+import { UserFeedPost } from "@/lib/modules/post/post.interface";
 
 const REACTS = [
   {
@@ -61,20 +63,12 @@ const REACTS = [
   },
 ];
 
-export function PostFeedItem({ post }: { post: any }) {
+export function PostFeedItem({ post }: { post: UserFeedPost }) {
   const [showComments, setShowComments] = useState(false);
   const [showReacts, setShowReacts] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const leaveTimeout = useRef<NodeJS.Timeout | null>(null);
-  const reactCounts = post.reacts || {
-    like: 0,
-    dislike: 0,
-    love: 0,
-    haha: 0,
-    angry: 0,
-    sad: 0,
-    meh: 0,
-  };
+  const reactCounts = post.reactionSummary || {};
 
   // Hover logic for react button
   const handleReactMouseEnter = () => {
@@ -89,10 +83,19 @@ export function PostFeedItem({ post }: { post: any }) {
   return (
     <Card className="mb-8 max-w-2xl mx-auto gap-0">
       <CardHeader className="flex flex-row items-center gap-4 mb-0 pb-0 border-b-0">
-        <Avatar>
-          <AvatarImage src={post.user.avatar} alt={post.user.name} />
-          <AvatarFallback>{post.user.name[0]}</AvatarFallback>
-        </Avatar>
+        <Link
+          href={`/${post.user.id}`}
+          prefetch={false}
+          className="cursor-pointer"
+        >
+          <Avatar>
+            <AvatarImage
+              src={post.user.avatar || undefined}
+              alt={post.user.name}
+            />
+            <AvatarFallback>{post.user.name[0]}</AvatarFallback>
+          </Avatar>
+        </Link>
         <div>
           <CardTitle className="font-semibold text-base p-0 m-0 leading-tight">
             {post.user.name}
@@ -292,13 +295,20 @@ export function PostFeedItem({ post }: { post: any }) {
         )}
         <div className="flex gap-4 text-xs text-muted-foreground mb-1 items-center justify-between">
           {/* Hiển thị các icon cảm xúc đã được sử dụng */}
-          {REACTS.filter((r) => reactCounts[r.type] > 0).length > 0 && (
+          {Object.values(reactCounts).some((v) => v && v > 0) && (
             <span className="flex items-center">
               <ReactionIcons
-                reactions={REACTS.filter((r) => reactCounts[r.type] > 0).map((r) => r.type) as ReactionType[]}
+                reactions={
+                  Object.entries(reactCounts)
+                    .filter((entry) => entry[1] && entry[1] > 0)
+                    .map((entry) => entry[0]) as ReactionType[]
+                }
               />
               <span className="ml-1 font-medium text-xs text-foreground">
-                {(Object.values(reactCounts) as number[]).reduce((a, b) => a + b, 0)}
+                {Object.values(reactCounts).reduce(
+                  (a, b) => (a || 0) + (b || 0),
+                  0
+                )}
               </span>
             </span>
           )}
@@ -306,9 +316,7 @@ export function PostFeedItem({ post }: { post: any }) {
           <span className="text-right min-w-fit">
             {post.commentCount || 0} bình luận
           </span>
-          <span className="text-right min-w-fit">
-            {post.shareCount || 0} chia sẻ
-          </span>
+          {/* Bỏ shareCount vì không có trong interface */}
         </div>
         {showComments && (
           <div className="mt-3 border-t pt-2">

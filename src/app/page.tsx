@@ -1,11 +1,13 @@
-import { PostFeedItem } from "@/components/common/PostFeedItem";
+import { PostFeedList } from "@/components/common/PostFeedList";
 
 const tempPosts = [
   {
-    id: 1,
+    id: "1",
     caption: "Đây là bài viết demo số 1!",
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     user: {
+      id: "user1",
       name: "Nguyễn Văn A",
       avatar: "https://picsum.photos/seed/a/60/60",
     },
@@ -41,15 +43,16 @@ const tempPosts = [
         order: 6,
       },
     ],
-    reacts: { like: 12, love: 3, haha: 1, wow: 0, sad: 0, angry: 0 },
+    reactionSummary: { like: 12, love: 3, haha: 1, sad: 0, angry: 0, meh: 0, dislike: 0 },
     commentCount: 5,
-    shareCount: 2,
   },
   {
-    id: 2,
+    id: "2",
     caption: "Bài viết số 2 với video demo!",
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     user: {
+      id: "user2",
       name: "Trần Thị B",
       avatar: "https://picsum.photos/seed/b/60/60",
     },
@@ -60,31 +63,29 @@ const tempPosts = [
         order: 1,
       },
     ],
-    reacts: { like: 2, love: 0, haha: 0, wow: 1, sad: 0, angry: 0 },
+    reactionSummary: { like: 2, love: 0, haha: 0, sad: 0, angry: 0, meh: 0, dislike: 0 },
     commentCount: 1,
-    shareCount: 0,
   },
   {
-    id: 3,
+    id: "3",
     caption: "Bài viết số 3 chỉ có text.",
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     user: {
+      id: "user3",
       name: "Lê Văn C",
       avatar: "https://picsum.photos/seed/c/60/60",
     },
     media: [],
-    reacts: { like: 0, love: 0, haha: 0, wow: 0, sad: 0, angry: 0 },
+    reactionSummary: { like: 0, love: 0, haha: 0, sad: 0, angry: 0, meh: 0, dislike: 0 },
     commentCount: 0,
-    shareCount: 0,
   },
 ];
 
 export default function Home() {
   return (
     <div className="max-w-xl mx-auto py-8">
-      {tempPosts.map((post) => (
-        <PostFeedItem key={post.id} post={post} />
-      ))}
+      <PostFeedList posts={tempPosts} />
     </div>
   );
 }

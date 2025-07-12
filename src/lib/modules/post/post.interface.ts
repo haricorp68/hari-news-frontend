@@ -1,3 +1,22 @@
+export type ReactionType =
+  | "like"
+  | "dislike"
+  | "love"
+  | "haha"
+  | "angry"
+  | "sad"
+  | "meh";
+
+export interface ReactionSummary {
+  like?: number;
+  dislike?: number;
+  love?: number;
+  haha?: number;
+  angry?: number;
+  sad?: number;
+  meh?: number;
+}
+
 export interface UserFeedPostMedia {
   url: string;
   type: string;
@@ -5,17 +24,20 @@ export interface UserFeedPostMedia {
 }
 
 export interface UserFeedPostUser {
+  id: string;
   name: string;
-  avatar: string;
+  avatar: string | null;
 }
 
 export interface UserFeedPost {
-  id: number;
+  id: string;
   caption: string;
   created_at: string;
   updated_at: string;
   media: UserFeedPostMedia[];
   user: UserFeedPostUser;
+  reactionSummary: ReactionSummary;
+  commentCount: number;
 }
 
 export interface CommunityFeedPostMedia {
