@@ -23,26 +23,32 @@ import type {
   AutocompleteCategoriesParams,
 } from "./category.interface";
 
-export function useCategory(categoryId?: string) {
+interface UseCategoryOptions {
+  enabledRoot?: boolean;
+  enabledDetail?: boolean;
+}
+
+export function useCategory(categoryId?: string, options?: UseCategoryOptions) {
   const queryClient = useQueryClient();
 
-  // 1. Lấy danh sách tất cả categories
-  const categoriesQuery = useQuery<FindAllCategoriesResponse, Error>({
-    queryKey: ["categories"],
-    queryFn: getAllCategoriesApi,
-  });
+  // 1. Lấy danh sách tất cả categories (không dùng mặc định)
+  // const categoriesQuery = useQuery<FindAllCategoriesResponse, Error>({
+  //   queryKey: ["categories"],
+  //   queryFn: getAllCategoriesApi,
+  // });
 
   // 2. Lấy categories gốc
   const rootCategoriesQuery = useQuery<FindRootCategoriesResponse, Error>({
     queryKey: ["categories", "root"],
     queryFn: getRootCategoriesApi,
+    enabled: options?.enabledRoot,
   });
 
   // 3. Lấy chi tiết category theo id (nếu có categoryId)
   const categoryDetailQuery = useQuery<FindCategoryResponse, Error>({
     queryKey: ["category", categoryId],
     queryFn: () => getCategoryByIdApi(categoryId!),
-    enabled: !!categoryId,
+    enabled: !!categoryId && (options?.enabledDetail ?? true),
   });
 
   // 4. Lấy categories con
@@ -66,7 +72,6 @@ export function useCategory(categoryId?: string) {
   const createCategoryMutation = useMutation({
     mutationFn: (data: CreateCategoryRequest) => createCategoryApi(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
       queryClient.invalidateQueries({ queryKey: ["categories", "root"] });
     },
   });
@@ -76,7 +81,6 @@ export function useCategory(categoryId?: string) {
     mutationFn: ({ id, data }: { id: string; data: UpdateCategoryRequest }) =>
       updateCategoryApi(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
       queryClient.invalidateQueries({ queryKey: ["categories", "root"] });
       queryClient.invalidateQueries({ queryKey: ["category", id] });
       queryClient.invalidateQueries({ queryKey: ["categories", "children", id] });
@@ -87,15 +91,14 @@ export function useCategory(categoryId?: string) {
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: string) => deleteCategoryApi(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
       queryClient.invalidateQueries({ queryKey: ["categories", "root"] });
     },
   });
 
   return {
     // Queries
-    categories: categoriesQuery.data?.data,
-    categoriesLoading: categoriesQuery.isLoading,
+    // categories: categoriesQuery.data?.data,
+    // categoriesLoading: categoriesQuery.isLoading,
     rootCategories: rootCategoriesQuery.data?.data,
     rootCategoriesLoading: rootCategoriesQuery.isLoading,
     category: categoryDetailQuery.data?.data,
@@ -122,7 +125,6 @@ export function useCategory(categoryId?: string) {
     deleteCategoryLoading: deleteCategoryMutation.isPending,
     
     // Refetch functions
-    refetchCategories: categoriesQuery.refetch,
     refetchRootCategories: rootCategoriesQuery.refetch,
     refetchCategory: categoryDetailQuery.refetch,
     refetchChildCategories: childCategoriesQuery.refetch,
