@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   Bell,
   Check,
@@ -14,7 +14,7 @@ import {
   Paintbrush,
   Settings,
   Video,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Breadcrumb,
@@ -23,13 +23,13 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/ui/breadcrumb";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Sidebar,
   SidebarContent,
@@ -39,8 +39,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-} from "@/components/ui/sidebar"
-import { useUserConfig } from "@/lib/modules/user/hooks/useUserConfig";
+} from "@/components/ui/sidebar";
+import { useSelfUserConfig } from "@/lib/modules/user/hooks/useSelfUserConfig";
 
 const data = {
   nav: [
@@ -57,10 +57,17 @@ const data = {
     { name: "Privacy & visibility", icon: Lock },
     { name: "Advanced", icon: Settings },
   ],
-}
+};
 
-export function SettingsDialog({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
-  const { data: userConfig, isLoading: userConfigLoading } = useUserConfig();
+export function SettingsDialog({
+  open,
+  setOpen,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}) {
+  const { userConfig: userConfig, userConfigLoading: userConfigLoading } =
+    useSelfUserConfig();
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="overflow-hidden p-0 md:max-h-[500px] md:max-w-[700px] lg:max-w-[800px]">
@@ -114,13 +121,14 @@ export function SettingsDialog({ open, setOpen }: { open: boolean; setOpen: (ope
                 <h3 className="font-semibold mb-2">Cài đặt của bạn</h3>
                 {userConfigLoading ? (
                   <div>Đang tải...</div>
-                ) : userConfig?.data ? (
+                ) : userConfig ? (
                   <>
                     <div className="mb-2">
-                      <b>Email Notifications:</b> {userConfig.data.emailNotifications ? "Bật" : "Tắt"}
+                      <b>Email Notifications:</b>{" "}
+                      {userConfig.emailNotifications ? "Bật" : "Tắt"}
                     </div>
                     <div className="mb-2">
-                      <b>Privacy:</b> {userConfig.data.privacy}
+                      <b>Privacy:</b> {userConfig.privacy}
                     </div>
                   </>
                 ) : (
@@ -138,5 +146,5 @@ export function SettingsDialog({ open, setOpen }: { open: boolean; setOpen: (ope
         </SidebarProvider>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

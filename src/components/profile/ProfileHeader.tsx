@@ -3,6 +3,7 @@
 import { User } from "@/lib/modules/user/user.interface";
 import { Button } from "@/components/ui/button";
 import { Settings, User as UserIcon, Edit2 } from "lucide-react";
+import Image from "next/image";
 
 interface ProfileHeaderProps {
   user: User;
@@ -16,9 +17,11 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
       <div className="flex justify-center md:block">
         <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-gray-200">
           {user.avatar ? (
-            <img
+            <Image
               src={user.avatar}
               alt={user.name}
+              width={160}
+              height={160}
               className="w-full h-full object-cover"
             />
           ) : (

@@ -578,10 +578,6 @@ function BottomNavBar() {
 
 export function AppSidebar({ children }: { children?: React.ReactNode }) {
   const { profile, logout, profileLoading } = useAuth();
-  console.log(
-    "🔍 ~ AppSidebar ~ src/components/layout/Sidebar.tsx:580 ~ profile:",
-    profile
-  );
 
   const handleLogout = () => {
     logout();

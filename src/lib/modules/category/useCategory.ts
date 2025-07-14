@@ -31,11 +31,10 @@ interface UseCategoryOptions {
 export function useCategory(categoryId?: string, options?: UseCategoryOptions) {
   const queryClient = useQueryClient();
 
-  // 1. Lấy danh sách tất cả categories (không dùng mặc định)
-  // const categoriesQuery = useQuery<FindAllCategoriesResponse, Error>({
-  //   queryKey: ["categories"],
-  //   queryFn: getAllCategoriesApi,
-  // });
+  const categoriesQuery = useQuery<FindAllCategoriesResponse, Error>({
+    queryKey: ["categories"],
+    queryFn: getAllCategoriesApi,
+  });
 
   // 2. Lấy categories gốc
   const rootCategoriesQuery = useQuery<FindRootCategoriesResponse, Error>({
@@ -59,13 +58,22 @@ export function useCategory(categoryId?: string, options?: UseCategoryOptions) {
   });
 
   // 5. Tìm kiếm categories
-  const searchCategoriesMutation = useMutation<SearchCategoriesResponse, Error, SearchCategoriesParams>({
+  const searchCategoriesMutation = useMutation<
+    SearchCategoriesResponse,
+    Error,
+    SearchCategoriesParams
+  >({
     mutationFn: (params: SearchCategoriesParams) => searchCategoriesApi(params),
   });
 
   // 6. Gợi ý autocomplete
-  const autocompleteCategoriesMutation = useMutation<AutocompleteCategoriesResponse, Error, AutocompleteCategoriesParams>({
-    mutationFn: (params: AutocompleteCategoriesParams) => autocompleteCategoriesApi(params),
+  const autocompleteCategoriesMutation = useMutation<
+    AutocompleteCategoriesResponse,
+    Error,
+    AutocompleteCategoriesParams
+  >({
+    mutationFn: (params: AutocompleteCategoriesParams) =>
+      autocompleteCategoriesApi(params),
   });
 
   // 7. Tạo category mới
@@ -83,7 +91,9 @@ export function useCategory(categoryId?: string, options?: UseCategoryOptions) {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["categories", "root"] });
       queryClient.invalidateQueries({ queryKey: ["category", id] });
-      queryClient.invalidateQueries({ queryKey: ["categories", "children", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["categories", "children", id],
+      });
     },
   });
 
@@ -97,36 +107,36 @@ export function useCategory(categoryId?: string, options?: UseCategoryOptions) {
 
   return {
     // Queries
-    // categories: categoriesQuery.data?.data,
-    // categoriesLoading: categoriesQuery.isLoading,
+    categories: categoriesQuery.data?.data,
+    categoriesLoading: categoriesQuery.isLoading,
     rootCategories: rootCategoriesQuery.data?.data,
     rootCategoriesLoading: rootCategoriesQuery.isLoading,
     category: categoryDetailQuery.data?.data,
     categoryLoading: categoryDetailQuery.isLoading,
     childCategories: childCategoriesQuery.data?.data,
     childCategoriesLoading: childCategoriesQuery.isLoading,
-    
+
     // Mutations
     searchCategories: searchCategoriesMutation.mutate,
     searchCategoriesLoading: searchCategoriesMutation.isPending,
     searchCategoriesData: searchCategoriesMutation.data?.data,
-    
+
     autocompleteCategories: autocompleteCategoriesMutation.mutate,
     autocompleteCategoriesLoading: autocompleteCategoriesMutation.isPending,
     autocompleteCategoriesData: autocompleteCategoriesMutation.data?.data,
-    
+
     createCategory: createCategoryMutation.mutate,
     createCategoryLoading: createCategoryMutation.isPending,
-    
+
     updateCategory: updateCategoryMutation.mutate,
     updateCategoryLoading: updateCategoryMutation.isPending,
-    
+
     deleteCategory: deleteCategoryMutation.mutate,
     deleteCategoryLoading: deleteCategoryMutation.isPending,
-    
+
     // Refetch functions
     refetchRootCategories: rootCategoriesQuery.refetch,
     refetchCategory: categoryDetailQuery.refetch,
     refetchChildCategories: childCategoriesQuery.refetch,
   };
-} 
+}

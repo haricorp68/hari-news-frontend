@@ -51,6 +51,9 @@ export const CategoryAutocompleteInput: React.FC<CategoryAutocompleteInputProps>
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Nếu sau này có thêm group khác, set biến này thành true để hiển thị divider
+  const hasOtherGroups = false;
+
   return (
     <div className="relative w-full max-w-md" ref={wrapperRef}>
       <div className="flex items-center relative">
@@ -101,7 +104,7 @@ export const CategoryAutocompleteInput: React.FC<CategoryAutocompleteInputProps>
           ) : (
             <div className="p-4 text-center text-muted-foreground text-sm">Không tìm thấy danh mục phù hợp.</div>
           )}
-          <div className="my-1 border-t" />
+          {hasOtherGroups && <div className="my-1 border-t" />}
         </div>
       )}
     </div>
