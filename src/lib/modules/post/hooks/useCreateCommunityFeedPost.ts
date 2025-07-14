@@ -1,15 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createCommunityFeedPostApi } from "../post.api";
+import type { CreateCommunityFeedPostRequest, CommunityFeedPostResponse } from "../post.interface";
 
 export function useCreateCommunityFeedPost() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<CommunityFeedPostResponse, Error, CreateCommunityFeedPostRequest>({
     mutationFn: createCommunityFeedPostApi,
-    onSuccess: (data, variables) => {
-      // variables.communityId phải được truyền vào khi gọi mutation
-      if (variables && variables.communityId) {
-        queryClient.invalidateQueries({ queryKey: ["communityFeedPosts", variables.communityId] });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["communityFeedPosts"] });
     },
   });
 } 

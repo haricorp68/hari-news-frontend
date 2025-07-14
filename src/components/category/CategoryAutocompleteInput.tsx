@@ -3,18 +3,22 @@ import { Input } from "@/components/ui/input";
 import { useAutocompleteCategories } from "@/lib/modules/category/hooks/useAutocompleteCategories";
 import { Category } from "@/lib/modules/category";
 import { Search, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
 
 interface CategoryAutocompleteInputProps {
   onSelect?: (category: Category) => void;
   placeholder?: string;
 }
 
-export const CategoryAutocompleteInput: React.FC<CategoryAutocompleteInputProps> = ({ onSelect, placeholder }) => {
+export const CategoryAutocompleteInput: React.FC<
+  CategoryAutocompleteInputProps
+> = ({ onSelect, placeholder }) => {
   const [value, setValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [displayedData, setDisplayedData] = useState<Category[]>([]);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const { autocompleteCategories, autocompleteCategoriesData } = useAutocompleteCategories();
+  const { autocompleteCategories, autocompleteCategoriesData } =
+    useAutocompleteCategories();
 
   // Debounce autocomplete
   useEffect(() => {
@@ -43,7 +47,10 @@ export const CategoryAutocompleteInput: React.FC<CategoryAutocompleteInputProps>
   const wrapperRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     }
@@ -62,7 +69,7 @@ export const CategoryAutocompleteInput: React.FC<CategoryAutocompleteInputProps>
           className="pl-10"
           placeholder={placeholder || "Tìm kiếm danh mục..."}
           value={value}
-          onChange={e => setValue(e.target.value)}
+          onChange={(e) => setValue(e.target.value)}
           onFocus={() => value && setShowDropdown(true)}
           autoComplete="off"
         />
@@ -70,9 +77,11 @@ export const CategoryAutocompleteInput: React.FC<CategoryAutocompleteInputProps>
       {showDropdown && value && (
         <div className="absolute z-20 mt-1 w-full bg-popover border rounded shadow-lg max-h-60 overflow-auto animate-in fade-in">
           {/* Group: Danh mục */}
-          <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Danh mục</div>
+          <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Danh mục
+          </div>
           {displayedData.length > 0 ? (
-            displayedData.map(cat => (
+            displayedData.map((cat) => (
               <div
                 key={cat.id}
                 className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-accent"
@@ -83,10 +92,12 @@ export const CategoryAutocompleteInput: React.FC<CategoryAutocompleteInputProps>
                 }}
               >
                 {cat.coverImage ? (
-                  <img
+                  <Image
                     src={cat.coverImage}
                     alt={cat.name}
-                    className="w-10 h-10 object-cover rounded"
+                    height={50}
+                    width={50}
+                    className="rounded-xl"
                   />
                 ) : (
                   <div className="w-10 h-10 flex items-center justify-center bg-muted rounded">
@@ -96,17 +107,21 @@ export const CategoryAutocompleteInput: React.FC<CategoryAutocompleteInputProps>
                 <div className="flex flex-col min-w-0">
                   <span className="font-medium truncate">{cat.name}</span>
                   {cat.description && (
-                    <span className="text-xs text-muted-foreground truncate">{cat.description}</span>
+                    <span className="text-xs text-muted-foreground truncate">
+                      {cat.description}
+                    </span>
                   )}
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-4 text-center text-muted-foreground text-sm">Không tìm thấy danh mục phù hợp.</div>
+            <div className="p-4 text-center text-muted-foreground text-sm">
+              Không tìm thấy danh mục phù hợp.
+            </div>
           )}
           {hasOtherGroups && <div className="my-1 border-t" />}
         </div>
       )}
     </div>
   );
-}; 
+};

@@ -1,4 +1,4 @@
-import { User } from './user.entity';
+import { User } from "@/lib/modules/user/user.interface";
 
 export interface UserConfig {
   id: number;
@@ -7,8 +7,8 @@ export interface UserConfig {
   preferences?: {
     emailNotifications?: boolean;
     pushNotifications?: boolean;
-    privacyLevel?: 'public' | 'friends' | 'private';
-    theme?: 'light' | 'dark' | 'auto';
+    privacyLevel?: "public" | "friends" | "private";
+    theme?: "light" | "dark" | "auto";
   };
   socialLinks?: {
     facebook?: string;
@@ -25,4 +25,4 @@ export interface UserConfig {
   updated_at: Date;
 }
 
-// Import User từ user.entity nếu cần 
+// Import User từ user.entity nếu cần

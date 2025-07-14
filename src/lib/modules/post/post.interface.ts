@@ -77,3 +77,32 @@ export interface CompanyFeedPost {
   media: CompanyFeedPostMedia[];
   company: CompanyFeedPostCompany;
 }
+
+// ==== API RESPONSE & REQUEST TYPES ====
+import type { APIResponse, PaginationMetadata } from "@/lib/types/api-response";
+
+// USER FEED
+export interface CreateUserFeedPostRequest {
+  caption: string;
+  media?: { url: string; type: string; order: number }[];
+}
+export type UserFeedPostListResponse = APIResponse<UserFeedPost[], PaginationMetadata | undefined>;
+export type UserFeedPostResponse = APIResponse<UserFeedPost, undefined>;
+
+// COMMUNITY FEED
+export interface CreateCommunityFeedPostRequest {
+  communityId: number;
+  caption: string;
+  media?: { url: string; type: string; order: number }[];
+}
+export type CommunityFeedPostListResponse = APIResponse<CommunityFeedPost[], PaginationMetadata | undefined>;
+export type CommunityFeedPostResponse = APIResponse<CommunityFeedPost, undefined>;
+
+// COMPANY FEED
+export interface CreateCompanyFeedPostRequest {
+  companyId: number;
+  caption: string;
+  media?: { url: string; type: string; order: number }[];
+}
+export type CompanyFeedPostListResponse = APIResponse<CompanyFeedPost[], PaginationMetadata | undefined>;
+export type CompanyFeedPostResponse = APIResponse<CompanyFeedPost, undefined>;

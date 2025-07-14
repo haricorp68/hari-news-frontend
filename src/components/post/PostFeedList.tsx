@@ -1,4 +1,4 @@
-import { PostFeedItem } from "@/components/common/PostFeedItem";
+import { PostFeedItem } from "@/components/post/PostFeedItem";
 import type { UserFeedPost } from "@/lib/modules/post/post.interface";
 
 export function PostFeedList({ posts }: { posts: UserFeedPost[] }) {
@@ -11,4 +11,4 @@ export function PostFeedList({ posts }: { posts: UserFeedPost[] }) {
       ))}
     </div>
   );
-} 
+}

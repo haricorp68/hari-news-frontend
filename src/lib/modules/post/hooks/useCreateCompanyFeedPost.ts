@@ -1,15 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createCompanyFeedPostApi } from "../post.api";
+import type { CreateCompanyFeedPostRequest, CompanyFeedPostResponse } from "../post.interface";
 
 export function useCreateCompanyFeedPost() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<CompanyFeedPostResponse, Error, CreateCompanyFeedPostRequest>({
     mutationFn: createCompanyFeedPostApi,
-    onSuccess: (data, variables) => {
-      // variables.companyId phải được truyền vào khi gọi mutation
-      if (variables && variables.companyId) {
-        queryClient.invalidateQueries({ queryKey: ["companyFeedPosts", variables.companyId] });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companyFeedPosts"] });
     },
   });
 } 

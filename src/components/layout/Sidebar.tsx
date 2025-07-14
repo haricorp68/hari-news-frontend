@@ -68,7 +68,7 @@ import {
   SidebarMenuAction,
 } from "@/components/ui/sidebar";
 import { SettingsDialog } from "@/components/settings-dialog";
-import { PostCreateDialog } from "@/components/common/PostCreateDialog";
+import { PostCreateDialog } from "@/components/post/PostCreateDialog";
 import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
 
 // Data cho navigation

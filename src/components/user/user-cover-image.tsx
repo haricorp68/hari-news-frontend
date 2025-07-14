@@ -3,6 +3,7 @@
 import { User } from "@/lib/modules/user/user.interface"
 import { cn } from "@/lib/utils"
 import { ImageIcon } from "lucide-react"
+import Image from "next/image";
 
 interface UserCoverImageProps {
   user: User
@@ -20,10 +21,11 @@ export function UserCoverImage({ user, className, height = "md" }: UserCoverImag
   return (
     <div className={cn("relative w-full overflow-hidden rounded-lg", heightClasses[height], className)}>
       {user.coverImage ? (
-        <img
+        <Image
           src={user.coverImage}
           alt={`${user.name}'s cover image`}
-          className="h-full w-full object-cover"
+          layout="fill"
+          objectFit="cover"
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">

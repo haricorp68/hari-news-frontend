@@ -1,6 +1,7 @@
 "use client"
 
 import { Plus } from "lucide-react";
+import Image from "next/image";
 
 interface Story {
   id: string;
@@ -19,7 +20,13 @@ export function ProfileStories({ stories = [], isOwnProfile }: ProfileStoriesPro
       {stories.map((story) => (
         <div key={story.id} className="flex flex-col items-center gap-1 min-w-[72px]">
           <div className="w-16 h-16 rounded-full border-2 border-primary overflow-hidden flex items-center justify-center">
-            <img src={story.image} alt={story.label} className="w-full h-full object-cover" />
+            <Image
+              src={story.image}
+              alt={story.label}
+              width={64}
+              height={64}
+              className="w-full h-full object-cover"
+            />
           </div>
           <span className="text-xs mt-1 truncate max-w-[64px]">{story.label}</span>
         </div>

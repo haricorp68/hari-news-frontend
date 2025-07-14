@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCompanyFeedPostsApi } from "../post.api";
+import type { CompanyFeedPostListResponse } from "../post.interface";
 
 export function useCompanyFeedPosts(companyId: number, enabled = true) {
-  return useQuery({
+  return useQuery<CompanyFeedPostListResponse, Error>({
     queryKey: ["companyFeedPosts", companyId],
-    queryFn: () => getCompanyFeedPostsApi(companyId).then(res => res.data),
+    queryFn: () => getCompanyFeedPostsApi(companyId),
     enabled,
   });
 } 

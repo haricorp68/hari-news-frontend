@@ -1,4 +1,4 @@
-import { PostFeedList } from "@/components/common/PostFeedList";
+import { PostFeedList } from "@/components/post/PostFeedList";
 
 const tempPosts = [
   {
@@ -43,7 +43,15 @@ const tempPosts = [
         order: 6,
       },
     ],
-    reactionSummary: { like: 12, love: 3, haha: 1, sad: 0, angry: 0, meh: 0, dislike: 0 },
+    reactionSummary: {
+      like: 12,
+      love: 3,
+      haha: 1,
+      sad: 0,
+      angry: 0,
+      meh: 0,
+      dislike: 0,
+    },
     commentCount: 5,
   },
   {
@@ -63,7 +71,15 @@ const tempPosts = [
         order: 1,
       },
     ],
-    reactionSummary: { like: 2, love: 0, haha: 0, sad: 0, angry: 0, meh: 0, dislike: 0 },
+    reactionSummary: {
+      like: 2,
+      love: 0,
+      haha: 0,
+      sad: 0,
+      angry: 0,
+      meh: 0,
+      dislike: 0,
+    },
     commentCount: 1,
   },
   {
@@ -77,7 +93,15 @@ const tempPosts = [
       avatar: "https://picsum.photos/seed/c/60/60",
     },
     media: [],
-    reactionSummary: { like: 0, love: 0, haha: 0, sad: 0, angry: 0, meh: 0, dislike: 0 },
+    reactionSummary: {
+      like: 0,
+      love: 0,
+      haha: 0,
+      sad: 0,
+      angry: 0,
+      meh: 0,
+      dislike: 0,
+    },
     commentCount: 0,
   },
 ];

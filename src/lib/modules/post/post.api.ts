@@ -27,6 +27,18 @@ export async function getSelfUserFeedPostDetailApi(
   return getApi<UserFeedPost>(`/post/self/user-feed/${id}`);
 }
 
+export async function getUserFeedPostsApi(params: {
+  userId: string;
+  limit?: number;
+  offset?: number;
+}): Promise<APIResponse<UserFeedPost[]>> {
+  const { userId, limit, offset } = params;
+  const query: Record<string, any> = {};
+  if (limit !== undefined) query.limit = limit;
+  if (offset !== undefined) query.offset = offset;
+  return getApi<UserFeedPost[]>(`/post/user-feed/${userId}`, { params: query });
+}
+
 // COMMUNITY FEED
 export async function createCommunityFeedPostApi(body: {
   communityId: number;
