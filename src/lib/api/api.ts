@@ -81,6 +81,15 @@ export const putApi = async <T = unknown>(
   return res.data;
 };
 
+export const patchApi = async <T = unknown>(
+  url: string,
+  data?: unknown,
+  config?: AxiosRequestConfig
+) => {
+  const res = await api.patch<APIResponse<T>>(url, data, config);
+  return res.data;
+};
+
 export const deleteApi = async <T = unknown>(
   url: string,
   config?: AxiosRequestConfig
