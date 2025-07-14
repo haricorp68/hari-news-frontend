@@ -92,15 +92,16 @@ export const CategoryAutocompleteInput: React.FC<
                 }}
               >
                 {cat.coverImage ? (
-                  <Image
-                    src={cat.coverImage}
-                    alt={cat.name}
-                    height={50}
-                    width={50}
-                    className="rounded-xl"
-                  />
+                  <div className="w-18 h-18 relative flex-shrink-0">
+                    <Image
+                      src={cat.coverImage}
+                      alt={cat.name}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
                 ) : (
-                  <div className="w-10 h-10 flex items-center justify-center bg-muted rounded">
+                  <div className="w-18 h-18 flex items-center justify-center bg-muted rounded-lg">
                     <ImageIcon className="w-5 h-5 text-muted-foreground" />
                   </div>
                 )}
