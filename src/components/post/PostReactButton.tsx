@@ -22,6 +22,7 @@ export function PostReactButton({
   className = "",
   userReaction,
   onReactChange,
+  onReacted,
 }: {
   postId: string;
   showReacts: boolean;
@@ -30,15 +31,21 @@ export function PostReactButton({
   className?: string;
   userReaction: ReactionType | "none";
   onReactChange?: (type: ReactionType) => void;
+  onReacted?: () => void;
 }) {
   const { mutate: toggleReaction, isPending } = useToggleReaction(
     onReactChange
       ? {
           onSuccess: (data) => {
             onReactChange(data.data.type as ReactionType);
+            if (onReacted) onReacted();
           },
         }
-      : undefined
+      : {
+          onSuccess: () => {
+            if (onReacted) onReacted();
+          },
+        }
   );
 
   const handleMainButton = () => {
@@ -81,7 +88,10 @@ export function PostReactButton({
                 variant="ghost"
                 size="icon"
                 title={r.label}
-                onClick={() => toggleReaction({ postId, type: r.type })}
+                onClick={() => {
+                  toggleReaction({ postId, type: r.type });
+                  if (onReacted) onReacted();
+                }}
                 disabled={isPending}
               >
                 <Icon className={`h-5 w-5 ${r.color}`} />

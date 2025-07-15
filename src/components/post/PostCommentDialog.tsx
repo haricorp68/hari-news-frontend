@@ -23,12 +23,14 @@ interface PostCommentDialogProps {
   post: UserFeedPost;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  refetchPostDetail?: () => void;
 }
 
 export function PostCommentDialog({
   post,
   open,
   onOpenChange,
+  refetchPostDetail,
 }: PostCommentDialogProps) {
   const { comments, commentsLoading } = useCommentList(post.id, open);
   const { createComment, createCommentLoading } = useCreateComment();
@@ -53,11 +55,25 @@ export function PostCommentDialog({
     leaveTimeout.current = setTimeout(() => setShowReacts(false), 500);
   };
 
+  // Hàm này sẽ tắt popup react và clear timeout để không bị hover hiện lại
+  const handleReacted = () => {
+    setShowReacts(false);
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+    if (leaveTimeout.current) clearTimeout(leaveTimeout.current);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
-    createComment({ postId: post.id, content });
-    setContent("");
+    createComment(
+      { postId: post.id, content },
+      {
+        onSuccess: () => {
+          setContent("");
+          if (refetchPostDetail) refetchPostDetail();
+        },
+      }
+    );
   };
 
   return (
@@ -161,7 +177,11 @@ export function PostCommentDialog({
                   handleReactMouseEnter={handleReactMouseEnter}
                   handleReactMouseLeave={handleReactMouseLeave}
                   className="border rounded w-auto min-w-0"
-                  onReactChange={setUserReaction}
+                  onReactChange={(type) => {
+                    setUserReaction(type);
+                    if (refetchPostDetail) refetchPostDetail();
+                  }}
+                  onReacted={handleReacted}
                 />
                 <Textarea
                   value={content}

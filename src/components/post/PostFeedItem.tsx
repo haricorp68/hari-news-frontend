@@ -21,12 +21,16 @@ import { UserFeedPost } from "@/lib/modules/post/post.interface";
 import { PostCommentDialog } from "./PostCommentDialog";
 import { UserProfileLink } from "@/components/ui/user-profile-link";
 import { PostReactButton } from "./PostReactButton";
+import { useUserFeedPostDetail } from "@/lib/modules/post/hooks/useUserFeedPostDetail";
 
 export function PostFeedItem({ post }: { post: UserFeedPost }) {
   const [showComments, setShowComments] = useState(false);
   const [showReacts, setShowReacts] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const leaveTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch post detail when dialog is open
+  const { data: postDetail, refetch } = useUserFeedPostDetail(post.id, showComments);
 
   // Hover logic for react button
   const handleReactMouseEnter = () => {
@@ -283,9 +287,13 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
         </div>
         {/* Dialog bình luận */}
         <PostCommentDialog
-          post={post}
+          post={postDetail || post}
           open={showComments}
-          onOpenChange={setShowComments}
+          onOpenChange={(open) => {
+            setShowComments(open);
+            if (open) refetch();
+          }}
+          refetchPostDetail={refetch}
         />
       </CardFooter>
     </Card>

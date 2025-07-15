@@ -39,6 +39,10 @@ export async function getUserFeedPostsApi(params: {
   return getApi<UserFeedPost[]>(`/post/user-feed/${userId}`, { params: query });
 }
 
+export async function getUserFeedPostDetailApi(id: string | number) {
+  return getApi<UserFeedPost>(`/post/user-feed/detail/${id}`);
+}
+
 // COMMUNITY FEED
 export async function createCommunityFeedPostApi(body: {
   communityId: number;

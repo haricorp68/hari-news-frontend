@@ -4,6 +4,7 @@ import { PlayCircle } from "lucide-react"; // icon video
 import { Heart, MessageCircle } from "lucide-react"; // icon reaction, comment
 import type { UserFeedPost } from "@/lib/modules/post/post.interface";
 import { PostCommentDialog } from "./PostCommentDialog";
+import { useUserFeedPostDetail } from "@/lib/modules/post/hooks/useUserFeedPostDetail";
 
 interface FeedPostCardProps {
   post: UserFeedPost;
@@ -24,6 +25,9 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
   const [showDialog, setShowDialog] = useState(false);
   const firstMedia = post.media[0];
   const isVideo = firstMedia?.type.startsWith("video");
+
+  // Fetch post detail when dialog is open
+  const { data: postDetail, refetch } = useUserFeedPostDetail(post.id, showDialog);
 
   // Tổng số reaction
   const reactionCount = Object.values(post.reactionSummary || {}).reduce(
@@ -89,9 +93,13 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
         </div>
       </div>
       <PostCommentDialog
-        post={post}
+        post={postDetail || post}
         open={showDialog}
-        onOpenChange={setShowDialog}
+        onOpenChange={(open) => {
+          setShowDialog(open);
+          if (open) refetch();
+        }}
+        refetchPostDetail={refetch}
       />
     </>
   );
