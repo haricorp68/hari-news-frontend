@@ -8,6 +8,7 @@ import {
 import { useRepliesByParentId } from "@/lib/modules/comment/hooks/useRepliesByParentId";
 import { formatRelativeTime, formatFullTime } from "@/utils/formatTime";
 import { UserProfileLink } from "@/components/ui/user-profile-link";
+import Image from "next/image";
 
 interface CommentListProps {
   comments: any[];
@@ -81,6 +82,30 @@ function CommentItem({
             )}
             <span className="break-words whitespace-pre-line">{c.content}</span>
           </div>
+          {/* Media grid */}
+          {c.media && c.media.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {c.media.map((m: any, idx: number) => (
+                m.type.startsWith("image") ? (
+                  <Image
+                    key={idx}
+                    src={m.url}
+                    alt="media"
+                    width={400}
+                    height={300}
+                    className="w-full h-40 object-cover rounded-lg bg-black"
+                  />
+                ) : (
+                  <video
+                    key={idx}
+                    src={m.url}
+                    controls
+                    className="w-full h-40 object-cover rounded-lg bg-black"
+                  />
+                )
+              ))}
+            </div>
+          )}
           <div className="flex gap-4 mt-1 text-xs text-muted-foreground items-center">
             <TooltipProvider>
               <Tooltip>

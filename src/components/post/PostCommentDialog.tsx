@@ -137,10 +137,10 @@ export function PostCommentDialog({
             )}
           </div>
           {/* Right: Bình luận (4.5/10) */}
-          <div className="md:flex-[4.5] flex flex-col h-full min-w-0 w-full md:w-auto">
-            <Card className="rounded-none border-0 shadow-none h-full flex flex-col p-0 gap-0">
+          <div className="md:flex-[4.5] flex flex-col h-full min-h-0 min-w-0 w-full md:w-auto">
+            <Card className="rounded-none border-0 shadow-none h-full flex flex-col min-h-0 p-0 gap-0">
               {/* Header: Avatar + tên người dùng cùng hàng ngang */}
-              <div className="flex flex-row items-center gap-3 border-b py-4 px-4">
+              <div className="flex flex-row items-center gap-3 border-b py-4 px-4 flex-shrink-0">
                 <UserProfileLink
                   user={post.user}
                   avatarOnly
@@ -152,7 +152,8 @@ export function PostCommentDialog({
                 />
               </div>
 
-              <CardContent className="flex-1 overflow-y-auto px-4 py-2">
+              {/* Comment List (scrollable) */}
+              <CardContent className="flex-1 min-h-0 overflow-y-auto px-4 py-2">
                 {commentsLoading ? (
                   <div className="text-center text-muted-foreground py-8">
                     Đang tải bình luận...
@@ -165,8 +166,9 @@ export function PostCommentDialog({
                   </div>
                 )}
               </CardContent>
-              {/* Post Stats Section */}
-              <div className="px-4 py-2 border-t">
+
+              {/* Chức năng: caption, stats, form nhập bình luận */}
+              <div className="px-4 py-2 border-t flex-shrink-0">
                 {/* Post Content */}
                 {post.caption && (
                   <div className="">
@@ -185,33 +187,33 @@ export function PostCommentDialog({
                   reactionSummary={post.reactionSummary}
                   commentCount={post.commentCount}
                 />
-              </div>
-              <form
-                onSubmit={handleSubmit}
-                className="p-4 pt-0 flex gap-2 items-end flex-row"
-              >
-                <PostReactButton
-                  showReacts={showReacts}
-                  handleReactMouseEnter={handleReactMouseEnter}
-                  handleReactMouseLeave={handleReactMouseLeave}
-                  REACTS={REACTS}
-                  className="border rounded w-auto min-w-0"
-                />
-                <Textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Viết bình luận..."
-                  className="flex-1 min-h-10 max-w-md"
-                  rows={1}
-                  disabled={createCommentLoading}
-                />
-                <Button
-                  type="submit"
-                  disabled={createCommentLoading || !content.trim()}
+                <form
+                  onSubmit={handleSubmit}
+                  className="pt-2 flex gap-2 items-end flex-row"
                 >
-                  Đăng
-                </Button>
-              </form>
+                  <PostReactButton
+                    showReacts={showReacts}
+                    handleReactMouseEnter={handleReactMouseEnter}
+                    handleReactMouseLeave={handleReactMouseLeave}
+                    REACTS={REACTS}
+                    className="border rounded w-auto min-w-0"
+                  />
+                  <Textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Viết bình luận..."
+                    className="flex-1 min-h-10 max-w-md max-h-2"
+                    rows={1}
+                    disabled={createCommentLoading}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={createCommentLoading || !content.trim()}
+                  >
+                    Đăng
+                  </Button>
+                </form>
+              </div>
             </Card>
           </div>
         </div>
