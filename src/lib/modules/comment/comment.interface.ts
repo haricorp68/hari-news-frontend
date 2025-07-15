@@ -14,7 +14,7 @@ export interface CommentUser {
 export interface Comment {
   id: string;
   postId: string;
-  postType: string;
+  postType: PostType;
   content: string;
   user: CommentUser;
   parentId: string | null;
@@ -45,3 +45,12 @@ export type CommentListResponse = APIResponse<
   Comment[],
   PaginationMetadata | undefined
 >;
+
+export enum PostType {
+  USER_FEED = "user_feed",
+  COMMUNITY_FEED = "community_feed",
+  COMPANY_FEED = "company_feed",
+  USER_NEWS = "user_news",
+  COMMUNITY_NEWS = "community_news",
+  COMPANY_NEWS = "company_news",
+}

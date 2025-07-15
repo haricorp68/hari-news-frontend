@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -8,6 +7,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useRepliesByParentId } from "@/lib/modules/comment/hooks/useRepliesByParentId";
 import { formatRelativeTime, formatFullTime } from "@/utils/formatTime";
+import { UserProfileLink } from "@/components/ui/user-profile-link";
 
 interface CommentListProps {
   comments: any[];
@@ -65,14 +65,11 @@ function CommentItem({
       id={`comment-${c.id}`}
       className={`flex gap-3 items-start flex-col ${indentClass}`.trim()}
     >
-      <div className="flex flex-row w-full">
-        <Avatar className="size-8 mt-1">
-          <AvatarImage src={c.user.avatar || undefined} alt={c.user.name} />
-          <AvatarFallback>{c.user.name[0]}</AvatarFallback>
-        </Avatar>
+      <div className="flex flex-row w-full gap-4">
+        <UserProfileLink user={c.user} avatarOnly className="flex items-center" />
         <div className="flex-1">
           <div className="flex flex-row flex-wrap items-center gap-x-1 text-sm">
-            <span className="font-semibold">{c.user.name}</span>
+            <UserProfileLink user={c.user} className="font-semibold hover:underline cursor-pointer" />
             {parentUser && parentId && (
               <button
                 type="button"

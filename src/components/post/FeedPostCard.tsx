@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { PlayCircle } from "lucide-react"; // icon video
 import { Heart, MessageCircle } from "lucide-react"; // icon reaction, comment
 import type { UserFeedPost } from "@/lib/modules/post/post.interface";
+import { PostCommentDialog } from "./PostCommentDialog";
 
 interface FeedPostCardProps {
   post: UserFeedPost;
@@ -20,6 +21,7 @@ function timeAgo(dateString: string) {
 }
 
 const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
+  const [showDialog, setShowDialog] = useState(false);
   const firstMedia = post.media[0];
   const isVideo = firstMedia?.type.startsWith("video");
 
@@ -30,58 +32,68 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
   );
 
   return (
-    <div className="relative group w-full aspect-[4/5] rounded-lg overflow-hidden bg-gray-100 shadow">
-      {/* Thời gian tạo post góc trên trái, chỉ hiện khi hover */}
-      <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-        {timeAgo(post.created_at)}
-      </div>
-      {/* Media hoặc caption */}
-      {firstMedia ? (
-        isVideo ? (
-          <video
-            src={firstMedia.url}
-            className="object-cover w-full h-full"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster={firstMedia.url + "?frame=1"} // fallback nếu có
-          />
+    <>
+      <div
+        className="relative group w-full aspect-[4/5] rounded-lg overflow-hidden bg-gray-100 shadow cursor-pointer"
+        onClick={() => setShowDialog(true)}
+      >
+        {/* Thời gian tạo post góc trên trái, chỉ hiện khi hover */}
+        <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+          {timeAgo(post.created_at)}
+        </div>
+        {/* Media hoặc caption */}
+        {firstMedia ? (
+          isVideo ? (
+            <video
+              src={firstMedia.url}
+              className="object-cover w-full h-full"
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster={firstMedia.url + "?frame=1"} // fallback nếu có
+            />
+          ) : (
+            <Image
+              src={firstMedia.url}
+              alt="post media"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={false}
+            />
+          )
         ) : (
-          <Image
-            src={firstMedia.url}
-            alt="post media"
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            priority={false}
-          />
-        )
-      ) : (
-        <div className="flex items-center justify-center w-full h-full text-gray-700 px-4 text-center text-base font-medium">
-          {post.caption}
-        </div>
-      )}
+          <div className="flex items-center justify-center w-full h-full text-gray-700 px-4 text-center text-base font-medium">
+            {post.caption}
+          </div>
+        )}
 
-      {/* Icon video góc trên phải */}
-      {isVideo && (
-        <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1 z-10">
-          <PlayCircle size={24} color="white" />
-        </div>
-      )}
+        {/* Icon video góc trên phải */}
+        {isVideo && (
+          <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1 z-10">
+            <PlayCircle size={24} color="white" />
+          </div>
+        )}
 
-      {/* Overlay khi hover */}
-      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center">
-        <div className="flex items-center gap-6 text-white text-lg font-semibold">
-          <span className="flex items-center gap-2">
-            <Heart size={24} /> {reactionCount}
-          </span>
-          <span className="flex items-center gap-2">
-            <MessageCircle size={24} /> {post.commentCount}
-          </span>
+        {/* Overlay khi hover */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center">
+          <div className="flex items-center gap-6 text-white text-lg font-semibold">
+            <span className="flex items-center gap-2">
+              <Heart size={24} /> {reactionCount}
+            </span>
+            <span className="flex items-center gap-2">
+              <MessageCircle size={24} /> {post.commentCount}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+      <PostCommentDialog
+        post={post}
+        open={showDialog}
+        onOpenChange={setShowDialog}
+      />
+    </>
   );
 };
 

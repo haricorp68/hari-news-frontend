@@ -1,5 +1,4 @@
 "use client";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,14 +24,14 @@ import Image from "next/image";
 import {
   Card,
   CardHeader,
-  CardTitle,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
 import ReactionIcons, { ReactionType } from "@/components/ui/reaction-icons";
-import Link from "next/link";
 import { UserFeedPost } from "@/lib/modules/post/post.interface";
 import { PostCommentDialog } from "./PostCommentDialog";
+import { UserProfileLink } from "@/components/ui/user-profile-link";
+import { PostReactButton } from "./PostReactButton";
 
 const REACTS = [
   {
@@ -64,12 +63,44 @@ const REACTS = [
   },
 ];
 
+export function PostStatsBar({
+  reactionSummary,
+  commentCount,
+}: {
+  reactionSummary: any;
+  commentCount: number;
+}) {
+  const values = Object.values(reactionSummary || {}) as number[];
+  return (
+    <div className="flex gap-4 text-xs text-muted-foreground items-center justify-between">
+      {/* Hiển thị các icon cảm xúc đã được sử dụng */}
+      {values.some((v) => v && v > 0) && (
+        <span className="flex items-center">
+          <ReactionIcons
+            reactions={
+              (Object.entries(reactionSummary || {}) as [string, number][])
+                .filter((entry) => entry[1] && entry[1] > 0)
+                .map((entry) => entry[0]) as ReactionType[]
+            }
+          />
+          <span className="ml-1 font-medium text-xs text-foreground">
+            {values.reduce((a, b) => (a || 0) + (b || 0), 0)}
+          </span>
+        </span>
+      )}
+      <span className="flex-1"></span>
+      <span className="text-right min-w-fit">
+        {commentCount || 0} bình luận
+      </span>
+    </div>
+  );
+}
+
 export function PostFeedItem({ post }: { post: UserFeedPost }) {
   const [showComments, setShowComments] = useState(false);
   const [showReacts, setShowReacts] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const leaveTimeout = useRef<NodeJS.Timeout | null>(null);
-  const reactCounts = post.reactionSummary || {};
 
   // Hover logic for react button
   const handleReactMouseEnter = () => {
@@ -84,23 +115,12 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
   return (
     <Card className="mb-8 max-w-2xl mx-auto gap-0">
       <CardHeader className="flex flex-row items-center gap-4 mb-0 pb-0 border-b-0">
-        <Link
-          href={`/${post.user.id}`}
-          prefetch={false}
-          className="cursor-pointer"
-        >
-          <Avatar>
-            <AvatarImage
-              src={post.user.avatar || undefined}
-              alt={post.user.name}
-            />
-            <AvatarFallback>{post.user.name[0]}</AvatarFallback>
-          </Avatar>
-        </Link>
+        <UserProfileLink user={post.user} avatarOnly className="" />
         <div>
-          <CardTitle className="font-semibold text-base p-0 m-0 leading-tight">
-            {post.user.name}
-          </CardTitle>
+          <UserProfileLink
+            user={post.user}
+            className="font-semibold text-base p-0 m-0 leading-tight hover:underline cursor-pointer"
+          />
           <div className="text-xs text-muted-foreground">
             {new Date(post.created_at).toLocaleString()}
           </div>
@@ -294,31 +314,10 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
             )}
           </div>
         )}
-        <div className="flex gap-4 text-xs text-muted-foreground mb-1 items-center justify-between">
-          {/* Hiển thị các icon cảm xúc đã được sử dụng */}
-          {Object.values(reactCounts).some((v) => v && v > 0) && (
-            <span className="flex items-center">
-              <ReactionIcons
-                reactions={
-                  Object.entries(reactCounts)
-                    .filter((entry) => entry[1] && entry[1] > 0)
-                    .map((entry) => entry[0]) as ReactionType[]
-                }
-              />
-              <span className="ml-1 font-medium text-xs text-foreground">
-                {Object.values(reactCounts).reduce(
-                  (a, b) => (a || 0) + (b || 0),
-                  0
-                )}
-              </span>
-            </span>
-          )}
-          <span className="flex-1"></span>
-          <span className="text-right min-w-fit">
-            {post.commentCount || 0} bình luận
-          </span>
-          {/* Bỏ shareCount vì không có trong interface */}
-        </div>
+        <PostStatsBar
+          reactionSummary={post.reactionSummary}
+          commentCount={post.commentCount}
+        />
         {showComments && (
           <div className="mt-3 border-t pt-2">
             <div className="text-sm text-muted-foreground">
@@ -331,34 +330,12 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
         <Separator className="my-3" />
         <div className="flex w-full px-6">
           {/* Reacts */}
-          <div
-            className="relative flex-1"
-            onMouseEnter={handleReactMouseEnter}
-            onMouseLeave={handleReactMouseLeave}
-          >
-            <Button
-              variant="ghost"
-              size="lg"
-              className="w-full justify-center flex-1 rounded "
-            >
-              <ThumbsUp className=" h-5 w-5" /> Thích
-            </Button>
-            {/* React popup */}
-            {showReacts && (
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 flex gap-1 bg-background border rounded-xl shadow-lg p-2 z-10 animate-in fade-in">
-                {REACTS.map((r) => (
-                  <Button
-                    key={r.type}
-                    variant="ghost"
-                    size="icon"
-                    title={r.label}
-                  >
-                    {r.icon}
-                  </Button>
-                ))}
-              </div>
-            )}
-          </div>
+          <PostReactButton
+            showReacts={showReacts}
+            handleReactMouseEnter={handleReactMouseEnter}
+            handleReactMouseLeave={handleReactMouseLeave}
+            REACTS={REACTS}
+          />
           {/* Comment */}
           <Button
             variant="ghost"
@@ -378,7 +355,11 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
           </Button>
         </div>
         {/* Dialog bình luận */}
-        <PostCommentDialog postId={post.id} open={showComments} onOpenChange={setShowComments} media={post.media} />
+        <PostCommentDialog
+          post={post}
+          open={showComments}
+          onOpenChange={setShowComments}
+        />
       </CardFooter>
     </Card>
   );
