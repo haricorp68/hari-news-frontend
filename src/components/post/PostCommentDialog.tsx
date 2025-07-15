@@ -27,6 +27,7 @@ import {
   Meh,
 } from "lucide-react";
 import { CommentList } from "@/components/ui/comment-list";
+import { formatFullTime } from "@/utils/formatTime";
 
 interface PostCommentDialogProps {
   post: UserFeedPost;
@@ -36,9 +37,14 @@ interface PostCommentDialogProps {
 
 export function PostCommentDialog({
   post,
+
   open,
   onOpenChange,
 }: PostCommentDialogProps) {
+  console.log(
+    "🔍 ~ PostCommentDialog ~ src/components/post/PostCommentDialog.tsx:38 ~ post:",
+    post
+  );
   const { comments, commentsLoading } = useCommentList(post.id, open);
   const { createComment, createCommentLoading } = useCreateComment();
   const [content, setContent] = useState("");
@@ -92,7 +98,7 @@ export function PostCommentDialog({
     e.preventDefault();
     if (!content.trim()) return;
     //mark
-    createComment({ postId: post.id, postType: "post", content });
+    createComment({ postId: post.id, content });
     setContent("");
   };
 
@@ -152,7 +158,7 @@ export function PostCommentDialog({
 
             {/* Comment List (scrollable) - ĐÂY LÀ PHẦN QUAN TRỌNG */}
             <div
-              className="flex-1 overflow-y-auto px-4 py-2"
+              className="flex-1 overflow-y-auto overflow-x-auto px-4 py-2"
               style={{ height: 0 }}
             >
               {commentsLoading ? (
@@ -180,7 +186,7 @@ export function PostCommentDialog({
               {/* Post Date */}
               <div className="text-xs text-muted-foreground mb-2">
                 {post.created_at
-                  ? new Date(post.created_at).toLocaleDateString("vi-VN")
+                  ? formatFullTime(post.created_at)
                   : ""}
               </div>
               {/* Post Stats Bar */}

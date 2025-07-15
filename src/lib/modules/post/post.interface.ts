@@ -86,7 +86,10 @@ export interface CreateUserFeedPostRequest {
   caption: string;
   media?: { url: string; type: string; order: number }[];
 }
-export type UserFeedPostListResponse = APIResponse<UserFeedPost[], PaginationMetadata | undefined>;
+export type UserFeedPostListResponse = APIResponse<
+  UserFeedPost[],
+  PaginationMetadata | undefined
+>;
 export type UserFeedPostResponse = APIResponse<UserFeedPost, undefined>;
 
 // COMMUNITY FEED
@@ -95,8 +98,14 @@ export interface CreateCommunityFeedPostRequest {
   caption: string;
   media?: { url: string; type: string; order: number }[];
 }
-export type CommunityFeedPostListResponse = APIResponse<CommunityFeedPost[], PaginationMetadata | undefined>;
-export type CommunityFeedPostResponse = APIResponse<CommunityFeedPost, undefined>;
+export type CommunityFeedPostListResponse = APIResponse<
+  CommunityFeedPost[],
+  PaginationMetadata | undefined
+>;
+export type CommunityFeedPostResponse = APIResponse<
+  CommunityFeedPost,
+  undefined
+>;
 
 // COMPANY FEED
 export interface CreateCompanyFeedPostRequest {
@@ -104,5 +113,8 @@ export interface CreateCompanyFeedPostRequest {
   caption: string;
   media?: { url: string; type: string; order: number }[];
 }
-export type CompanyFeedPostListResponse = APIResponse<CompanyFeedPost[], PaginationMetadata | undefined>;
+export type CompanyFeedPostListResponse = APIResponse<
+  CompanyFeedPost[],
+  PaginationMetadata | undefined
+>;
 export type CompanyFeedPostResponse = APIResponse<CompanyFeedPost, undefined>;

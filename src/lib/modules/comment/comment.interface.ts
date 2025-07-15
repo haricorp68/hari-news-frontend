@@ -27,7 +27,6 @@ export interface Comment {
 // ==== API RESPONSE & REQUEST TYPES ====
 
 export interface CreateCommentRequest {
-  postType: string;
   postId: string;
   content: string;
   parentId?: string;

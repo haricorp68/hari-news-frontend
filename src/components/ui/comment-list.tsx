@@ -66,11 +66,18 @@ function CommentItem({
       id={`comment-${c.id}`}
       className={`flex gap-3 items-start flex-col ${indentClass}`.trim()}
     >
-      <div className="flex flex-row w-full gap-4">
-        <UserProfileLink user={c.user} avatarOnly className="flex items-center" />
+      <div className="flex flex-row w-full gap-1">
+        <UserProfileLink
+          user={c.user}
+          avatarOnly
+          className="flex items-start"
+        />
         <div className="flex-1">
-          <div className="flex flex-row flex-wrap items-center gap-x-1 text-sm">
-            <UserProfileLink user={c.user} className="font-semibold hover:underline cursor-pointer" />
+          <div className="flex flex-row flex-wrap items-start gap-x-1 text-sm mt-2">
+            <UserProfileLink
+              user={c.user}
+              className="font-semibold hover:underline cursor-pointer"
+            />
             {parentUser && parentId && (
               <button
                 type="button"
@@ -80,12 +87,14 @@ function CommentItem({
                 @{parentUser}
               </button>
             )}
-            <span className="break-words whitespace-pre-line">{c.content}</span>
+            <span className="break-words break-all whitespace-pre-line max-w-full block">
+              {c.content}
+            </span>
           </div>
           {/* Media grid */}
           {c.media && c.media.length > 0 && (
             <div className="grid grid-cols-2 gap-2 mt-2">
-              {c.media.map((m: any, idx: number) => (
+              {c.media.map((m: any, idx: number) =>
                 m.type.startsWith("image") ? (
                   <Image
                     key={idx}
@@ -103,7 +112,7 @@ function CommentItem({
                     className="w-full h-40 object-cover rounded-lg bg-black"
                   />
                 )
-              ))}
+              )}
             </div>
           )}
           <div className="flex gap-4 mt-1 text-xs text-muted-foreground items-center">
