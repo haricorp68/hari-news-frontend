@@ -18,6 +18,7 @@ import { PostReactButton } from "./PostReactButton";
 import { CommentList } from "@/components/ui/comment-list";
 import { formatFullTime } from "@/utils/formatTime";
 import { PostStatsBar } from "./PostStatsBar";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PostCommentDialogProps {
   post: UserFeedPost;
@@ -32,6 +33,7 @@ export function PostCommentDialog({
   onOpenChange,
   refetchPostDetail,
 }: PostCommentDialogProps) {
+  const queryClient = useQueryClient();
   const { comments, commentsLoading } = useCommentList(post.id, open);
   const { createComment, createCommentLoading } = useCreateComment();
   const [content, setContent] = useState("");
@@ -60,6 +62,7 @@ export function PostCommentDialog({
     setShowReacts(false);
     if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
     if (leaveTimeout.current) clearTimeout(leaveTimeout.current);
+    queryClient.invalidateQueries({ queryKey: ["userFeedPosts"] });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -71,6 +74,7 @@ export function PostCommentDialog({
         onSuccess: () => {
           setContent("");
           if (refetchPostDetail) refetchPostDetail();
+          queryClient.invalidateQueries({ queryKey: ["userFeedPosts"] });
         },
       }
     );
