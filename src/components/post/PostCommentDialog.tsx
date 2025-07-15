@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCommentList } from "@/lib/modules/comment/hooks/useCommentList";
 import { useCreateComment } from "@/lib/modules/comment/hooks/useCreateComment";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -14,20 +14,10 @@ import {
 import Image from "next/image";
 import { UserProfileLink } from "@/components/ui/user-profile-link";
 import { UserFeedPost } from "@/lib/modules/post/post.interface";
-import { PostStatsBar } from "./PostFeedItem";
 import { PostReactButton } from "./PostReactButton";
-import { useRef } from "react";
-import {
-  ThumbsUp,
-  ThumbsDown,
-  Heart,
-  Laugh,
-  Angry,
-  Frown,
-  Meh,
-} from "lucide-react";
 import { CommentList } from "@/components/ui/comment-list";
 import { formatFullTime } from "@/utils/formatTime";
+import { PostStatsBar } from "./PostStatsBar";
 
 interface PostCommentDialogProps {
   post: UserFeedPost;
@@ -37,14 +27,9 @@ interface PostCommentDialogProps {
 
 export function PostCommentDialog({
   post,
-
   open,
   onOpenChange,
 }: PostCommentDialogProps) {
-  console.log(
-    "🔍 ~ PostCommentDialog ~ src/components/post/PostCommentDialog.tsx:38 ~ post:",
-    post
-  );
   const { comments, commentsLoading } = useCommentList(post.id, open);
   const { createComment, createCommentLoading } = useCreateComment();
   const [content, setContent] = useState("");
@@ -52,39 +37,13 @@ export function PostCommentDialog({
   const [showReacts, setShowReacts] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const leaveTimeout = useRef<NodeJS.Timeout | null>(null);
-  const REACTS = [
-    {
-      type: "like",
-      icon: <ThumbsUp className="text-blue-500" />,
-      label: "Thích",
-    },
-    {
-      type: "dislike",
-      icon: <ThumbsDown className="text-gray-500" />,
-      label: "Không thích",
-    },
-    {
-      type: "love",
-      icon: <Heart className="text-red-500" />,
-      label: "Yêu thích",
-    },
-    {
-      type: "haha",
-      icon: <Laugh className="text-yellow-500" />,
-      label: "Haha",
-    },
-    {
-      type: "angry",
-      icon: <Angry className="text-orange-500" />,
-      label: "Phẫn nộ",
-    },
-    { type: "sad", icon: <Frown className="text-blue-400" />, label: "Buồn" },
-    {
-      type: "meh",
-      icon: <Meh className="text-gray-400" />,
-      label: "Bình thường",
-    },
-  ];
+
+  // Local state cho userReaction để cập nhật UI ngay
+  const [userReaction, setUserReaction] = useState<import("@/lib/modules/post/post.interface").ReactionType | "none">(post.userReaction ?? "none");
+  useEffect(() => {
+    setUserReaction(post.userReaction ?? "none");
+  }, [post.userReaction, post.id]);
+
   const handleReactMouseEnter = () => {
     if (leaveTimeout.current) clearTimeout(leaveTimeout.current);
     hoverTimeout.current = setTimeout(() => setShowReacts(true), 500);
@@ -97,7 +56,6 @@ export function PostCommentDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
-    //mark
     createComment({ postId: post.id, content });
     setContent("");
   };
@@ -185,9 +143,7 @@ export function PostCommentDialog({
 
               {/* Post Date */}
               <div className="text-xs text-muted-foreground mb-2">
-                {post.created_at
-                  ? formatFullTime(post.created_at)
-                  : ""}
+                {post.created_at ? formatFullTime(post.created_at) : ""}
               </div>
               {/* Post Stats Bar */}
               <PostStatsBar
@@ -199,11 +155,13 @@ export function PostCommentDialog({
                 className="pt-2 flex gap-2 items-end flex-row"
               >
                 <PostReactButton
+                  postId={post.id}
+                  userReaction={userReaction}
                   showReacts={showReacts}
                   handleReactMouseEnter={handleReactMouseEnter}
                   handleReactMouseLeave={handleReactMouseLeave}
-                  REACTS={REACTS}
                   className="border rounded w-auto min-w-0"
+                  onReactChange={setUserReaction}
                 />
                 <Textarea
                   value={content}

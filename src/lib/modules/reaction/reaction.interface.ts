@@ -3,7 +3,7 @@ import { ReactionType } from "../post/post.interface";
 
 // Request body for /reaction/toggle
 export interface ReactionToggleRequest {
-  type: string; // e.g., 'like'
+  type: ReactionType
   postId: string;
 }
 

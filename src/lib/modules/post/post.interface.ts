@@ -38,6 +38,7 @@ export interface UserFeedPost {
   user: UserFeedPostUser;
   reactionSummary: ReactionSummary;
   commentCount: number;
+  userReaction?: ReactionType; // loại reaction của user hiện tại, undefined nếu chưa react
 }
 
 export interface CommunityFeedPostMedia {

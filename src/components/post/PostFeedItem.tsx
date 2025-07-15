@@ -6,18 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import {
-  MessageCircle,
-  Share2,
-  MoreHorizontal,
-  ThumbsUp,
-  ThumbsDown,
-  Heart,
-  Laugh,
-  Angry,
-  Frown,
-  Meh,
-} from "lucide-react";
+import { MessageCircle, Share2, MoreHorizontal } from "lucide-react";
 import { useState, useRef } from "react";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
@@ -27,74 +16,11 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import ReactionIcons, { ReactionType } from "@/components/ui/reaction-icons";
+import { PostStatsBar } from "./PostStatsBar";
 import { UserFeedPost } from "@/lib/modules/post/post.interface";
 import { PostCommentDialog } from "./PostCommentDialog";
 import { UserProfileLink } from "@/components/ui/user-profile-link";
 import { PostReactButton } from "./PostReactButton";
-
-const REACTS = [
-  {
-    type: "like",
-    icon: <ThumbsUp className="text-blue-500" />,
-    label: "Thích",
-  },
-  {
-    type: "dislike",
-    icon: <ThumbsDown className="text-gray-500" />,
-    label: "Không thích",
-  },
-  {
-    type: "love",
-    icon: <Heart className="text-red-500" />,
-    label: "Yêu thích",
-  },
-  { type: "haha", icon: <Laugh className="text-yellow-500" />, label: "Haha" },
-  {
-    type: "angry",
-    icon: <Angry className="text-orange-500" />,
-    label: "Phẫn nộ",
-  },
-  { type: "sad", icon: <Frown className="text-blue-400" />, label: "Buồn" },
-  {
-    type: "meh",
-    icon: <Meh className="text-gray-400" />,
-    label: "Bình thường",
-  },
-];
-
-export function PostStatsBar({
-  reactionSummary,
-  commentCount,
-}: {
-  reactionSummary: any;
-  commentCount: number;
-}) {
-  const values = Object.values(reactionSummary || {}) as number[];
-  return (
-    <div className="flex gap-4 text-xs text-muted-foreground items-center justify-between">
-      {/* Hiển thị các icon cảm xúc đã được sử dụng */}
-      {values.some((v) => v && v > 0) && (
-        <span className="flex items-center">
-          <ReactionIcons
-            reactions={
-              (Object.entries(reactionSummary || {}) as [string, number][])
-                .filter((entry) => entry[1] && entry[1] > 0)
-                .map((entry) => entry[0]) as ReactionType[]
-            }
-          />
-          <span className="ml-1 font-medium text-xs text-foreground">
-            {values.reduce((a, b) => (a || 0) + (b || 0), 0)}
-          </span>
-        </span>
-      )}
-      <span className="flex-1"></span>
-      <span className="text-right min-w-fit">
-        {commentCount || 0} bình luận
-      </span>
-    </div>
-  );
-}
 
 export function PostFeedItem({ post }: { post: UserFeedPost }) {
   const [showComments, setShowComments] = useState(false);
@@ -331,10 +257,11 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
         <div className="flex w-full px-6">
           {/* Reacts */}
           <PostReactButton
+            postId={post.id}
+            userReaction={post.userReaction ?? "none"}
             showReacts={showReacts}
             handleReactMouseEnter={handleReactMouseEnter}
             handleReactMouseLeave={handleReactMouseLeave}
-            REACTS={REACTS}
           />
           {/* Comment */}
           <Button
