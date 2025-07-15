@@ -32,6 +32,7 @@ import {
 import ReactionIcons, { ReactionType } from "@/components/ui/reaction-icons";
 import Link from "next/link";
 import { UserFeedPost } from "@/lib/modules/post/post.interface";
+import { PostCommentDialog } from "./PostCommentDialog";
 
 const REACTS = [
   {
@@ -363,7 +364,7 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
             variant="ghost"
             size="lg"
             className="flex-1 justify-center rounded"
-            onClick={() => setShowComments((v) => !v)}
+            onClick={() => setShowComments(true)}
           >
             <MessageCircle className=" h-5 w-5" /> Bình luận
           </Button>
@@ -376,6 +377,8 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
             <Share2 className=" h-5 w-5" /> Chia sẻ
           </Button>
         </div>
+        {/* Dialog bình luận */}
+        <PostCommentDialog postId={post.id} open={showComments} onOpenChange={setShowComments} media={post.media} />
       </CardFooter>
     </Card>
   );

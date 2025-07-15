@@ -2,7 +2,7 @@ import { PostFeedList } from "@/components/post/PostFeedList";
 
 const tempPosts = [
   {
-    id: "1",
+    id: "13726ee5-5f5f-4474-a373-e16465cb5bb1",
     caption: "Đây là bài viết demo số 1!",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
