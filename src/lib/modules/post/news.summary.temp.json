@@ -1,0 +1,86 @@
+[
+  {
+    "id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+    "title": "Chính phủ công bố gói hỗ trợ kinh tế 50.000 tỷ đồng cho doanh nghiệp vừa và nhỏ",
+    "summary": "Thủ tướng Chính phủ vừa ký quyết định phê duyệt gói hỗ trợ kinh tế trị giá 50.000 tỷ đồng nhằm hỗ trợ các doanh nghiệp vừa và nhỏ vượt qua khó khăn, tập trung vào 3 trụ cột: hỗ trợ lãi suất vay vốn, giảm thuế doanh nghiệp và đầu tư nghiên cứu phát triển. Gói hỗ trợ sẽ được triển khai từ tháng 8/2025 trong 24 tháng.",
+    "cover_image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "category": {
+      "id": "44d8288d-1097-4fcd-9961-d9f0db720457",
+      "name": "Thời sự",
+      "description": "Tin tức thời sự, chính trị, kinh tế và xã hội mới nhất trong nước"
+    },
+    "created_at": "2025-07-16T17:00:54.986Z",
+    "updated_at": "2025-07-16T17:00:54.986Z",
+    "user": {
+      "id": "d14dc9a1-8209-4fcc-bfa0-5495c2b3d347",
+      "name": "Nguyễn Văn Minh",
+      "avatar": "https://randomuser.me/api/portraits/men/32.jpg"
+    },
+    "reactionSummary": {
+      "like": 245,
+      "love": 89,
+      "haha": 12,
+      "wow": 156,
+      "sad": 3,
+      "angry": 8
+    },
+    "commentCount": 127,
+    "tags": ["Tin nóng", "Thời sự"]
+  },
+  {
+    "id": "c79b80c4-499d-49ec-93bc-e62586b994d2",
+    "title": "Giá xăng tăng 800 đồng/lít: Người dân lo lắng về chi phí sinh hoạt tăng cao",
+    "summary": "Trong kỳ điều chỉnh giá xăng dầu ngày 16/7, giá xăng RON 95 đã tăng 800 đồng/lít lên mức 23.500 đồng/lít - mức tăng mạnh nhất trong 3 tháng qua. Nguyên nhân chính là do giá dầu thô Brent tăng từ 82 lên 87 USD/thùng và tỷ giá USD/VND biến động. Nhiều doanh nghiệp vận tải và người dân bày tỏ lo ngại về tác động đến chi phí sinh hoạt.",
+    "cover_image": "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
+    "category": {
+      "id": "44d8288d-1097-4fcd-9961-d9f0db720457",
+      "name": "Thời sự",
+      "description": "Tin tức thời sự, chính trị, kinh tế và xã hội mới nhất trong nước"
+    },
+    "created_at": "2025-07-16T14:42:07.757Z",
+    "updated_at": "2025-07-16T14:42:07.757Z",
+    "user": {
+      "id": "d14dc9a1-8209-4fcc-bfa0-5495c2b3d347",
+      "name": "Lê Thị Hương",
+      "avatar": "https://randomuser.me/api/portraits/women/44.jpg"
+    },
+    "reactionSummary": {
+      "like": 78,
+      "love": 12,
+      "haha": 5,
+      "wow": 34,
+      "sad": 189,
+      "angry": 267
+    },
+    "commentCount": 412,
+    "tags": ["Pháp luật"]
+  },
+  {
+    "id": "a1b2c3d4-5678-9101-1121-314151617181",
+    "title": "VTV Awards 2025: 'Hương vị tình thân' thắng lớn, sao Việt hội tụ tại Nhà hát Lớn",
+    "summary": "Lễ trao giải VTV Awards 2025 diễn ra tối 15/7 tại Nhà hát Lớn Hà Nội với sự tham gia của hơn 200 nghệ sĩ. Bộ phim 'Hương vị tình thân' đã giành giải 'Phim truyền hình được yêu thích nhất', cùng với đó Thu Quỳnh và Mạnh Trường lần lượt nhận giải Nữ và Nam diễn viên xuất sắc. Chương trình còn có những tiết mục đặc sắc từ Mỹ Tâm, Tùng Dương và nhóm Da LAB.",
+    "cover_image": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80",
+    "category": {
+      "id": "55e8288d-1097-4fcd-9961-d9f0db720457",
+      "name": "Giải trí",
+      "description": "Tin tức giải trí, showbiz, điện ảnh và âm nhạc trong nước và quốc tế"
+    },
+    "created_at": "2025-07-15T10:20:30.000Z",
+    "updated_at": "2025-07-15T10:20:30.000Z",
+    "user": {
+      "id": "e12dc9a1-8209-4fcc-bfa0-5495c2b3d347",
+      "name": "Phạm Minh Tuấn",
+      "avatar": "https://randomuser.me/api/portraits/men/45.jpg"
+    },
+    "reactionSummary": {
+      "like": 567,
+      "love": 234,
+      "haha": 45,
+      "wow": 123,
+      "sad": 12,
+      "angry": 6
+    },
+    "commentCount": 198,
+    "tags": ["Showbiz", "Sao"]
+  }
+]

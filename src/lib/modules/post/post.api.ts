@@ -3,6 +3,11 @@ import type {
   UserFeedPost,
   CommunityFeedPost,
   CompanyFeedPost,
+  CreateUserNewsPostRequest,
+  UserNewsPostResponse,
+  UserNewsPost,
+  UserNewsPostSummaryListResponse,
+  UserNewsPostSummary
 } from "./post.interface";
 import type { APIResponse } from "@/lib/types/api-response";
 
@@ -41,6 +46,23 @@ export async function getUserFeedPostsApi(params: {
 
 export async function getUserFeedPostDetailApi(id: string | number) {
   return getApi<UserFeedPost>(`/post/user-feed/detail/${id}`);
+}
+
+// USER NEWS POST
+export async function createUserNewsPostApi(body: CreateUserNewsPostRequest): Promise<UserNewsPostResponse> {
+  return postApi<UserNewsPost>("/post/user-news", body);
+}
+
+export async function getSelfUserNewsPostsApi(): Promise<UserNewsPostSummaryListResponse> {
+  return getApi<UserNewsPostSummary[]>("/post/self/user-news");
+}
+
+export async function getUserNewsPostsApi(userId: string): Promise<UserNewsPostSummaryListResponse> {
+  return getApi<UserNewsPostSummary[]>(`/post/user-news/${userId}`);
+}
+
+export async function getUserNewsPostDetailApi(postId: string): Promise<UserNewsPostResponse> {
+  return getApi<UserNewsPost>(`/post/user-news/detail/${postId}`);
 }
 
 // COMMUNITY FEED

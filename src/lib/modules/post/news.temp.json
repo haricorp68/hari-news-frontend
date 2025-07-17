@@ -1,0 +1,157 @@
+{
+  "id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+  "title": "Cách mạng công nghệ AI: Tác động và thách thức trong đời sống hiện đại",
+  "summary": "Trí tuệ nhân tạo (AI) đang thay đổi mạnh mẽ mọi lĩnh vực từ kinh tế, giáo dục, y tế đến giải trí. Bài viết phân tích sâu các tác động tích cực, tiêu cực và những thách thức đặt ra cho xã hội hiện đại.",
+  "cover_image": "https://i1-kinhdoanh.vnecdn.net/2025/07/17/o-ng-tra-n-vie-t-ha-pho-tru-o-1934-1903-1752743034.jpg?w=0&h=0&q=100&dpr=2&fit=crop&s=p6kGwpM9GbtSPcrMyWgAig",
+  "category": {
+    "id": "44d8288d-1097-4fcd-9961-d9f0db720457",
+    "name": "Công nghệ",
+    "description": "Tin tức công nghệ mới nhất"
+  },
+  "created_at": "2025-07-16T17:00:54.986Z",
+  "updated_at": "2025-07-16T17:00:54.986Z",
+  "user": {
+    "id": "d14dc9a1-8209-4fcc-bfa0-5495c2b3d347",
+    "name": "Nguyễn Văn Công",
+    "avatar": "https://randomuser.me/api/portraits/men/32.jpg"
+  },
+  "blocks": [
+    {
+      "id": "block-1",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "heading_1",
+      "content": "AI - Xu hướng tất yếu của thời đại",
+      "order": 1
+    },
+    {
+      "id": "block-2",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "text",
+      "content": "Trong những năm gần đây, AI đã trở thành từ khóa nóng trên toàn cầu. Từ các tập đoàn công nghệ lớn đến các startup nhỏ, tất cả đều đầu tư mạnh mẽ vào AI nhằm tối ưu hóa quy trình, nâng cao hiệu quả và tạo ra các sản phẩm, dịch vụ mới.",
+      "order": 2
+    },
+    {
+      "id": "block-3",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "image",
+      "media_url": "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
+      "content": "AI trong sản xuất công nghiệp",
+      "order": 3
+    },
+    {
+      "id": "block-4",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "heading_2",
+      "content": "Tác động tích cực của AI",
+      "order": 4
+    },
+    {
+      "id": "block-5",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "text",
+      "content": "AI giúp tự động hóa nhiều công việc lặp đi lặp lại, giảm chi phí nhân công và tăng năng suất. Trong y tế, AI hỗ trợ chẩn đoán bệnh nhanh chóng, chính xác hơn. Trong giáo dục, AI cá nhân hóa lộ trình học tập cho từng học sinh.",
+      "order": 5
+    },
+    {
+      "id": "block-6",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "image",
+      "media_url": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80",
+      "content": "AI trong y tế hiện đại",
+      "order": 6
+    },
+    {
+      "id": "block-7",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "heading_2",
+      "content": "Những thách thức và mặt trái của AI",
+      "order": 7
+    },
+    {
+      "id": "block-8",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "text",
+      "content": "Bên cạnh lợi ích, AI cũng đặt ra nhiều thách thức: nguy cơ mất việc làm do tự động hóa, vấn đề đạo đức khi AI ra quyết định thay con người, nguy cơ bị lạm dụng trong deepfake, tấn công mạng...",
+      "order": 8
+    },
+    {
+      "id": "block-9",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "image",
+      "media_url": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80",
+      "content": "Deepfake - mặt trái của AI",
+      "order": 9
+    },
+    {
+      "id": "block-10",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "heading_2",
+      "content": "AI trong đời sống hàng ngày",
+      "order": 10
+    },
+    {
+      "id": "block-11",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "text",
+      "content": "Từ trợ lý ảo trên điện thoại, đề xuất phim trên Netflix, đến xe tự lái, AI đã len lỏi vào mọi ngóc ngách của cuộc sống hiện đại.",
+      "order": 11
+    },
+    {
+      "id": "block-12",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "video",
+      "media_url": "https://www.w3schools.com/html/mov_bbb.mp4",
+      "content": "Video minh họa AI trong thực tế",
+      "order": 12
+    },
+    {
+      "id": "block-13",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "heading_2",
+      "content": "Tài liệu tham khảo",
+      "order": 13
+    },
+    {
+      "id": "block-14",
+      "post_type": "user_news",
+      "post_id": "5d44d3c7-9c89-4b36-a21b-2c4e7c659ed3",
+      "type": "file",
+      "media_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "file_name": "AI-Report-2025.pdf",
+      "file_size": 2048000,
+      "content": "Báo cáo đầy đủ về AI năm 2025 (PDF)",
+      "order": 14
+    }
+  ],
+  "reactionSummary": {
+    "like": 120,
+    "love": 45,
+    "haha": 7,
+    "angry": 2,
+    "sad": 3
+  },
+  "commentCount": 18,
+  "userReaction": "like",
+  "tags": [
+    "AI",
+    "Công nghệ",
+    "Tự động hóa",
+    "Deepfake",
+    "Y tế",
+    "Video",
+    "Báo cáo"
+  ]
+}

@@ -82,6 +82,79 @@ export interface CompanyFeedPost {
 // ==== API RESPONSE & REQUEST TYPES ====
 import type { APIResponse, PaginationMetadata } from "@/lib/types/api-response";
 
+// User News Post
+export interface UserNewsPostCategory {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export enum UserNewsPostBlockType {
+  Text = "text",
+  Image = "image",
+  Video = "video",
+  File = "file",
+  HEADING_1 = "heading_1",
+  HEADING_2 = "heading_2",
+  HEADING_3 = "heading_3",
+}
+
+export interface UserNewsPostBlock {
+  id: string;
+  type: UserNewsPostBlockType;
+  content: string;
+  media_url: string | null;
+  file_name: string | null;
+  file_size: number | null;
+  order: number;
+}
+
+export interface CreateUserNewsPostBlockRequest {
+  type: "text" | "image" | "video" | "file";
+  content: string;
+  media_url?: string;
+  file_name?: string;
+  file_size?: number;
+  order: number;
+}
+
+export interface CreateUserNewsPostRequest {
+  title: string;
+  summary: string;
+  cover_image: string;
+  blocks: CreateUserNewsPostBlockRequest[];
+  categoryId: string;
+}
+
+export interface UserNewsPost {
+  id: string;
+  title: string;
+  summary: string;
+  cover_image: string;
+  category: UserNewsPostCategory;
+  created_at: string;
+  updated_at: string;
+  user: UserFeedPostUser;
+  blocks: UserNewsPostBlock[];
+  reactionSummary: ReactionSummary;
+  commentCount: number;
+  userReaction?: ReactionType;
+}
+
+export interface UserNewsPostSummary {
+  id: string;
+  title: string;
+  summary: string;
+  cover_image: string;
+  category: UserNewsPostCategory;
+  created_at: string;
+  updated_at: string;
+  user: UserFeedPostUser;
+  reactionSummary: ReactionSummary;
+  commentCount: number;
+  tags?: string[];
+}
+
 // USER FEED
 export interface CreateUserFeedPostRequest {
   caption: string;
@@ -119,3 +192,10 @@ export type CompanyFeedPostListResponse = APIResponse<
   PaginationMetadata | undefined
 >;
 export type CompanyFeedPostResponse = APIResponse<CompanyFeedPost, undefined>;
+
+export type UserNewsPostSummaryListResponse = APIResponse<
+  UserNewsPostSummary[],
+  undefined
+>;
+
+export type UserNewsPostResponse = APIResponse<UserNewsPost, undefined>;
