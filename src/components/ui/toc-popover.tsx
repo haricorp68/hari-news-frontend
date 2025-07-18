@@ -29,26 +29,23 @@ export const TOCPopover: React.FC<TOCPopoverProps> = ({
 }) => {
   return (
     <>
-      {/* TOC Toggle Buttons */}
-      {/* Desktop Button */}
+      {/* TOC Toggle Button - Responsive */}
       <Button
         variant="outline"
         size="sm"
-        className="hidden md:flex fixed top-32 right-10 z-40 items-center gap-2 rounded-xl "
-        onClick={onToggle}
-      >
-        <TableOfContents className="h-4 w-4" />
-      </Button>
-
-      {/* Mobile Button */}
-      <Button
-        variant="outline"
-        size="sm"
-        className="md:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full shadow-md hover:shadow-lg transition-shadow"
+        className={cn(
+          "fixed z-40 flex items-center gap-2 transition-shadow",
+          // Responsive position
+          "md:top-32 md:right-10 md:bottom-auto md:left-auto top-auto right-6 bottom-6 left-auto",
+          // Responsive border radius
+          "md:rounded-xl rounded-full",
+          // Responsive shadow
+          "shadow-md hover:shadow-lg",
+        )}
         onClick={onToggle}
       >
         <TableOfContents className="h-4 w-4 text-blue-500" />
-        Mục lục
+        <span className="md:hidden">Mục lục</span>
       </Button>
 
       {/* TOC Popover */}
