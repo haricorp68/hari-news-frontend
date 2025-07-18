@@ -5,18 +5,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatFullTime } from "@/utils/formatTime";
 import newsData from "@/lib/modules/post/news.temp.json";
 import { UserProfileLink } from "@/components/ui/user-profile-link";
-import { useState } from "react";
-import { TOCPopover, TOCBlock } from "@/components/ui/toc-popover";
 
 export default function NewsDetailPage() {
   const post = newsData;
-  // Lấy danh sách heading cho TOC
-  const toc = post.blocks.filter(
-    (block) =>
-      block.type === "heading_1" ||
-      block.type === "heading_2" ||
-      block.type === "heading_3"
-  );
 
   // Hàm tạo id từ content (đơn giản hóa, có thể cải tiến)
   const slugify = (str: string) =>
@@ -25,9 +16,6 @@ export default function NewsDetailPage() {
       .replace(/[^a-z0-9\u00C0-\u1EF9\s-]/gi, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
-
-  // State điều khiển hiển thị TOC
-  const [showTOC, setShowTOC] = useState(false);
 
   return (
     <div className="w-full flex flex-col md:flex-row items-start md:items-stretch relative">
@@ -215,15 +203,6 @@ export default function NewsDetailPage() {
           </div>
         </div>
       </div>
-
-      {/* TOC Component - bao gồm cả buttons và popover */}
-      <TOCPopover
-        toc={toc as TOCBlock[]}
-        slugify={slugify}
-        show={showTOC}
-        onClose={() => setShowTOC(false)}
-        onToggle={() => setShowTOC(!showTOC)}
-      />
     </div>
   );
 }
