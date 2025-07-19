@@ -4,6 +4,7 @@ import "./globals.css";
 import QueryProvider from "./QueryProvider";
 import { Toaster } from "sonner";
 import { AppSidebar } from "@/components/layout/Sidebar";
+import { Montserrat } from "next/font/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,6 +13,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
 });
 
@@ -28,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${montserrat.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
           <AppSidebar>{children}</AppSidebar>
