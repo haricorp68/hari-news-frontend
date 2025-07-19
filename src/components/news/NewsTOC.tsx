@@ -1,100 +1,166 @@
-'use client'
-import { useSidebar } from '@/components/ui/sidebar'
-import { BookOpen } from 'lucide-react'
+"use client";
+import { useRef, useEffect, useState, useMemo } from "react";
+import { useSidebar } from "@/components/ui/sidebar";
+import { BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-} from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
-const SIDEBAR_WIDTH = '16rem'
+const SIDEBAR_WIDTH = "16rem";
+export type TocItem = { id: string; label: string; level: number };
 
-export type TocItem = { id: string; label: string; level: number }
+function TocAccordion({
+  toc,
+  activeId,
+  onClick,
+}: {
+  toc: TocItem[];
+  activeId?: string;
+  onClick?: () => void;
+}) {
+  // Group heading_1 và các heading con
+  const groups: { h1: TocItem; children: TocItem[] }[] = [];
+  let current: { h1: TocItem; children: TocItem[] } | null = null;
+  toc.forEach((item) => {
+    if (item.level === 1) {
+      if (current) groups.push(current);
+      current = { h1: item, children: [] };
+    } else if (current) {
+      current.children.push(item);
+    }
+  });
+  if (current) groups.push(current);
 
-function TocList({ toc, onClick }: { toc: TocItem[]; onClick?: () => void }) {
+  // Tìm heading cha của activeId (nếu activeId là con)
+  const parentId = useMemo(() => {
+    for (const group of groups) {
+      if (group.h1.id === activeId) return group.h1.id;
+      if (group.children.some((c) => c.id === activeId)) return group.h1.id;
+    }
+    return undefined;
+  }, [groups, activeId]);
+
+  // State controlled cho Accordion
+  const [openItems, setOpenItems] = useState<string[]>([]);
+  useEffect(() => {
+    if (parentId) {
+      setOpenItems((prev) => (prev.includes(parentId) ? prev : [parentId]));
+    }
+  }, [parentId]);
+
+  // Scroll active heading into view
+  const activeRef = useRef<HTMLAnchorElement | null>(null);
+  useEffect(() => {
+    if (activeRef.current) {
+      activeRef.current.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    }
+  }, [activeId]);
+
   return (
-    <ul className="space-y-2">
-      {toc.map((item) => (
-        <li key={item.id} className={item.level > 1 ? 'ml-4' : ''}>
-          <a
-            href={`#${item.id}`}
-            className="block text-sm text-muted-foreground hover:text-primary transition"
-            onClick={onClick}
+    <Accordion type="multiple" value={openItems} onValueChange={setOpenItems}>
+      {groups.map((group) => (
+        <AccordionItem key={group.h1.id} value={group.h1.id}>
+          <AccordionTrigger
+            className={
+              "text-xs px-2 " +
+              (group.h1.id === activeId || parentId === group.h1.id
+                ? "font-bold text-primary"
+                : "text-muted-foreground hover:text-primary")
+            }
           >
-            {item.label}
-          </a>
-        </li>
+            {group.h1.label}
+          </AccordionTrigger>
+          <AccordionContent className="pl-2">
+            <ul className="space-y-1">
+              {group.children.map((item) => (
+                <li key={item.id} className={item.level > 2 ? "ml-4" : ""}>
+                  <a
+                    ref={item.id === activeId ? activeRef : undefined}
+                    href={`#${item.id}`}
+                    className={
+                      "block text-xs transition " +
+                      (item.id === activeId
+                        ? "font-bold text-primary"
+                        : "text-muted-foreground hover:text-primary")
+                    }
+                    onClick={onClick}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
       ))}
-    </ul>
-  )
+    </Accordion>
+  );
 }
 
-export function NewsTOC({ toc = [] }: { toc?: TocItem[] }) {
-  const { state, isMobile } = useSidebar()
+export function NewsTOC({
+  toc = [],
+  activeId,
+}: {
+  toc?: TocItem[];
+  activeId?: string;
+}) {
+  const { state, isMobile } = useSidebar();
 
-  // MOBILE: Floating button mở Sheet
   if (isMobile) {
     return (
       <Sheet>
         <SheetTrigger asChild>
           <Button
-            className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg p-3 bg-background border"
+            className="fixed  bottom-6 right-6 z-50 rounded-full shadow-lg p-3 bg-background border"
             size="icon"
             variant="outline"
-          >
-            <BookOpen className="w-6 h-6" />
-            <span className="sr-only">Mục lục</span>
-          </Button>
+          ></Button>
         </SheetTrigger>
         <SheetContent side="right" className="max-w-xs w-full">
-          <div className="flex items-center gap-2 mb-4">
-            <BookOpen className="w-5 h-5" />
-            <span className="font-semibold text-base">Mục lục</span>
-          </div>
-          <TocList toc={toc} />
+          <TocAccordion toc={toc} activeId={activeId} />
         </SheetContent>
       </Sheet>
-    )
+    );
   }
 
-  // SIDEBAR COLLAPSED: chỉ hiện icon, bấm mở dropdown
-  if (state === 'collapsed') {
+  if (state === "collapsed") {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            className="flex flex-col items-center justify-center h-full w-full"
+            className="flex flex-col items-center justify-center w-12 border"
             size="icon"
             variant="ghost"
           >
-            <BookOpen className="w-6 h-6" />
-            <span className="sr-only">Mục lục</span>
+            <BookOpen />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="right" align="start" className="w-56 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <BookOpen className="w-5 h-5" />
-            <span className="font-semibold text-base">Mục lục</span>
-          </div>
-          <TocList toc={toc} />
+          <TocAccordion toc={toc} activeId={activeId} />
         </DropdownMenuContent>
       </DropdownMenu>
-    )
+    );
   }
 
-  // SIDEBAR EXPANDED: hiện đầy đủ
   return (
     <nav
       className={cn(
-        'h-full px-4 py-6 overflow-y-auto transition-all duration-200',
-        'w-full'
+        "h-full px-4 py-2 overflow-y-auto transition-all duration-200",
+        "w-full"
       )}
       style={{
         width: SIDEBAR_WIDTH,
@@ -103,13 +169,9 @@ export function NewsTOC({ toc = [] }: { toc?: TocItem[] }) {
       }}
       aria-label="Mục lục"
     >
-      <div className="flex items-center gap-2 mb-4">
-        <BookOpen className="w-5 h-5" />
-        <span className="font-semibold text-base">Mục lục</span>
-      </div>
-      <TocList toc={toc} />
+      <TocAccordion toc={toc} activeId={activeId} />
     </nav>
-  )
+  );
 }
 
 export default NewsTOC;
