@@ -87,16 +87,24 @@ function TocAccordion({
           <AccordionContent className="pl-2">
             <ul className="space-y-1">
               {group.children.map((item) => (
-                <li key={item.id} className={item.level > 2 ? "ml-4" : ""}>
+                <li
+                  key={item.id}
+                  className={cn(
+                    item.level === 2 && "ml-2 pl-2 border-l border-muted",
+                    item.level === 3 && "ml-4 pl-3 border-l-2 border-primary/30"
+                  )}
+                >
                   <a
                     ref={item.id === activeId ? activeRef : undefined}
                     href={`#${item.id}`}
-                    className={
-                      "block text-xs transition " +
-                      (item.id === activeId
+                    className={cn(
+                      "block transition",
+                      item.level === 2 && "text-xs text-muted-foreground",
+                      item.level === 3 && "text-[11px] text-muted-foreground/70 italic",
+                      item.id === activeId
                         ? "font-bold text-primary"
-                        : "text-muted-foreground hover:text-primary")
-                    }
+                        : "hover:text-primary"
+                    )}
                     onClick={onClick}
                   >
                     {item.label}
@@ -159,7 +167,7 @@ export function NewsTOC({
   return (
     <nav
       className={cn(
-        "h-full px-4 py-2 overflow-y-auto transition-all duration-200",
+        "h-full px-4 py-2 overflow-y-auto transition-all duration-200 scrollbar-hide",
         "w-full"
       )}
       style={{

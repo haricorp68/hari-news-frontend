@@ -79,7 +79,7 @@ export default function NewsDetailPage() {
   const activeId = useActiveHeading(toc);
 
   return (
-    <div className="min-h-screen bg-background flex flex-row items-start ">
+    <div className="min-h-screen bg-background flex flex-row items-start">
       {/* Nội dung chính */}
       <main className="flex-1 w-full mx-auto md:px-0">
         <div className="w-full flex flex-col md:flex-row items-start md:items-stretch relative">
@@ -293,7 +293,7 @@ export default function NewsDetailPage() {
             maxWidth: tocWidth,
           }}
         >
-          <div className="fixed h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="fixed h-[calc(100vh-4rem)]">
             <NewsTOC toc={toc} activeId={activeId} />
           </div>
         </aside>
