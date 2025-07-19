@@ -8,6 +8,7 @@ import { UserProfileLink } from "@/components/ui/user-profile-link";
 import { NewsTOC, TocItem } from "@/components/news/NewsTOC";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
+import { Separator } from "@/components/ui/separator";
 
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
@@ -278,6 +279,7 @@ export default function NewsDetailPage() {
                       );
                     return null;
                   })}
+                <Separator className="my-8 border-t-2 border-dashed border-muted" />
               </div>
             </div>
           </div>
