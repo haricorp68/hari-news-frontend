@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatFullTime } from "@/utils/formatTime";
-import newsData from "@/lib/modules/post/news.temp.json";
+import { useUserNewsPostDetail } from "@/lib/modules/post/hooks/useUserNewsPostDetail";
+import { useParams } from "next/navigation";
 import { UserProfileLink } from "@/components/ui/user-profile-link";
 import { NewsTOC, TocItem } from "@/components/news/NewsTOC";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -42,7 +42,9 @@ function useActiveHeading(toc: TocItem[]) {
 }
 
 export default function NewsDetailPage() {
-  const post = newsData ?? {};
+  const params = useParams();
+  const postId = typeof params?.id === "string" ? params.id : Array.isArray(params?.id) ? params.id[0] : "";
+  const { post, postLoading } = useUserNewsPostDetail(postId);
   const { state, isMobile } = useSidebar();
 
   // Hàm tạo id từ content (đơn giản hóa, có thể cải tiến)
@@ -54,7 +56,7 @@ export default function NewsDetailPage() {
       .replace(/-+/g, "-");
 
   // Sinh TOC từ post.blocks
-  const toc: TocItem[] = Array.isArray(post.blocks)
+  const toc: TocItem[] = Array.isArray(post?.blocks)
     ? post.blocks
         .filter(
           (block) =>
@@ -78,6 +80,9 @@ export default function NewsDetailPage() {
   const tocWidth = state === "expanded" ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_ICON;
 
   const activeId = useActiveHeading(toc);
+
+  if (postLoading) return <div className="w-full text-center py-10">Đang tải dữ liệu...</div>;
+  if (!post) return <div className="w-full text-center py-10 text-red-500">Không tìm thấy bài viết.</div>;
 
   return (
     <div className="min-h-screen bg-background flex flex-row items-start">
@@ -130,20 +135,6 @@ export default function NewsDetailPage() {
                   </span>
                 </div>
               </div>
-              {/* Tags */}
-              {Array.isArray(post?.tags) && post.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {post.tags.map((tag: string, idx: number) => (
-                    <Badge
-                      key={tag + idx}
-                      variant="outline"
-                      className="text-xs font-normal px-2 py-0.5"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
               {/* Summary */}
               <div className="text-lg text-gray-700 mb-6">
                 {post?.summary ?? ""}
