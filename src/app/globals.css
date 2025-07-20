@@ -130,6 +130,34 @@
     scroll-behavior: smooth;
     overscroll-behavior: none;
   }
+  
+  /* Fix for modal scroll issues */
+  body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+  
+  /* Ensure scroll restoration works properly */
+  body.scroll-restored {
+    overflow: auto !important;
+    position: static !important;
+    top: auto !important;
+    width: auto !important;
+  }
+  
+  /* Force scroll to work */
+  body {
+    overflow-y: auto !important;
+  }
+  
+  /* Override any modal scroll locks */
+  body:not(.modal-open) {
+    overflow: auto !important;
+    position: static !important;
+    top: auto !important;
+    width: auto !important;
+  }
 }
 
 .scrollbar-hide {

@@ -14,7 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Upload, Check, X, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 export interface UploadResult {
   public_id: string;
@@ -129,6 +130,32 @@ export function CloudinaryUpload({
 }: CloudinaryUploadProps) {
   const [uploadedImages, setUploadedImages] = useState<UploadResult[]>([]);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const { lockScroll, unlockScroll } = useScrollLock();
+
+  // Force unlock scroll when user tries to scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      // If user is trying to scroll but body is locked, force unlock
+      if (document.body.classList.contains('modal-open')) {
+        unlockScroll();
+      }
+    };
+
+    const handleWheel = () => {
+      if (document.body.classList.contains('modal-open')) {
+        unlockScroll();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('wheel', handleWheel);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('wheel', handleWheel);
+      unlockScroll();
+    };
+  }, [unlockScroll]);
 
   const handleUploadSuccess = (result: any) => {
     const imageData: UploadResult = {
@@ -153,6 +180,18 @@ export function CloudinaryUpload({
     const sourceName =
       sourceNames[imageData.source || ""] || "Nguồn không xác định";
     toast.success(`Upload thành công từ ${sourceName}!`);
+    
+    // Force unlock scroll immediately and with delay
+    unlockScroll();
+    setTimeout(() => {
+      unlockScroll();
+    }, 100);
+    setTimeout(() => {
+      unlockScroll();
+    }, 500);
+    setTimeout(() => {
+      unlockScroll();
+    }, 1000);
   };
 
   const handleUploadError = (error: any) => {
@@ -253,6 +292,18 @@ export function CloudinaryUpload({
         }
         onSuccess={handleUploadSuccess}
         onError={handleUploadError}
+        onClose={() => {
+          // Ensure body scroll is restored when widget closes
+          unlockScroll();
+        }}
+        onAbort={() => {
+          // Ensure body scroll is restored when upload is aborted
+          unlockScroll();
+        }}
+        onOpen={() => {
+          // Lock scroll when widget opens
+          lockScroll();
+        }}
         options={uploadOptions}
       >
               {({ open }) => (

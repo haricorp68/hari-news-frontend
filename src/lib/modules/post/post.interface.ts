@@ -110,7 +110,7 @@ export interface UserNewsPostBlock {
 }
 
 export interface CreateUserNewsPostBlockRequest {
-  type: "text" | "image" | "video" | "file";
+  type: "text" | "image" | "video" | "file" | "heading_1" | "heading_2" | "heading_3";
   content: string;
   media_url?: string;
   file_name?: string;

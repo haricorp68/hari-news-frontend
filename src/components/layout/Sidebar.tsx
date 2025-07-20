@@ -135,7 +135,7 @@ const navData = {
         },
         {
           title: "Bài báo (News)",
-          url: "/post/news",
+          url: "/news/create",
         },
       ],
     },
