@@ -1,7 +1,5 @@
 "use client";
 
-import { NewsCreateForm } from "@/components/news/NewsCreateForm";
-
 export default function CreateNewsPage() {
   return (
     <div className="container mx-auto py-8 px-4">
@@ -14,9 +12,7 @@ export default function CreateNewsPage() {
             Viết và chia sẻ bài báo của bạn với cộng đồng
           </p>
         </div>
-        
-        <NewsCreateForm />
       </div>
     </div>
   );
-} 
+}
