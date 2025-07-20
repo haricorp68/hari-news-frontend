@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
       "scontent.fhan20-1.fna.fbcdn.net",
       "images.unsplash.com",
       "i1-kinhdoanh.vnecdn.net",
+      "res.cloudinary.com",
     ],
   },
 };
