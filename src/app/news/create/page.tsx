@@ -3,11 +3,11 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 // import { CloudinaryUpload } from "@/components/CloudinaryUpload";
+import { CloudinaryUpload, UploadResult } from "@/components/CloudinaryUpload";
 import { useCreateUserNewsPost } from "@/lib/modules/post/hooks/useCreateUserNewsPost";
 import { useCategory } from "@/lib/modules/category/useCategory";
 import { UserNewsPostBlockType } from "@/lib/modules/post/post.interface";
 // import type { UploadResult } from "@/components/CloudinaryUpload";
-import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +40,7 @@ import {
   File,
   Plus,
   Trash2,
+  Eye,
 } from "lucide-react";
 import type { DragEndEvent } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -49,6 +50,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { NewsDetailLayout } from "@/components/news/NewsDetailLayout";
+import { useAuth } from "@/lib/modules/auth/useAuth";
 
 interface NewsBlock {
   id: string;
@@ -209,13 +213,19 @@ export default function CreateNewsPage() {
   const { rootCategories, rootCategoriesLoading } = useCategory(undefined, {
     enabledRoot: true,
   });
+  const { profile } = useAuth();
 
   // Form state
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   // const [coverImage, setCoverImage] = useState("");
+  const [coverImage, setCoverImage] = useState<UploadResult | null>(null);
   const [categoryId, setCategoryId] = useState("");
   const [blocks, setBlocks] = useState<NewsBlock[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagsInput, setTagsInput] = useState("");
+  // Thêm state quản lý preview
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   // DnD-kit setup
   const sensors = useSensors(
@@ -269,21 +279,20 @@ export default function CreateNewsPage() {
     );
   }, []);
 
-  // // Handle cover image upload
-  // const handleCoverImageUpload = useCallback((result: UploadResult) => {
-  //   setCoverImage(result.secure_url);
-  //   toast.success("Ảnh bìa đã được upload thành công!");
-  // }, []);
+  const handleCoverImageUpload = useCallback((result: UploadResult) => {
+    setCoverImage(result);
+  }, []);
 
-  // // Handle block media upload
-  // const handleBlockMediaUpload = useCallback((blockId: string, result: UploadResult) => {
-  //   updateBlock(blockId, {
-  //     media_url: result.secure_url,
-  //     file_name: result.public_id,
-  //     file_size: result.bytes,
-  //   });
-  //   toast.success("Media đã được upload thành công!");
-  // }, [updateBlock]);
+  const handleBlockMediaUpload = useCallback(
+    (blockId: string, result: UploadResult) => {
+      updateBlock(blockId, {
+        media_url: result.secure_url,
+        file_name: result.public_id,
+        file_size: result.bytes,
+      });
+    },
+    [updateBlock]
+  );
 
   // Handle form submission
   const handleSubmit = useCallback(
@@ -291,40 +300,35 @@ export default function CreateNewsPage() {
       e.preventDefault();
 
       if (!title.trim()) {
-        toast.error("Vui lòng nhập tiêu đề bài viết");
         return;
       }
 
       if (!summary.trim()) {
-        toast.error("Vui lòng nhập tóm tắt bài viết");
         return;
       }
 
       // if (!coverImage) {
-      //   toast.error("Vui lòng upload ảnh bìa");
+      //
       //   return;
       // }
 
       if (!categoryId) {
-        toast.error("Vui lòng chọn danh mục");
         return;
       }
 
       if (blocks.length === 0) {
-        toast.error("Vui lòng thêm ít nhất một block nội dung");
         return;
       }
 
       const invalidBlocks = blocks.filter((block) => !block.content.trim());
       if (invalidBlocks.length > 0) {
-        toast.error("Vui lòng nhập nội dung cho tất cả các block");
         return;
       }
 
       const requestData = {
         title: title.trim(),
         summary: summary.trim(),
-        cover_image: "", // coverImage,
+        cover_image: coverImage?.secure_url || "", // coverImage,
         categoryId,
         blocks: blocks.map((block) => ({
           type: block.type,
@@ -334,18 +338,18 @@ export default function CreateNewsPage() {
           file_size: block.file_size,
           order: block.order,
         })),
+        tags,
       };
 
       try {
         await createUserNewsPost(requestData);
-        toast.success("Bài viết đã được tạo thành công!");
+
         router.push("/");
       } catch (error) {
-        toast.error("Có lỗi xảy ra khi tạo bài viết");
         console.error("Create news error:", error);
       }
     },
-    [title, summary, categoryId, blocks, createUserNewsPost, router]
+    [title, summary, categoryId, blocks, createUserNewsPost, router, coverImage, tags]
   );
 
   // Get block type name
@@ -424,10 +428,38 @@ export default function CreateNewsPage() {
               rows={2}
               placeholder="Mô tả ảnh (tùy chọn)"
             />
-            {/* <CloudinaryUpload ... /> */}
-            <div className="bg-muted p-4 rounded-lg text-center text-muted-foreground">
-              UPLOAD ĐÃ BỊ COMMENT
-            </div>
+            <CloudinaryUpload
+              value={
+                block.media_url
+                  ? {
+                      public_id: block.file_name || "",
+                      secure_url: block.media_url,
+                      url: block.media_url,
+                      width: 0,
+                      height: 0,
+                      format: "",
+                      resource_type: "image",
+                    }
+                  : null
+              }
+              onUploadSuccess={(result) =>
+                handleBlockMediaUpload(block.id, result)
+              }
+              onRemove={() =>
+                updateBlock(block.id, {
+                  media_url: undefined,
+                  file_name: undefined,
+                  file_size: undefined,
+                })
+              }
+              allowedFormats={["jpg", "jpeg", "png", "gif", "webp"]}
+              resourceType="image"
+              showPreview
+              showRemove
+              showCopy
+              label="Upload ảnh"
+              description="Chọn hoặc kéo thả ảnh"
+            />
           </div>
         );
       case "video":
@@ -438,10 +470,38 @@ export default function CreateNewsPage() {
               rows={2}
               placeholder="Mô tả video (tùy chọn)"
             />
-            {/* <CloudinaryUpload ... /> */}
-            <div className="bg-muted p-4 rounded-lg text-center text-muted-foreground">
-              UPLOAD ĐÃ BỊ COMMENT
-            </div>
+            <CloudinaryUpload
+              value={
+                block.media_url
+                  ? {
+                      public_id: block.file_name || "",
+                      secure_url: block.media_url,
+                      url: block.media_url,
+                      width: 0,
+                      height: 0,
+                      format: "",
+                      resource_type: "video",
+                    }
+                  : null
+              }
+              onUploadSuccess={(result) =>
+                handleBlockMediaUpload(block.id, result)
+              }
+              onRemove={() =>
+                updateBlock(block.id, {
+                  media_url: undefined,
+                  file_name: undefined,
+                  file_size: undefined,
+                })
+              }
+              allowedFormats={["mp4", "avi", "mov", "wmv", "flv", "webm"]}
+              resourceType="video"
+              showPreview
+              showRemove
+              showCopy
+              label="Upload video"
+              description="Chọn hoặc kéo thả video"
+            />
           </div>
         );
       case "file":
@@ -452,10 +512,47 @@ export default function CreateNewsPage() {
               rows={2}
               placeholder="Mô tả file (tùy chọn)"
             />
-            {/* <CloudinaryUpload ... /> */}
-            <div className="bg-muted p-4 rounded-lg text-center text-muted-foreground">
-              UPLOAD ĐÃ BỊ COMMENT
-            </div>
+            <CloudinaryUpload
+              value={
+                block.media_url
+                  ? {
+                      public_id: block.file_name || "",
+                      secure_url: block.media_url,
+                      url: block.media_url,
+                      width: 0,
+                      height: 0,
+                      format: "",
+                      resource_type: "raw",
+                    }
+                  : null
+              }
+              onUploadSuccess={(result) =>
+                handleBlockMediaUpload(block.id, result)
+              }
+              onRemove={() =>
+                updateBlock(block.id, {
+                  media_url: undefined,
+                  file_name: undefined,
+                  file_size: undefined,
+                })
+              }
+              allowedFormats={[
+                "pdf",
+                "doc",
+                "docx",
+                "xls",
+                "xlsx",
+                "ppt",
+                "pptx",
+                "txt",
+              ]}
+              resourceType="raw"
+              showPreview
+              showRemove
+              showCopy
+              label="Upload file"
+              description="Chọn hoặc kéo thả file"
+            />
           </div>
         );
       default:
@@ -508,6 +605,31 @@ export default function CreateNewsPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="tags">Tags (phân tách bởi dấu phẩy)</Label>
+              <Input
+                id="tags"
+                value={tagsInput}
+                onChange={e => {
+                  setTagsInput(e.target.value);
+                  setTags(
+                    e.target.value
+                      .split(",")
+                      .map((t) => t.trim())
+                      .filter((t) => t.length > 0)
+                  );
+                }}
+                placeholder="ví dụ: react, nextjs, ai"
+              />
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {tags.map((tag, idx) => (
+                    <Badge key={idx} variant="outline">{tag}</Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label>Danh mục *</Label>
               <select
                 value={categoryId}
@@ -536,12 +658,18 @@ export default function CreateNewsPage() {
 
             <div className="space-y-2">
               <Label>Ảnh bìa *</Label>
-              {/* {!coverImage ? (
-                <CloudinaryUpload ... />
-              ) : ( ... )} */}
-              <div className="bg-muted p-4 rounded-lg text-center text-muted-foreground">
-                UPLOAD ĐÃ BỊ COMMENT
-              </div>
+              <CloudinaryUpload
+                value={coverImage}
+                onUploadSuccess={handleCoverImageUpload}
+                onRemove={() => setCoverImage(null)}
+                allowedFormats={["jpg", "jpeg", "png", "gif", "webp"]}
+                resourceType="image"
+                showPreview
+                showRemove
+                showCopy
+                label="Upload ảnh bìa"
+                description="Chọn hoặc kéo thả ảnh bìa cho bài viết"
+              />
             </div>
           </CardContent>
         </Card>
@@ -618,14 +746,53 @@ export default function CreateNewsPage() {
         </Card>
 
         {/* Nút tạo bài viết ở dưới cùng */}
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="w-full mt-8 text-base h-12"
-        >
-          {isPending ? "Đang tạo..." : "Tạo bài viết"}
-        </Button>
+        <div className="flex gap-2 w-full mt-8">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            onClick={() => setPreviewOpen(true)}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            Xem preview
+          </Button>
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="flex-1 text-base h-12"
+          >
+            {isPending ? "Đang tạo..." : "Tạo bài viết"}
+          </Button>
+        </div>
       </form>
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-4xl w-full p-0 overflow-hidden">
+          <NewsDetailLayout
+            post={{
+              title,
+              cover_image: coverImage?.secure_url,
+              user: profile ? {
+                id: profile.id,
+                name: profile.name,
+                avatar: profile.avatar || null,
+              } : undefined,
+              created_at: undefined,
+              summary,
+              blocks: blocks.map((block) => ({
+                ...block,
+                media_url: block.media_url || null,
+                file_size: block.file_size || null,
+                file_name: block.file_name || null,
+              })),
+            }}
+            toc={[]}
+            activeId={undefined}
+            tocWidth={"0"}
+            isMobile={true}
+            slugify={(str) => str.replace(/\s+/g, "-").toLowerCase()}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

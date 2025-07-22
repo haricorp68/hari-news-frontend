@@ -2,20 +2,17 @@
 
 import { CldUploadWidget } from "next-cloudinary";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Copy, Upload, Check, X, Image as ImageIcon } from "lucide-react";
+import {
+  Copy,
+  Upload,
+  Check,
+  File as FileIcon,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
-import { useScrollLock } from "@/hooks/useScrollLock";
+import { useState } from "react";
 
 export interface UploadResult {
   public_id: string;
@@ -28,136 +25,49 @@ export interface UploadResult {
   bytes?: number;
   created_at?: string;
   source?: string;
+  file_name?: string; // Added for file resource type
 }
 
 export interface CloudinaryUploadProps {
-  // Upload configuration
-  maxFiles?: number;
-  sources?: UploadSource[];
-  resourceType?: "image" | "video" | "raw";
-  allowedFormats?: string[];
-  maxFileSize?: number;
-  uploadPreset?: string;
-  
-  // Folder organization
-  folder?: string;                    // Folder path in Cloudinary (e.g., "users", "products", "news")
-  subFolder?: string;                 // Sub-folder (e.g., "avatars", "thumbnails")
-  useTimestamp?: boolean;             // Add timestamp to filename
-  useOriginalName?: boolean;          // Keep original filename
-  customTransformation?: string;      // Custom transformation string
-  
-  // UI configuration
-  title?: string;
-  description?: string;
-  showPreview?: boolean;
-  showSource?: boolean;
-  showDetails?: boolean;
-  showCopyButtons?: boolean;
-  showRemoveButtons?: boolean;
-  
-  // Callbacks
+  value?: UploadResult | null;
   onUploadSuccess?: (result: UploadResult) => void;
   onUploadError?: (error: any) => void;
-  onImageRemove?: (publicId: string) => void;
-  
-  // Styling
+  onRemove?: () => void;
+  allowedFormats?: string[];
+  maxFiles?: number;
+  resourceType?: "image" | "video" | "raw";
+  uploadPreset?: string;
+  showPreview?: boolean;
+  showRemove?: boolean;
+  showCopy?: boolean;
+  disabled?: boolean;
   className?: string;
-  variant?: "default" | "simple" | "detailed";
+  label?: string;
+  description?: string;
 }
 
-type UploadSource =
-  | "local"
-  | "camera"
-  | "url"
-  | "google_drive"
-  | "dropbox"
-  | "shutterstock"
-  | "gettyimages"
-  | "istock"
-  | "unsplash"
-  | "image_search";
-
-const defaultSources: UploadSource[] = [
-  "local",
-  "camera",
-  "url",
-  "google_drive",
-  "dropbox",
-  "shutterstock",
-  "gettyimages",
-  "istock",
-  "unsplash",
-  "image_search",
-];
-
-const sourceNames: Record<string, string> = {
-  local: "Máy Tính",
-  camera: "Camera",
-  url: "URL",
-  google_drive: "Google Drive",
-  dropbox: "Dropbox",
-  shutterstock: "Shutterstock",
-  gettyimages: "Getty Images",
-  istock: "iStock",
-  unsplash: "Unsplash",
-  image_search: "Tìm Kiếm Ảnh",
-};
-
 export function CloudinaryUpload({
-  maxFiles = 5,
-  sources = defaultSources,
-  resourceType = "image",
-  allowedFormats = ["jpg", "jpeg", "png", "gif", "webp"],
-  maxFileSize = 10000000,
-  uploadPreset,
-  folder,
-  subFolder,
-  useTimestamp = false,
-  useOriginalName = false,
-  customTransformation,
-  title = "Upload Ảnh",
-  description = "Chọn ảnh để upload lên Cloudinary",
-  showPreview = true,
-  showSource = true,
-  showDetails = true,
-  showCopyButtons = true,
-  showRemoveButtons = true,
+  value,
   onUploadSuccess,
   onUploadError,
-  onImageRemove,
+  onRemove,
+  allowedFormats = ["jpg", "jpeg", "png", "gif", "webp"],
+  maxFiles = 1,
+  resourceType = "image",
+  uploadPreset,
+  showPreview = true,
+  showRemove = true,
+  showCopy = true,
+  disabled = false,
   className = "",
-  variant = "default",
+  label = "Upload file",
+  description = "Chọn hoặc kéo thả file để upload",
 }: CloudinaryUploadProps) {
-  const [uploadedImages, setUploadedImages] = useState<UploadResult[]>([]);
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
-  const { lockScroll, unlockScroll } = useScrollLock();
-
-  // Force unlock scroll when user tries to scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      // If user is trying to scroll but body is locked, force unlock
-      if (document.body.classList.contains('modal-open')) {
-        unlockScroll();
-      }
-    };
-
-    const handleWheel = () => {
-      if (document.body.classList.contains('modal-open')) {
-        unlockScroll();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('wheel', handleWheel);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('wheel', handleWheel);
-      unlockScroll();
-    };
-  }, [unlockScroll]);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleUploadSuccess = (result: any) => {
+    setLoading(false);
     const imageData: UploadResult = {
       public_id: result.info.public_id,
       secure_url: result.info.secure_url,
@@ -170,120 +80,74 @@ export function CloudinaryUpload({
       created_at: result.info.created_at || new Date().toISOString(),
       source: result.info.source || "unknown",
     };
-
-    setUploadedImages((prev) => [imageData, ...prev]);
-
-    if (onUploadSuccess) {
-      onUploadSuccess(imageData);
-    }
-
-    const sourceName =
-      sourceNames[imageData.source || ""] || "Nguồn không xác định";
-    toast.success(`Upload thành công từ ${sourceName}!`);
-    
-    // Force unlock scroll immediately and with delay
-    unlockScroll();
-    setTimeout(() => {
-      unlockScroll();
-    }, 100);
-    setTimeout(() => {
-      unlockScroll();
-    }, 500);
-    setTimeout(() => {
-      unlockScroll();
-    }, 1000);
+    onUploadSuccess?.(imageData);
+    toast.success("Upload thành công!");
   };
 
   const handleUploadError = (error: any) => {
-    console.error("Upload error:", error);
-
-    if (onUploadError) {
-      onUploadError(error);
-    }
-
-    toast.error("Có lỗi xảy ra khi upload ảnh");
+    setLoading(false);
+    onUploadError?.(error);
+    toast.error("Có lỗi xảy ra khi upload file");
   };
 
-  const copyToClipboard = async (url: string) => {
+  const handleOpen = (open: () => void) => {
+    if (!disabled) {
+      setLoading(false);
+      open();
+    }
+  };
+
+  const handleCopy = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
-      setCopiedUrl(url);
+      setCopied(true);
       toast.success("Đã copy URL vào clipboard!");
-      setTimeout(() => setCopiedUrl(null), 2000);
+      setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Không thể copy URL");
     }
   };
 
-  const handleRemoveImage = (publicId: string) => {
-    setUploadedImages((prev) =>
-      prev.filter((img) => img.public_id !== publicId)
-    );
-
-    if (onImageRemove) {
-      onImageRemove(publicId);
+  // UI for preview
+  const renderPreview = () => {
+    if (!value) return null;
+    if (value.resource_type === "image") {
+      return (
+        <img
+          src={value.secure_url}
+          alt={value.public_id}
+          className="w-full max-w-xs h-auto rounded-lg border object-contain"
+        />
+      );
     }
-
-    toast.success("Đã xóa ảnh khỏi danh sách");
-  };
-
-  const handleClearAll = () => {
-    setUploadedImages([]);
-    toast.success("Đã xóa tất cả ảnh");
-  };
-
-  const getSourceName = (source: string) => {
-    return sourceNames[source] || "Nguồn không xác định";
-  };
-
-  const renderUploadWidget = () => {
-    // Build folder path
-    let folderPath = "";
-    if (folder) {
-      folderPath = folder;
-      if (subFolder) {
-        folderPath += `/${subFolder}`;
-      }
+    if (value.resource_type === "video") {
+      return (
+        <video
+          src={value.secure_url}
+          controls
+          className="w-full max-w-xs rounded-lg border bg-black"
+        />
+      );
     }
-
-    // Build upload options
-    const uploadOptions: any = {
-      maxFiles,
-      sources,
-      resourceType,
-      clientAllowedFormats: allowedFormats,
-      maxFileSize,
-    };
-
-    // Add folder path if specified
-    if (folderPath) {
-      uploadOptions.folder = folderPath;
-      
-      // When using folder, we can use public_id_prefix for better naming
-      if (useTimestamp) {
-        const timestamp = Date.now();
-        uploadOptions.public_id_prefix = `${timestamp}_`;
-      }
-    } else {
-      // Add timestamp if enabled (only when not using folder)
-      if (useTimestamp) {
-        uploadOptions.use_filename = true;
-        uploadOptions.unique_filename = true;
-      }
-
-      // Add original name if enabled (only when not using folder)
-      if (useOriginalName) {
-        uploadOptions.use_filename = true;
-        uploadOptions.unique_filename = false;
-      }
-    }
-
-    // Add custom transformation if specified
-    if (customTransformation) {
-      uploadOptions.transformation = customTransformation;
-    }
-
+    // file
     return (
+      <div className="flex items-center gap-2 p-3 border rounded-lg bg-muted">
+        <FileIcon className="w-5 h-5 text-muted-foreground" />
+        <span className="truncate text-sm">
+          {value.file_name || value.public_id}
+        </span>
+      </div>
+    );
+  };
+
+  return (
+    <div className={`flex flex-col items-center gap-3 ${className}`.trim()}>
+      {label && <Label className="mb-1">{label}</Label>}
+      {showPreview && value && (
+        <div className="mb-2 w-full flex flex-col items-center">
+          {renderPreview()}
+        </div>
+      )}
       <CldUploadWidget
         uploadPreset={
           uploadPreset ||
@@ -292,211 +156,68 @@ export function CloudinaryUpload({
         }
         onSuccess={handleUploadSuccess}
         onError={handleUploadError}
-        onClose={() => {
-          // Ensure body scroll is restored when widget closes
-          unlockScroll();
+        onOpen={() => setLoading(true)}
+        options={{
+          maxFiles,
+          resourceType,
+          clientAllowedFormats: allowedFormats,
+          maxFileSize: 10000000,
         }}
-        onAbort={() => {
-          // Ensure body scroll is restored when upload is aborted
-          unlockScroll();
-        }}
-        onOpen={() => {
-          // Lock scroll when widget opens
-          lockScroll();
-        }}
-        options={uploadOptions}
       >
-              {({ open }) => (
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-            <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-lg font-medium mb-2">Chọn ảnh để upload</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Hỗ trợ: {allowedFormats.join(", ").toUpperCase()} (tối đa{" "}
-              {Math.round(maxFileSize / 1000000)}MB)
-            </p>
-            {folderPath && (
-              <p className="text-xs text-muted-foreground mb-2">
-                📁 Folder: {folderPath}
-              </p>
+        {({ open }) => (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={disabled || loading}
+            className=" flex items-center gap-2 border-dashed border-2 border-muted-foreground px-4 py-3 justify-center"
+            onClick={() => handleOpen(open)}
+          >
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Upload className="w-5 h-5" />
             )}
-            {sources.length > 0 && (
-              <p className="text-xs text-muted-foreground mb-4">
-                Nguồn: {sources.map((s) => sourceNames[s]).join(", ")}
-              </p>
-            )}
-            <Button onClick={() => open()} className="gap-2">
-              <Upload className="h-4 w-4" />
-              Chọn Ảnh
-            </Button>
-          </div>
+            {value ? "Đổi file" : label}
+          </Button>
         )}
       </CldUploadWidget>
-    );
-  };
-
-  const renderImageList = () => {
-    if (uploadedImages.length === 0) return null;
-
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Ảnh Đã Upload</CardTitle>
-              <CardDescription>
-                Danh sách các ảnh đã upload thành công
-              </CardDescription>
-            </div>
-            {showRemoveButtons && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClearAll}
-                className="text-red-600 hover:text-red-700"
-              >
-                Xóa Tất Cả
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            {uploadedImages.map((image, index) => (
-              <div
-                key={`${image.public_id}-${index}`}
-                className="border rounded-lg p-4"
-              >
-                <div className="flex items-start gap-4">
-                  {showPreview && (
-                    <div className="flex-shrink-0">
-                      <img
-                        src={image.secure_url}
-                        alt={`Uploaded image ${index + 1}`}
-                        className="w-20 h-20 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium truncate">
-                        {image.public_id}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        {showSource && image.source && (
-                          <Badge variant="outline" className="text-xs">
-                            {getSourceName(image.source)}
-                          </Badge>
-                        )}
-                        {showDetails && (
-                          <div className="text-sm text-muted-foreground">
-                            <span>
-                              {image.width} × {image.height}
-                            </span>
-                            <span className="mx-1">•</span>
-                            <span className="uppercase">{image.format}</span>
-                          </div>
-                        )}
-                        {showRemoveButtons && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleRemoveImage(image.public_id)}
-                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div>
-                        <Label className="text-sm font-medium">URL:</Label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Input
-                            value={image.secure_url}
-                            readOnly
-                            className="text-sm"
-                          />
-                          {showCopyButtons && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => copyToClipboard(image.secure_url)}
-                              className="flex-shrink-0"
-                            >
-                              {copiedUrl === image.secure_url ? (
-                                <Check className="h-4 w-4" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
-                      {showDetails && (
-                        <div>
-                          <Label className="text-sm font-medium">
-                            Public ID:
-                          </Label>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Input
-                              value={image.public_id}
-                              readOnly
-                              className="text-sm"
-                            />
-                            {showCopyButtons && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => copyToClipboard(image.public_id)}
-                                className="flex-shrink-0"
-                              >
-                                {copiedUrl === image.public_id ? (
-                                  <Check className="h-4 w-4" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-
-  if (variant === "simple") {
-    return (
-      <div className={className}>
-        {renderUploadWidget()}
-        {showPreview && renderImageList()}
-      </div>
-    );
-  }
-
-  return (
-    <div className={className}>
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            {title}
-          </CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>{renderUploadWidget()}</CardContent>
-      </Card>
-
-      {renderImageList()}
+      {description && !value && (
+        <div className="text-xs text-muted-foreground text-center mt-1">
+          {description}
+        </div>
+      )}
+      {value && (
+        <div className="flex gap-2 mt-2 w-full justify-center">
+          {showCopy && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => handleCopy(value.secure_url)}
+              className="gap-1"
+            >
+              {copied ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+              <span className="text-xs">Copy URL</span>
+            </Button>
+          )}
+          {showRemove && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={onRemove}
+              className="text-red-500 hover:text-red-700 gap-1"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="text-xs">Xóa</span>
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

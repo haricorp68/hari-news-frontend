@@ -124,6 +124,7 @@ export interface CreateUserNewsPostRequest {
   cover_image: string;
   blocks: CreateUserNewsPostBlockRequest[];
   categoryId: string;
+  tags: string[];
 }
 
 export interface UserNewsPost {
@@ -139,6 +140,7 @@ export interface UserNewsPost {
   reactionSummary: ReactionSummary;
   commentCount: number;
   userReaction?: ReactionType;
+  tags: string[]
 }
 
 export interface UserNewsPostSummary {

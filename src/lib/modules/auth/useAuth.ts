@@ -152,12 +152,14 @@ export function useAuth() {
   };
 
   useEffect(() => {
-    if (profileQuery.isError) {
-      setProfile(null);
-    } else if (profileQuery.data?.data) {
-      setProfile(profileQuery.data.data);
+    if (profileQuery.isFetched) {
+      if (profileQuery.isError || !profileQuery.data?.data) {
+        setProfile(null);
+      } else {
+        setProfile(profileQuery.data.data);
+      }
     }
-  }, [profileQuery.data, profileQuery.isError, setProfile]);
+  }, [profileQuery.data, profileQuery.isError, profileQuery.isFetched, setProfile]);
 
   return {
     profile,
