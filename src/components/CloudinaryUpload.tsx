@@ -3,14 +3,7 @@
 import { CldUploadWidget } from "next-cloudinary";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Copy,
-  Upload,
-  Check,
-  File as FileIcon,
-  Loader2,
-  Trash2,
-} from "lucide-react";
+import { Copy, Upload, Check, FileIcon, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -157,6 +150,7 @@ export function CloudinaryUpload({
         onSuccess={handleUploadSuccess}
         onError={handleUploadError}
         onOpen={() => setLoading(true)}
+        onClose={() => setLoading(false)} // Reset loading if dialog is closed without upload
         options={{
           maxFiles,
           resourceType,

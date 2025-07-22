@@ -39,6 +39,7 @@ import {
   Plus,
   Trash2,
   Eye,
+  SquarePlus,
 } from "lucide-react";
 import type { DragEndEvent } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -52,7 +53,14 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { NewsDetailLayout } from "@/components/news/NewsDetailLayout";
 import { useAuth } from "@/lib/modules/auth/useAuth";
 import { Input } from "@/components/ui/input";
-import { EntityAutocompleteInput } from "@/components/common/EntityAutocompleteInput";
+import { TagAutoCompleteInput } from "@/components/tag/TagAutoCompleteInput";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface NewsBlock {
   id: string;
@@ -221,7 +229,7 @@ export default function CreateNewsPage() {
   const [coverImage, setCoverImage] = useState<UploadResult | null>(null);
   const [categoryId, setCategoryId] = useState("");
   const [blocks, setBlocks] = useState<NewsBlock[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<NewsTag[]>([]); // Sửa thành NewsTag[]
   const [previewOpen, setPreviewOpen] = useState(false);
 
   // DnD-kit setup
@@ -294,17 +302,16 @@ export default function CreateNewsPage() {
   // Handle tag selection
   const handleTagSelect = useCallback((tag: NewsTag) => {
     setTags((prev) => {
-      const tagName = tag.name.trim();
-      if (!prev.includes(tagName)) {
-        return [...prev, tagName];
+      if (!prev.some((t) => t.id === tag.id)) {
+        return [...prev, tag];
       }
       return prev;
     });
   }, []);
 
   // Remove tag
-  const removeTag = useCallback((tagToRemove: string) => {
-    setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
+  const removeTag = useCallback((tagToRemoveId: string) => {
+    setTags((prev) => prev.filter((tag) => tag.id !== tagToRemoveId));
   }, []);
 
   // Handle form submission
@@ -346,7 +353,7 @@ export default function CreateNewsPage() {
           file_size: block.file_size,
           order: block.order,
         })),
-        tags,
+        tags: tags.map((tag) => tag.id), // Gửi tag id
       };
 
       try {
@@ -597,77 +604,82 @@ export default function CreateNewsPage() {
             <CardTitle>Thông tin cơ bản</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Tiêu đề bài viết *</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Nhập tiêu đề bài viết..."
-                required
-              />
+            <div className="flex gap-4">
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="title">Tiêu đề bài viết *</Label>
+                <Textarea
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Nhập tiêu đề bài viết..."
+                  required
+                />
+              </div>
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="summary">Tóm tắt *</Label>
+                <Textarea
+                  id="summary"
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                  placeholder="Nhập tóm tắt ngắn gọn về bài viết..."
+                  rows={3}
+                  required
+                />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="summary">Tóm tắt *</Label>
-              <Textarea
-                id="summary"
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-                placeholder="Nhập tóm tắt ngắn gọn về bài viết..."
-                rows={3}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Thẻ</Label>
-              <EntityAutocompleteInput
-                onSelectTag={handleTagSelect}
-                placeholder="Tìm kiếm thẻ..."
-              />
-              {tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {tags.map((tag, idx) => (
-                    <Badge
-                      key={idx}
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-red-100"
-                      onClick={() => removeTag(tag)}
-                    >
-                      {tag}
-                      <span className="ml-1">×</span>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Danh mục *</Label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="">Chọn danh mục</option>
-                {rootCategoriesLoading ? (
-                  <option value="loading" disabled>
-                    Đang tải...
-                  </option>
-                ) : rootCategories && rootCategories.length > 0 ? (
-                  rootCategories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))
-                ) : (
-                  <option value="no-categories" disabled>
-                    Không có danh mục
-                  </option>
+            <div className="flex gap-4">
+              <div className="flex-1 space-y-2">
+                <Label>Thẻ</Label>
+                <TagAutoCompleteInput
+                  onSelectTag={handleTagSelect}
+                  placeholder="Tìm kiếm thẻ..."
+                />
+                {tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {tags.map((tag) => (
+                      <Badge
+                        key={tag.id}
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-red-100"
+                        onClick={() => removeTag(tag.id)}
+                      >
+                        {tag.name}
+                        <span className="ml-1">×</span>
+                      </Badge>
+                    ))}
+                  </div>
                 )}
-              </select>
+              </div>
+              <div className="flex-1 space-y-2">
+                <Label>Danh mục *</Label>
+                <Select
+                  value={categoryId}
+                  onValueChange={setCategoryId}
+                  required
+                >
+                  <SelectTrigger className="w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <SelectValue placeholder="Chọn danh mục" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {rootCategoriesLoading ? (
+                      <SelectItem value="loading" disabled>
+                        Đang tải...
+                      </SelectItem>
+                    ) : rootCategories && rootCategories.length > 0 ? (
+                      rootCategories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="no-categories" disabled>
+                        Không có danh mục
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -767,14 +779,11 @@ export default function CreateNewsPage() {
             className="flex-1"
             onClick={() => setPreviewOpen(true)}
           >
-            <Eye className="w-4 h-4 mr-2" />
+            <Eye />
             Xem preview
           </Button>
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 text-base h-12"
-          >
+          <Button type="submit" disabled={isPending} className="flex-1">
+            <SquarePlus />
             {isPending ? "Đang tạo..." : "Tạo bài viết"}
           </Button>
         </div>
