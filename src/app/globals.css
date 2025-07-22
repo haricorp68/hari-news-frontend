@@ -167,3 +167,12 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome/Safari/Webkit */
 }
+
+.news-media {
+  width: 100% !important;
+  max-width: none !important;
+  height: auto;
+  display: block;
+  margin-left: 0;
+  margin-right: 0;
+}

@@ -155,7 +155,7 @@ export function CloudinaryUpload({
           maxFiles,
           resourceType,
           clientAllowedFormats: allowedFormats,
-          maxFileSize: 10000000,
+          maxFileSize: 100000000,
         }}
       >
         {({ open }) => (

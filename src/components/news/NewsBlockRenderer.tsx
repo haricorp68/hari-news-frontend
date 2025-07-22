@@ -26,7 +26,7 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
         {block.content}
       </h2>
     );
-  
+
   if (block?.type === "heading_2")
     return (
       <h3
@@ -37,7 +37,7 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
         {block.content}
       </h3>
     );
-  
+
   if (block?.type === "heading_3")
     return (
       <h4
@@ -48,26 +48,23 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
         {block.content}
       </h4>
     );
-  
+
   if (block?.type === "text")
     return (
       <p key={block.id} className="mb-4 text-base">
         {block.content}
       </p>
     );
-  
+
   if (block?.type === "image" && block.media_url)
     return (
-      <div
-        key={block.id}
-        className="my-6 flex flex-col items-center w-full"
-      >
+      <div key={block.id} className="my-6 flex flex-col items-center w-full">
         <Image
           src={block.media_url}
           alt={block.content || "image"}
           width={900}
           height={500}
-          className="rounded-xl object-contain max-h-[500px] w-full max-w-3xl"
+          className="rounded-xl object-contain w-full"
         />
         {block.content && (
           <div className="text-sm text-gray-500 mt-2 italic">
@@ -76,7 +73,7 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
         )}
       </div>
     );
-  
+
   if (block?.type === "file" && block.media_url) {
     const sizeMB = block.file_size
       ? `(${(block.file_size / 1024 / 1024).toFixed(1)} MB)`
@@ -103,13 +100,10 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
         </svg>
         <div className="flex-1">
           <div className="font-medium text-blue-700">
-            {block.file_name || "Tài liệu đính kèm"}{" "}
-            {sizeMB}
+            {block.file_name || "Tài liệu đính kèm"} {sizeMB}
           </div>
           {block.content && (
-            <div className="text-xs text-gray-500 mt-1">
-              {block.content}
-            </div>
+            <div className="text-xs text-gray-500 mt-1">{block.content}</div>
           )}
         </div>
         <a
@@ -124,25 +118,20 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
       </div>
     );
   }
-  
+
   if (block?.type === "video" && block.media_url)
     return (
-      <div
-        key={block.id}
-        className="my-6 flex flex-col items-center w-full"
-      >
+      <div key={block.id} className="my-6 flex flex-col items-center w-full">
         <video
           src={block.media_url}
           controls
           className="rounded-xl max-w-3xl w-full max-h-[500px] bg-black"
         />
         {block.content && (
-          <div className="text-sm text-gray-500 mt-2">
-            {block.content}
-          </div>
+          <div className="text-sm text-gray-500 mt-2">{block.content}</div>
         )}
       </div>
     );
-  
+
   return null;
-} 
+}
