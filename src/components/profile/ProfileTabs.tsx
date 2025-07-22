@@ -3,7 +3,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Grid, Newspaper } from "lucide-react";
 import FeedPostCardList from "@/components/post/FeedPostCardList";
+import { NewsSummaryCardList } from "@/components/post/NewsSummaryCardList";
 import { useUserFeedPostsById } from "@/lib/modules/post/hooks/useUserFeedPostsById";
+import { useUserNewsPostsById } from "@/lib/modules/post/hooks/useUserNewsPostsById";
 
 export function ProfileTabs({ userId }: { userId: string }) {
   return (
@@ -23,7 +25,7 @@ export function ProfileTabs({ userId }: { userId: string }) {
           <ProfilePostsGrid userId={userId} />
         </TabsContent>
         <TabsContent value="news">
-          <ProfileNewsGrid />
+          <ProfileNewsGrid userId={userId} />
         </TabsContent>
       </Tabs>
     </div>
@@ -43,18 +45,15 @@ function ProfilePostsGrid({ userId }: { userId: string }) {
   );
 }
 
-function ProfileNewsGrid() {
-  // Placeholder: Hiển thị lưới news
+function ProfileNewsGrid({ userId }: { userId: string }) {
+  // Sử dụng hook lấy news của user theo userId
+  const { data, isLoading } = useUserNewsPostsById(userId);
+  const newsPosts = data?.data || [];
   return (
-    <div className="grid grid-cols-3 gap-1 md:gap-4">
-      {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="aspect-square bg-muted flex items-center justify-center text-muted-foreground"
-        >
-          <Newspaper className="w-8 h-8" />
-        </div>
-      ))}
-    </div>
+    <NewsSummaryCardList
+      posts={newsPosts}
+      loading={isLoading}
+      className="mt-4"
+    />
   );
 }

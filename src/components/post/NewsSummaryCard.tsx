@@ -3,24 +3,27 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Share2 } from "lucide-react";
-import ReactionIcons from "@/components/ui/reaction-icons";
+import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import type { UserNewsPostSummary } from "@/lib/modules/post/post.interface";
 import Image from "next/image";
 import * as React from "react";
 import { UserProfileLink } from "@/components/ui/user-profile-link";
 import { formatFullTime } from "@/utils/formatTime";
 import Link from "next/link";
+import ReactionIcons from "../ui/reaction-icons";
 
 interface NewsSummaryCardProps {
   post: UserNewsPostSummary;
 }
 
 function getTotalReactions(summary: Record<string, number | undefined>) {
+  if (!summary || Object.keys(summary).length === 0) return 0;
   return Object.values(summary).reduce((acc: number, v) => acc + (v || 0), 0);
 }
 
 export function NewsSummaryCard({ post }: NewsSummaryCardProps) {
+  const hasReactions =
+    post.reactionSummary && Object.keys(post.reactionSummary).length > 0;
   return (
     <Card className="w-full flex flex-col md:flex-row overflow-hidden py-0 shadow-none gap-0">
       {/* Ảnh: trên mobile là trên, md: là trái */}
@@ -93,13 +96,21 @@ export function NewsSummaryCard({ post }: NewsSummaryCardProps) {
         </div>
         <div className="flex items-center gap-4 mt-2">
           <div className="flex-1 flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <ReactionIcons
-                reactions={Object.keys(post.reactionSummary) as any}
-              />
-              <span className="text-xs text-gray-600 font-medium">
-                {getTotalReactions(post.reactionSummary as any)}
-              </span>
+            <div className="flex items-center gap-1 text-gray-500 text-sm">
+              {hasReactions ? (
+                <>
+                  <ReactionIcons
+                    reactions={Object.keys(post.reactionSummary) as any}
+                    className="mr-1"
+                  />
+                  <span>{getTotalReactions(post.reactionSummary as any)}</span>
+                </>
+              ) : (
+                <>
+                  <ThumbsUp size={16} className="mr-1" />
+                  <span>0</span>
+                </>
+              )}
             </div>
             <div className="flex items-center gap-1 text-gray-500 text-sm">
               <MessageCircle size={16} className="mr-1" />
