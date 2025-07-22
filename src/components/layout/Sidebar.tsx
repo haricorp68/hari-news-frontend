@@ -71,6 +71,10 @@ import { SettingsDialog } from "@/components/settings-dialog";
 import { PostCreateDialog } from "@/components/post/PostCreateDialog";
 import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
 
+export const SIDEBAR_WIDTH = "16rem";
+export const SIDEBAR_WIDTH_MOBILE = "18rem";
+export const SIDEBAR_WIDTH_ICON = "3rem";
+
 // Data cho navigation
 const navData = {
   navMain: [

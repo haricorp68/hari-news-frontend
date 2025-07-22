@@ -121,7 +121,8 @@ function TocAccordion({
                     key={item.id}
                     className={cn(
                       item.level === 2 && "ml-2 pl-2 border-l border-muted",
-                      item.level === 3 && "ml-4 pl-3 border-l-2 border-primary/30"
+                      item.level === 3 &&
+                        "ml-4 pl-3 border-l-2 border-primary/30"
                     )}
                   >
                     <a
@@ -130,7 +131,8 @@ function TocAccordion({
                       className={cn(
                         "block transition",
                         item.level === 2 && "text-xs text-muted-foreground",
-                        item.level === 3 && "text-[11px] text-muted-foreground/70 italic",
+                        item.level === 3 &&
+                          "text-[11px] text-muted-foreground/70 italic",
                         item.id === activeId
                           ? "font-bold text-primary"
                           : "hover:text-primary"

@@ -4,9 +4,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { TocItem } from "@/components/news/NewsTOC";
 import { NewsDetailLayout, useActiveHeading, slugify } from "@/components/news";
 import { useUserNewsPostDetail } from "@/lib/modules/post/hooks/useUserNewsPostDetail";
-
-const SIDEBAR_WIDTH = "16rem";
-const SIDEBAR_WIDTH_ICON = "3rem";
+import { SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON } from "@/components/layout/Sidebar";
 
 export default function NewsDetailPage() {
   const params = useParams();

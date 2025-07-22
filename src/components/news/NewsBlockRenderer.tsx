@@ -21,7 +21,7 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
       <h2
         key={block.id}
         id={slugify(block.content)}
-        className="text-2xl font-bold mt-8 mb-2 scroll-mt-24"
+        className="text-2xl font-bold mt-2 mb-2 scroll-mt-24"
       >
         {block.content}
       </h2>

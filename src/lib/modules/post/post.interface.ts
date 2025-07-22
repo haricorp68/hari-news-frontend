@@ -81,6 +81,7 @@ export interface CompanyFeedPost {
 
 // ==== API RESPONSE & REQUEST TYPES ====
 import type { APIResponse, PaginationMetadata } from "@/lib/types/api-response";
+import { NewsTag } from "../newsTag/newsTag.interface";
 
 // User News Post
 export interface UserNewsPostCategory {
@@ -110,7 +111,14 @@ export interface UserNewsPostBlock {
 }
 
 export interface CreateUserNewsPostBlockRequest {
-  type: "text" | "image" | "video" | "file" | "heading_1" | "heading_2" | "heading_3";
+  type:
+    | "text"
+    | "image"
+    | "video"
+    | "file"
+    | "heading_1"
+    | "heading_2"
+    | "heading_3";
   content: string;
   media_url?: string;
   file_name?: string;
@@ -140,7 +148,7 @@ export interface UserNewsPost {
   reactionSummary: ReactionSummary;
   commentCount: number;
   userReaction?: ReactionType;
-  tags: string[]
+  tags: NewsTag[];
 }
 
 export interface UserNewsPostSummary {
@@ -154,7 +162,7 @@ export interface UserNewsPostSummary {
   user: UserFeedPostUser;
   reactionSummary: ReactionSummary;
   commentCount: number;
-  tags?: string[];
+  tags?: NewsTag[];
 }
 
 // USER FEED

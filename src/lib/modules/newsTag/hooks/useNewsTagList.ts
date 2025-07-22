@@ -16,5 +16,6 @@ export function useNewsTagList() {
     tagsLoading: query.isLoading,
     refetchTags: query.refetch,
     error: query.error,
+    metadata: query.data?.metadata,
   };
 }

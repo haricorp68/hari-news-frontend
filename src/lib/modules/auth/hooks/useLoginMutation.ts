@@ -13,4 +13,4 @@ export function useLoginMutation() {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
-} 
+}

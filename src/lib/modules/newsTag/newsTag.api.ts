@@ -1,8 +1,10 @@
-import { APIResponse } from "@/lib/types/api-response";
+import { APIResponse, PaginationMetadata } from "@/lib/types/api-response";
 import { NewsTag } from "./newsTag.interface";
 import { getApi } from "@/lib/api/api";
 
-export async function getAllTagsApi(): Promise<APIResponse<NewsTag[]>> {
+export async function getAllTagsApi(): Promise<
+  APIResponse<NewsTag[], PaginationMetadata | undefined>
+> {
   return getApi<NewsTag[]>("/news-tags");
 }
 

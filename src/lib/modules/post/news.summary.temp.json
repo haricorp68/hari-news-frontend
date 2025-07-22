@@ -25,7 +25,10 @@
       "angry": 8
     },
     "commentCount": 127,
-    "tags": ["Tin nóng", "Thời sự"]
+    "tags": [
+      { "name": "Tin nóng", "id": "1" },
+      { "name": "Thời sự", "id": "2" }
+    ]
   },
   {
     "id": "c79b80c4-499d-49ec-93bc-e62586b994d2",
@@ -53,7 +56,10 @@
       "angry": 267
     },
     "commentCount": 412,
-    "tags": ["Pháp luật"]
+    "tags": [
+      { "name": "Tin nóng", "id": "1" },
+      { "name": "Thời sự", "id": "2" }
+    ]
   },
   {
     "id": "a1b2c3d4-5678-9101-1121-314151617181",
@@ -81,6 +87,9 @@
       "angry": 6
     },
     "commentCount": 198,
-    "tags": ["Showbiz", "Sao"]
+    "tags": [
+      { "name": "Tin nóng", "id": "1" },
+      { "name": "Thời sự", "id": "2" }
+    ]
   }
 ]

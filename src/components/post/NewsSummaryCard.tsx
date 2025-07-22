@@ -22,11 +22,13 @@ function getTotalReactions(summary: Record<string, number | undefined>) {
 
 export function NewsSummaryCard({ post }: NewsSummaryCardProps) {
   return (
-    <Card
-      className="w-full max-w-2xl flex flex-col md:flex-row overflow-hidden py-0 shadow-none gap-0"
-    >
+    <Card className="w-full flex flex-col md:flex-row overflow-hidden py-0 shadow-none gap-0">
       {/* Ảnh: trên mobile là trên, md: là trái */}
-      <Link href={`/news/${post.id}`} className="relative w-full md:w-2/5 min-w-[112px] aspect-video md:aspect-auto block group" tabIndex={-1}>
+      <Link
+        href={`/news/${post.id}`}
+        className="relative w-full md:w-2/5 min-w-[112px] aspect-video md:aspect-auto block group"
+        tabIndex={-1}
+      >
         <Image
           src={post.cover_image}
           alt={post.title}
@@ -63,7 +65,11 @@ export function NewsSummaryCard({ post }: NewsSummaryCardProps) {
               <span>{formatFullTime(post.created_at).split(" ")[0]}</span>
             </span>
           </div>
-          <Link href={`/news/${post.id}`} className="block w-fit" onClick={e => e.stopPropagation()}>
+          <Link
+            href={`/news/${post.id}`}
+            className="block w-fit"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-lg font-semibold mb-1 line-clamp-2 hover:underline">
               {post.title}
             </h2>
@@ -75,11 +81,11 @@ export function NewsSummaryCard({ post }: NewsSummaryCardProps) {
             <div className="flex flex-wrap gap-2 mb-2">
               {post.tags.map((tag) => (
                 <Badge
-                  key={tag}
+                  key={tag.name}
                   variant="outline"
                   className="text-xs font-normal px-2 py-0.5"
                 >
-                  {tag}
+                  {tag.name}
                 </Badge>
               ))}
             </div>

@@ -22,13 +22,9 @@ export function NewsContent({ blocks, slugify }: NewsContentProps) {
   return (
     <div className="prose prose-neutral max-w-none mb-8">
       {blocks.map((block) => (
-        <NewsBlockRenderer
-          key={block.id}
-          block={block}
-          slugify={slugify}
-        />
+        <NewsBlockRenderer key={block.id} block={block} slugify={slugify} />
       ))}
-      <Separator className="my-8 border-t-2 border-dashed border-muted" />
+      <Separator />
     </div>
   );
-} 
+}

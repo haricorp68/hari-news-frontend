@@ -217,7 +217,7 @@ function DraggableBlock({
 
 export default function CreateNewsPage() {
   const router = useRouter();
-  const { mutate: createUserNewsPost, isPending } = useCreateUserNewsPost();
+  const useCreateNewsPost = useCreateUserNewsPost();
   const { rootCategories, rootCategoriesLoading } = useCategory(undefined, {
     enabledRoot: true,
   });
@@ -356,22 +356,21 @@ export default function CreateNewsPage() {
         tags: tags.map((tag) => tag.id), // Gửi tag id
       };
 
-      try {
-        await createUserNewsPost(requestData);
-        router.push("/");
-      } catch (error) {
-        console.error("Create news error:", error);
-      }
+      useCreateNewsPost.mutate(requestData, {
+        onSuccess: () => {
+          router.push("/");
+        },
+      });
     },
     [
       title,
       summary,
       categoryId,
       blocks,
-      createUserNewsPost,
       router,
       coverImage,
       tags,
+      useCreateNewsPost,
     ]
   );
 
@@ -782,9 +781,13 @@ export default function CreateNewsPage() {
             <Eye />
             Xem preview
           </Button>
-          <Button type="submit" disabled={isPending} className="flex-1">
+          <Button
+            type="submit"
+            disabled={useCreateNewsPost.isPending}
+            className="flex-1"
+          >
             <SquarePlus />
-            {isPending ? "Đang tạo..." : "Tạo bài viết"}
+            {useCreateNewsPost.isPending ? "Đang tạo..." : "Tạo bài viết"}
           </Button>
         </div>
       </form>

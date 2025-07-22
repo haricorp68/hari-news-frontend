@@ -3,6 +3,8 @@ import { NewsHeader } from "./NewsHeader";
 import { NewsContent } from "./NewsContent";
 import { NewsTOCSidebar } from "./NewsTOCSidebar";
 import { TocItem } from "./NewsTOC";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "../ui/separator";
 
 interface Block {
   id: string;
@@ -28,6 +30,7 @@ interface NewsDetailLayoutProps {
     created_at?: string;
     summary?: string;
     blocks?: Block[];
+    tags?: { id: string; name: string }[];
   };
   toc: TocItem[];
   activeId?: string;
@@ -53,7 +56,7 @@ export function NewsDetailLayout({
           <div className="flex-1 flex flex-col items-center">
             {/* Cover image */}
             <NewsCoverImage coverImage={post.cover_image} title={post.title} />
-            
+
             {/* Header */}
             <NewsHeader
               title={post.title}
@@ -61,7 +64,18 @@ export function NewsDetailLayout({
               createdAt={post.created_at}
               summary={post.summary}
             />
-            
+            {/* Tags */}
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4 w-full max-w-3xl mx-auto px-2">
+                {post.tags.map((tag) => (
+                  <Badge key={tag.id} variant="secondary">
+                    #{tag.name}
+                  </Badge>
+                ))}
+                <Separator />
+              </div>
+            )}
+
             {/* Content */}
             <div className="w-full max-w-3xl mx-auto px-2">
               <NewsContent blocks={post.blocks} slugify={slugify} />
@@ -69,7 +83,7 @@ export function NewsDetailLayout({
           </div>
         </div>
       </main>
-      
+
       {/* TOC Sidebar */}
       <NewsTOCSidebar
         toc={toc}
@@ -79,4 +93,4 @@ export function NewsDetailLayout({
       />
     </div>
   );
-} 
+}
