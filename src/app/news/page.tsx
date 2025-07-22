@@ -111,9 +111,9 @@ function Page() {
                       isItemSelected(cat.id, "category") ? "default" : "outline"
                     }
                     size="sm"
-                    className={`rounded-xl px-3 py-2 text-xs font-semibold ${
+                    className={`rounded-xl px-3 py-2 text-xs font-semibold border shadow-none ${
                       isItemSelected(cat.id, "category")
-                        ? "bg-black text-white"
+                        ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 "
                         : ""
                     }`}
                     onClick={() =>
@@ -164,9 +164,9 @@ function Page() {
                           isItemSelected(tag.id, "tag") ? "default" : "outline"
                         }
                         size="sm"
-                        className={`rounded-xl px-3 py-1 text-xs font-semibold ${
+                        className={`rounded-xl px-3 py-1 text-xs font-semibold border shadow-none ${
                           isItemSelected(tag.id, "tag")
-                            ? "bg-black text-white"
+                            ? "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100"
                             : ""
                         }`}
                         onClick={() =>
@@ -187,9 +187,9 @@ function Page() {
                         isItemSelected(tag.id, "tag") ? "default" : "outline"
                       }
                       size="sm"
-                      className={`rounded-xl px-3 py-1 text-xs font-semibold ${
+                      className={`rounded-xl px-3 py-1 text-xs font-semibold border shadow-none ${
                         isItemSelected(tag.id, "tag")
-                          ? "bg-black text-white"
+                          ? "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100"
                           : ""
                       }`}
                       onClick={() =>
@@ -234,18 +234,25 @@ function Page() {
 
         {/* Filter Header */}
         {selectedCategories.length > 0 && (
-          <div className="bg-white border-b p-4 sticky top-0 z-20">
+          <div className="bg-white border-b p-2 sticky top-0 z-20">
             <div className="flex flex-wrap gap-2 items-center">
+              <span className=" font-semibold mr-2">Filters</span>
               {selectedCategories.map((item) => (
                 <Button
                   key={`${item.type}-${item.id}`}
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-sm "
+                  className={`inline-flex items-center gap-2 px-3 rounded-xl border font-semibold text-xs shadow-none ${
+                    item.type === "category"
+                      ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:text-blue-700"
+                      : item.type === "tag"
+                      ? "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 hover:text-orange-700"
+                      : ""
+                  }`}
                   variant="outline"
                 >
                   <span>{item.name}</span>
                   <button
                     onClick={() => handleRemoveItem(item.id, item.type)}
-                    className=" rounded-xl p-0.5"
+                    className="rounded-xl p-0.5"
                     type="button"
                     aria-label={`Remove ${item.name}`}
                   >
