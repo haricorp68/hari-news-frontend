@@ -4,12 +4,10 @@ import { NewsSummaryCardList } from "@/components/post/NewsSummaryCardList";
 import newsSummaryData from "@/lib/modules/post/news.summary.temp.json";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScanSearch, ChevronLeft, ChevronRight } from "lucide-react";
+import { ScanSearch, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useNewsTagList } from "@/lib/modules/newsTag/hooks/useNewsTagList";
 import { useAutocompleteNewsTags } from "@/lib/modules/newsTag/hooks/useNewsTagAutoComplete";
 import { useRootCategories } from "@/lib/modules/category/hooks/useRootCategories";
-
-// Xoá biến categories vì đã dùng tags động từ API
 
 function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -29,21 +27,53 @@ function Page() {
     autocompleteNewsTagsData,
   } = useAutocompleteNewsTags();
   const { rootCategories, rootCategoriesLoading } = useRootCategories();
-  const [selectedCategory, setSelectedCategory] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+
+  // Updated state to handle multiple selections
+  const [selectedCategories, setSelectedCategories] = useState<
+    {
+      id: string;
+      name: string;
+      type: "category" | "tag";
+    }[]
+  >([]);
+
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);
 
-  const handleCategoryClick = (cat: { id: string; name: string }) => {
-    setSelectedCategory(cat);
-  };
-  const handleClear = () => {
-    setSelectedCategory(null);
+  const handleItemClick = (
+    item: { id: string; name: string },
+    type: "category" | "tag"
+  ) => {
+    setSelectedCategories((prev) => {
+      // Check if item already exists
+      const exists = prev.find(
+        (cat) => cat.id === item.id && cat.type === type
+      );
+      if (exists) {
+        // Remove if already selected
+        return prev.filter((cat) => !(cat.id === item.id && cat.type === type));
+      } else {
+        // Add if not selected
+        return [...prev, { ...item, type }];
+      }
+    });
   };
 
-  // Xử lý search input
+  const handleRemoveItem = (id: string, type: "category" | "tag") => {
+    setSelectedCategories((prev) =>
+      prev.filter((cat) => !(cat.id === id && cat.type === type))
+    );
+  };
+
+  const handleClearAll = () => {
+    setSelectedCategories([]);
+  };
+
+  const isItemSelected = (id: string, type: "category" | "tag") => {
+    return selectedCategories.some((cat) => cat.id === id && cat.type === type);
+  };
+
+  // Handle search input
   useEffect(() => {
     if (debouncedSearch.trim().length > 0) {
       autocompleteNewsTags(debouncedSearch);
@@ -78,16 +108,19 @@ function Page() {
                   <Button
                     key={cat.id}
                     variant={
-                      selectedCategory?.id === cat.id ? "default" : "outline"
+                      isItemSelected(cat.id, "category") ? "default" : "outline"
                     }
                     size="sm"
                     className={`rounded-xl px-3 py-2 text-xs font-semibold ${
-                      selectedCategory?.id === cat.id
+                      isItemSelected(cat.id, "category")
                         ? "bg-black text-white"
                         : ""
                     }`}
                     onClick={() =>
-                      handleCategoryClick({ id: cat.id, name: cat.name })
+                      handleItemClick(
+                        { id: cat.id, name: cat.name },
+                        "category"
+                      )
                     }
                   >
                     {cat.name}
@@ -128,18 +161,16 @@ function Page() {
                       <Button
                         key={tag.id}
                         variant={
-                          selectedCategory?.id === tag.id
-                            ? "default"
-                            : "outline"
+                          isItemSelected(tag.id, "tag") ? "default" : "outline"
                         }
                         size="sm"
                         className={`rounded-xl px-3 py-1 text-xs font-semibold ${
-                          selectedCategory?.id === tag.id
+                          isItemSelected(tag.id, "tag")
                             ? "bg-black text-white"
                             : ""
                         }`}
                         onClick={() =>
-                          handleCategoryClick({ id: tag.id, name: tag.name })
+                          handleItemClick({ id: tag.id, name: tag.name }, "tag")
                         }
                       >
                         {tag.name}
@@ -153,16 +184,16 @@ function Page() {
                     <Button
                       key={tag.id}
                       variant={
-                        selectedCategory?.id === tag.id ? "default" : "outline"
+                        isItemSelected(tag.id, "tag") ? "default" : "outline"
                       }
                       size="sm"
                       className={`rounded-xl px-3 py-1 text-xs font-semibold ${
-                        selectedCategory?.id === tag.id
+                        isItemSelected(tag.id, "tag")
                           ? "bg-black text-white"
                           : ""
                       }`}
                       onClick={() =>
-                        handleCategoryClick({ id: tag.id, name: tag.name })
+                        handleItemClick({ id: tag.id, name: tag.name }, "tag")
                       }
                     >
                       {tag.name}
@@ -188,7 +219,7 @@ function Page() {
       <div
         className={`${
           sidebarOpen ? "w-3/4" : "w-full"
-        } h-[calc(100vh-4rem)] overflow-auto bg-gray-100 p-4 transition-all duration-300 relative`}
+        } h-[calc(100vh-4rem)] overflow-auto bg-gray-100 transition-all duration-300 relative`}
       >
         {!sidebarOpen && (
           <button
@@ -200,7 +231,43 @@ function Page() {
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
-        <NewsSummaryCardList posts={newsSummaryData as any} />
+
+        {/* Filter Header */}
+        {selectedCategories.length > 0 && (
+          <div className="bg-white border-b p-4 sticky top-0 z-20">
+            <div className="flex flex-wrap gap-2 items-center">
+              {selectedCategories.map((item) => (
+                <Button
+                  key={`${item.type}-${item.id}`}
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-sm "
+                  variant="outline"
+                >
+                  <span>{item.name}</span>
+                  <button
+                    onClick={() => handleRemoveItem(item.id, item.type)}
+                    className=" rounded-xl p-0.5"
+                    type="button"
+                    aria-label={`Remove ${item.name}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </Button>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearAll}
+                className="text-xs rounded-xl"
+              >
+                Clear
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="p-4">
+          <NewsSummaryCardList posts={newsSummaryData as any} />
+        </div>
       </div>
     </div>
   );
