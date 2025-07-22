@@ -74,45 +74,76 @@ function TocAccordion({
     <Accordion type="multiple" value={openItems} onValueChange={setOpenItems}>
       {groups.map((group) => (
         <AccordionItem key={group.h1.id} value={group.h1.id}>
-          <AccordionTrigger
-            className={
-              "text-xs px-2 " +
-              (group.h1.id === activeId || parentId === group.h1.id
-                ? "font-bold text-primary"
-                : "text-muted-foreground hover:text-primary")
-            }
-          >
-            {group.h1.label}
-          </AccordionTrigger>
-          <AccordionContent className="pl-2">
-            <ul className="space-y-1">
-              {group.children.map((item) => (
-                <li
-                  key={item.id}
-                  className={cn(
-                    item.level === 2 && "ml-2 pl-2 border-l border-muted",
-                    item.level === 3 && "ml-4 pl-3 border-l-2 border-primary/30"
-                  )}
-                >
-                  <a
-                    ref={item.id === activeId ? activeRef : undefined}
-                    href={`#${item.id}`}
+          {group.children.length === 0 ? (
+            // Nếu không có con, chỉ là link, không phải accordion
+            <div
+              className={
+                "text-xs px-2 cursor-pointer select-none py-4 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:ring-[3px] " +
+                (group.h1.id === activeId || parentId === group.h1.id
+                  ? "font-bold text-primary"
+                  : "text-muted-foreground hover:text-primary")
+              }
+            >
+              <a
+                href={`#${group.h1.id}`}
+                className="block w-full h-full"
+                onClick={onClick}
+              >
+                {group.h1.label}
+              </a>
+            </div>
+          ) : (
+            <AccordionTrigger
+              className={
+                "text-xs px-2 " +
+                (group.h1.id === activeId || parentId === group.h1.id
+                  ? "font-bold text-primary"
+                  : "text-muted-foreground hover:text-primary")
+              }
+              hideIcon={false}
+            >
+              <a
+                href={`#${group.h1.id}`}
+                className="block w-full h-full"
+                onClick={onClick}
+                tabIndex={-1}
+                style={{ pointerEvents: "auto" }}
+              >
+                {group.h1.label}
+              </a>
+            </AccordionTrigger>
+          )}
+          {group.children.length > 0 && (
+            <AccordionContent className="pl-2">
+              <ul className="space-y-1">
+                {group.children.map((item) => (
+                  <li
+                    key={item.id}
                     className={cn(
-                      "block transition",
-                      item.level === 2 && "text-xs text-muted-foreground",
-                      item.level === 3 && "text-[11px] text-muted-foreground/70 italic",
-                      item.id === activeId
-                        ? "font-bold text-primary"
-                        : "hover:text-primary"
+                      item.level === 2 && "ml-2 pl-2 border-l border-muted",
+                      item.level === 3 && "ml-4 pl-3 border-l-2 border-primary/30"
                     )}
-                    onClick={onClick}
                   >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </AccordionContent>
+                    <a
+                      ref={item.id === activeId ? activeRef : undefined}
+                      href={`#${item.id}`}
+                      className={cn(
+                        "block transition",
+                        item.level === 2 && "text-xs text-muted-foreground",
+                        item.level === 3 && "text-[11px] text-muted-foreground/70 italic",
+                        item.id === activeId
+                          ? "font-bold text-primary"
+                          : "hover:text-primary"
+                      )}
+                      onClick={onClick}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </AccordionContent>
+          )}
         </AccordionItem>
       ))}
     </Accordion>

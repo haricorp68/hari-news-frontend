@@ -51,7 +51,7 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
 
   if (block?.type === "text")
     return (
-      <p key={block.id} className="mb-4 text-base">
+      <p key={block.id} className="mb-4 text-base text-justify">
         {block.content}
       </p>
     );
