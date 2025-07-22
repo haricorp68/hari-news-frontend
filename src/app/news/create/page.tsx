@@ -2,14 +2,12 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-// import { CloudinaryUpload } from "@/components/CloudinaryUpload";
 import { CloudinaryUpload, UploadResult } from "@/components/CloudinaryUpload";
 import { useCreateUserNewsPost } from "@/lib/modules/post/hooks/useCreateUserNewsPost";
 import { useCategory } from "@/lib/modules/category/useCategory";
 import { UserNewsPostBlockType } from "@/lib/modules/post/post.interface";
-// import type { UploadResult } from "@/components/CloudinaryUpload";
+import { NewsTag } from "@/lib/modules/newsTag/newsTag.interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -53,6 +51,8 @@ import {
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { NewsDetailLayout } from "@/components/news/NewsDetailLayout";
 import { useAuth } from "@/lib/modules/auth/useAuth";
+import { Input } from "@/components/ui/input";
+import { EntityAutocompleteInput } from "@/components/common/EntityAutocompleteInput";
 
 interface NewsBlock {
   id: string;
@@ -218,13 +218,10 @@ export default function CreateNewsPage() {
   // Form state
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
-  // const [coverImage, setCoverImage] = useState("");
   const [coverImage, setCoverImage] = useState<UploadResult | null>(null);
   const [categoryId, setCategoryId] = useState("");
   const [blocks, setBlocks] = useState<NewsBlock[]>([]);
   const [tags, setTags] = useState<string[]>([]);
-  const [tagsInput, setTagsInput] = useState("");
-  // Thêm state quản lý preview
   const [previewOpen, setPreviewOpen] = useState(false);
 
   // DnD-kit setup
@@ -294,6 +291,22 @@ export default function CreateNewsPage() {
     [updateBlock]
   );
 
+  // Handle tag selection
+  const handleTagSelect = useCallback((tag: NewsTag) => {
+    setTags((prev) => {
+      const tagName = tag.name.trim();
+      if (!prev.includes(tagName)) {
+        return [...prev, tagName];
+      }
+      return prev;
+    });
+  }, []);
+
+  // Remove tag
+  const removeTag = useCallback((tagToRemove: string) => {
+    setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
+  }, []);
+
   // Handle form submission
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -306,11 +319,6 @@ export default function CreateNewsPage() {
       if (!summary.trim()) {
         return;
       }
-
-      // if (!coverImage) {
-      //
-      //   return;
-      // }
 
       if (!categoryId) {
         return;
@@ -328,7 +336,7 @@ export default function CreateNewsPage() {
       const requestData = {
         title: title.trim(),
         summary: summary.trim(),
-        cover_image: coverImage?.secure_url || "", // coverImage,
+        cover_image: coverImage?.secure_url || "",
         categoryId,
         blocks: blocks.map((block) => ({
           type: block.type,
@@ -343,13 +351,21 @@ export default function CreateNewsPage() {
 
       try {
         await createUserNewsPost(requestData);
-
         router.push("/");
       } catch (error) {
         console.error("Create news error:", error);
       }
     },
-    [title, summary, categoryId, blocks, createUserNewsPost, router, coverImage, tags]
+    [
+      title,
+      summary,
+      categoryId,
+      blocks,
+      createUserNewsPost,
+      router,
+      coverImage,
+      tags,
+    ]
   );
 
   // Get block type name
@@ -605,25 +621,23 @@ export default function CreateNewsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tags">Tags (phân tách bởi dấu phẩy)</Label>
-              <Input
-                id="tags"
-                value={tagsInput}
-                onChange={e => {
-                  setTagsInput(e.target.value);
-                  setTags(
-                    e.target.value
-                      .split(",")
-                      .map((t) => t.trim())
-                      .filter((t) => t.length > 0)
-                  );
-                }}
-                placeholder="ví dụ: react, nextjs, ai"
+              <Label>Thẻ</Label>
+              <EntityAutocompleteInput
+                onSelectTag={handleTagSelect}
+                placeholder="Tìm kiếm thẻ..."
               />
               {tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-1">
+                <div className="flex flex-wrap gap-2 mt-2">
                   {tags.map((tag, idx) => (
-                    <Badge key={idx} variant="outline">{tag}</Badge>
+                    <Badge
+                      key={idx}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-red-100"
+                      onClick={() => removeTag(tag)}
+                    >
+                      {tag}
+                      <span className="ml-1">×</span>
+                    </Badge>
                   ))}
                 </div>
               )}
@@ -771,11 +785,13 @@ export default function CreateNewsPage() {
             post={{
               title,
               cover_image: coverImage?.secure_url,
-              user: profile ? {
-                id: profile.id,
-                name: profile.name,
-                avatar: profile.avatar || null,
-              } : undefined,
+              user: profile
+                ? {
+                    id: profile.id,
+                    name: profile.name,
+                    avatar: profile.avatar || null,
+                  }
+                : undefined,
               created_at: undefined,
               summary,
               blocks: blocks.map((block) => ({

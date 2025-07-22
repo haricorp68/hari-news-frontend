@@ -6,25 +6,26 @@ import { Search, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 
 interface CategoryAutocompleteInputProps {
-  onSelect?: (category: Category) => void;
+  onSelectCategory?: (category: Category) => void;
   placeholder?: string;
 }
 
 export const CategoryAutocompleteInput: React.FC<
   CategoryAutocompleteInputProps
-> = ({ onSelect, placeholder }) => {
+> = ({ onSelectCategory, placeholder }) => {
   const [value, setValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [displayedData, setDisplayedData] = useState<Category[]>([]);
+  const [displayedCategories, setDisplayedCategories] = useState<Category[]>([]);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
   const { autocompleteCategories, autocompleteCategoriesData } =
     useAutocompleteCategories();
 
-  // Debounce autocomplete
+  // Debounce autocomplete for categories only
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!value.trim()) {
-      setDisplayedData([]);
+      setDisplayedCategories([]);
       return;
     }
     debounceRef.current = setTimeout(() => {
@@ -36,14 +37,14 @@ export const CategoryAutocompleteInput: React.FC<
     };
   }, [value, autocompleteCategories]);
 
-  // Cập nhật displayedData khi có data mới
+  // Update displayed data when new data is received
   useEffect(() => {
     if (autocompleteCategoriesData) {
-      setDisplayedData(autocompleteCategoriesData);
+      setDisplayedCategories(autocompleteCategoriesData);
     }
   }, [autocompleteCategoriesData]);
 
-  // Đóng dropdown khi click ngoài
+  // Close dropdown when clicking outside
   const wrapperRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -57,9 +58,6 @@ export const CategoryAutocompleteInput: React.FC<
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Nếu sau này có thêm group khác, set biến này thành true để hiển thị divider
-  const hasOtherGroups = false;
 
   return (
     <div className="relative w-full max-w-md" ref={wrapperRef}>
@@ -75,52 +73,53 @@ export const CategoryAutocompleteInput: React.FC<
         />
       </div>
       {showDropdown && value && (
-        <div className="absolute z-20 mt-1 w-full bg-popover border rounded shadow-lg max-h-60 overflow-auto animate-in fade-in">
+        <div className="absolute z-20 mt-1 w-full bg-popover border rounded shadow-lg max-h-80 overflow-auto animate-in fade-in">
           {/* Group: Danh mục */}
-          <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Danh mục
-          </div>
-          {displayedData.length > 0 ? (
-            displayedData.map((cat) => (
-              <div
-                key={cat.id}
-                className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-accent"
-                onClick={() => {
-                  setValue(cat.name);
-                  setShowDropdown(false);
-                  onSelect?.(cat);
-                }}
-              >
-                {cat.coverImage ? (
-                  <div className="w-18 h-18 relative flex-shrink-0">
-                    <Image
-                      src={cat.coverImage}
-                      alt={cat.name}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-18 h-18 flex items-center justify-center bg-muted rounded-lg">
-                    <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                )}
-                <div className="flex flex-col min-w-0">
-                  <span className="font-medium truncate">{cat.name}</span>
-                  {cat.description && (
-                    <span className="text-xs text-muted-foreground truncate">
-                      {cat.description}
-                    </span>
-                  )}
-                </div>
+          {displayedCategories.length > 0 ? (
+            <>
+              <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-gray-50">
+                Danh mục
               </div>
-            ))
+              {displayedCategories.map((cat) => (
+                <div
+                  key={`category-${cat.id}`}
+                  className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-accent border-l-4 border-blue-500"
+                  onClick={() => {
+                    setValue(cat.name);
+                    setShowDropdown(false);
+                    onSelectCategory?.(cat);
+                  }}
+                >
+                  {cat.coverImage ? (
+                    <div className="w-12 h-12 relative flex-shrink-0">
+                      <Image
+                        src={cat.coverImage}
+                        alt={cat.name}
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 flex items-center justify-center bg-muted rounded-lg">
+                      <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-medium truncate">{cat.name}</span>
+                    {cat.description && (
+                      <span className="text-xs text-muted-foreground truncate">
+                        {cat.description}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </>
           ) : (
             <div className="p-4 text-center text-muted-foreground text-sm">
               Không tìm thấy danh mục phù hợp.
             </div>
           )}
-          {hasOtherGroups && <div className="my-1 border-t" />}
         </div>
       )}
     </div>
