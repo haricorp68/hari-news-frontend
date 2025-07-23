@@ -209,3 +209,12 @@ export type UserNewsPostSummaryListResponse = APIResponse<
 >;
 
 export type UserNewsPostResponse = APIResponse<UserNewsPost, undefined>;
+
+export interface GetNewsPostsParams {
+  page?: number;
+  pageSize?: number;
+  categoryId?: string;
+  tagIds?: string | string[];
+  fromDate?: string;
+  toDate?: string;
+}

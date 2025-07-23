@@ -1,8 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { NewsSummaryCardList } from "@/components/post/NewsSummaryCardList";
-import newsSummaryData from "@/lib/modules/post/news.summary.temp.json";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -13,10 +11,13 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ScanSearch, ChevronLeft, ChevronRight, X, Filter } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Filter } from "lucide-react";
+
 import { useNewsTagList } from "@/lib/modules/newsTag/hooks/useNewsTagList";
 import { useRootCategories } from "@/lib/modules/category/hooks/useRootCategories";
 import { useAutocompleteNewsTags } from "@/lib/modules/newsTag/hooks/useNewsTagAutoComplete";
+import { useNewsPosts } from "@/lib/modules/post/hooks/useNewsPosts";
+import { FilterContent } from "./FilterContent";
 
 function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -38,7 +39,17 @@ function Page() {
   } = useAutocompleteNewsTags();
   const { rootCategories, rootCategoriesLoading } = useRootCategories();
 
-  // Updated state to handle multiple selections
+  const [params, setParams] = useState({
+    page: 1,
+    pageSize: 20,
+    categoryId: "",
+    tagIds: [] as string[],
+    fromDate: "",
+    toDate: "",
+  });
+
+  const { posts, postsLoading } = useNewsPosts(params);
+
   const [selectedCategories, setSelectedCategories] = useState<
     {
       id: string;
@@ -50,20 +61,35 @@ function Page() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);
 
+  useEffect(() => {
+    setParams((prev) => ({
+      ...prev,
+      categoryId:
+        selectedCategories.find((item) => item.type === "category")?.id || "",
+      tagIds: selectedCategories
+        .filter((item) => item.type === "tag")
+        .map((item) => item.id),
+      page: 1,
+    }));
+  }, [selectedCategories]);
+
   const handleItemClick = (
     item: { id: string; name: string },
     type: "category" | "tag"
   ) => {
     setSelectedCategories((prev) => {
-      // Check if item already exists
       const exists = prev.find(
         (cat) => cat.id === item.id && cat.type === type
       );
       if (exists) {
-        // Remove if already selected
         return prev.filter((cat) => !(cat.id === item.id && cat.type === type));
       } else {
-        // Add if not selected
+        if (type === "category") {
+          return [
+            ...prev.filter((cat) => cat.type !== "category"),
+            { ...item, type },
+          ];
+        }
         return [...prev, { ...item, type }];
       }
     });
@@ -77,141 +103,53 @@ function Page() {
 
   const handleClearAll = () => {
     setSelectedCategories([]);
+    setParams({
+      page: 1,
+      pageSize: 20,
+      categoryId: "",
+      tagIds: [],
+      fromDate: "",
+      toDate: "",
+    });
+    setSearch("");
   };
 
   const isItemSelected = (id: string, type: "category" | "tag") => {
     return selectedCategories.some((cat) => cat.id === id && cat.type === type);
   };
 
-  // Handle search input
   useEffect(() => {
     if (debouncedSearch.trim().length > 0) {
       autocompleteNewsTags(debouncedSearch);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch]);
+  }, [debouncedSearch, autocompleteNewsTags]);
 
-  // Filter content component
-  const FilterContent = () => (
-    <div className="space-y-6">
-      {/* Categories Section */}
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-wider mb-3 text-gray-500 flex items-center gap-2">
-          Categories
-        </div>
-        <div className="flex flex-wrap gap-2 min-h-[32px]">
-          {rootCategoriesLoading && (
-            <span className="text-xs text-gray-400">Đang tải...</span>
-          )}
-          {!rootCategoriesLoading &&
-            rootCategories &&
-            rootCategories.length > 0 &&
-            rootCategories.map((cat: any) => (
-              <Button
-                key={cat.id}
-                variant={
-                  isItemSelected(cat.id, "category") ? "default" : "outline"
-                }
-                size="sm"
-                className={`rounded-full px-3 py-2 text-xs font-medium border shadow-none transition-colors ${
-                  isItemSelected(cat.id, "category")
-                    ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
-                    : "hover:bg-gray-50"
-                }`}
-                onClick={() =>
-                  handleItemClick({ id: cat.id, name: cat.name }, "category")
-                }
-              >
-                {cat.name}
-              </Button>
-            ))}
-          {!rootCategoriesLoading &&
-            (!rootCategories || rootCategories.length === 0) && (
-              <span className="text-xs text-gray-400">Không có danh mục</span>
-            )}
-        </div>
-      </div>
+  // ✅ 2. Tạo một hàm xử lý chung cho việc thay đổi params ngày tháng
+  const handleParamsChange = (newParams: Partial<typeof params>) => {
+    setParams((prev) => ({
+      ...prev,
+      ...newParams,
+      page: 1,
+    }));
+  };
 
-      {/* Tags Section */}
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-wider mb-3 text-gray-500">
-          Tags
-        </div>
-        <div className="relative mb-3">
-          <span className="absolute left-0 top-0 w-8 h-8 flex items-center justify-center text-gray-500 pointer-events-none">
-            <ScanSearch className="w-4 h-4" />
-          </span>
-          <Input
-            placeholder="Search for tags"
-            className="pl-8 h-8 text-xs rounded-full border-gray-200"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-wrap gap-2 min-h-[32px]">
-          {(autocompleteNewsTagsLoading || tagsLoading) && (
-            <span className="text-xs text-gray-400">Đang tải...</span>
-          )}
-          {search.trim().length > 0 &&
-            autocompleteNewsTagsData &&
-            autocompleteNewsTagsData.length > 0 && (
-              <>
-                {autocompleteNewsTagsData.map((tag: any) => (
-                  <Button
-                    key={tag.id}
-                    variant={
-                      isItemSelected(tag.id, "tag") ? "default" : "outline"
-                    }
-                    size="sm"
-                    className={`rounded-full px-3 py-1 text-xs font-medium border shadow-none transition-colors ${
-                      isItemSelected(tag.id, "tag")
-                        ? "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100"
-                        : "hover:bg-gray-50"
-                    }`}
-                    onClick={() =>
-                      handleItemClick({ id: tag.id, name: tag.name }, "tag")
-                    }
-                  >
-                    {tag.name}
-                  </Button>
-                ))}
-              </>
-            )}
-          {search.trim().length === 0 && tags && tags.length > 0 && (
-            <>
-              {tags.map((tag: any) => (
-                <Button
-                  key={tag.id}
-                  variant={
-                    isItemSelected(tag.id, "tag") ? "default" : "outline"
-                  }
-                  size="sm"
-                  className={`rounded-full px-3 py-1 text-xs font-medium border shadow-none transition-colors ${
-                    isItemSelected(tag.id, "tag")
-                      ? "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100"
-                      : "hover:bg-gray-50"
-                  }`}
-                  onClick={() =>
-                    handleItemClick({ id: tag.id, name: tag.name }, "tag")
-                  }
-                >
-                  {tag.name}
-                </Button>
-              ))}
-            </>
-          )}
-          {!tagsLoading &&
-            !autocompleteNewsTagsLoading &&
-            ((search.trim().length > 0 &&
-              (!autocompleteNewsTagsData ||
-                autocompleteNewsTagsData.length === 0)) ||
-              (search.trim().length === 0 && (!tags || tags.length === 0))) && (
-              <span className="text-xs text-gray-400">Không có tag nào</span>
-            )}
-        </div>
-      </div>
-    </div>
-  );
+  // ❌ Định nghĩa FilterContent đã được xóa khỏi đây và chuyển ra file riêng.
+
+  // ✅ 3. Gom tất cả props cho FilterContent vào một object để tái sử dụng
+  const filterContentProps = {
+    rootCategories,
+    rootCategoriesLoading,
+    tags,
+    tagsLoading,
+    autocompleteNewsTagsData,
+    autocompleteNewsTagsLoading,
+    search,
+    onSearchChange: setSearch,
+    isItemSelected,
+    onItemClick: handleItemClick,
+    params,
+    onParamsChange: handleParamsChange,
+  };
 
   return (
     <div className="h-full flex flex-col lg:flex-row">
@@ -227,7 +165,7 @@ function Page() {
           }}
         >
           <button
-            className={`absolute z-20  hover:bg-gray-200 rounded-lg p-2 text-xs transition-colors flex items-center justify-center top-4 ${
+            className={`absolute z-20 hover:bg-gray-200 rounded-lg p-2 text-xs transition-colors flex items-center justify-center top-4 ${
               sidebarOpen ? "right-4" : "left-1/2 -translate-x-1/2"
             }`}
             onClick={() => setSidebarOpen((v) => !v)}
@@ -248,7 +186,8 @@ function Page() {
             }`}
           >
             <ScrollArea className="h-full">
-              <FilterContent />
+              {/* ✅ 4. Sử dụng FilterContent và truyền props vào */}
+              <FilterContent {...filterContentProps} />
             </ScrollArea>
           </div>
         </aside>
@@ -263,7 +202,8 @@ function Page() {
             </SheetHeader>
             <ScrollArea className="h-[calc(100vh-80px)]">
               <div className="p-6">
-                <FilterContent />
+                {/* ✅ 4. Sử dụng FilterContent và truyền props vào */}
+                <FilterContent {...filterContentProps} />
               </div>
             </ScrollArea>
           </SheetContent>
@@ -293,7 +233,9 @@ function Page() {
         </div>
 
         {/* Active Filters Header */}
-        {selectedCategories.length > 0 && (
+        {(selectedCategories.length > 0 ||
+          params.fromDate ||
+          params.toDate) && (
           <div className="bg-white border-b p-4 sticky top-0 lg:top-0 z-20">
             <div className="flex flex-wrap gap-2 items-center">
               <span className="font-semibold text-sm mr-2 hidden sm:inline">
@@ -324,6 +266,50 @@ function Page() {
                     </button>
                   </Badge>
                 ))}
+                {params.fromDate && (
+                  <Badge
+                    variant="outline"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-medium text-xs bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                  >
+                    <span className="max-w-[120px] truncate">
+                      From: {new Date(params.fromDate).toLocaleString()}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setParams((prev) => ({
+                          ...prev,
+                          fromDate: "",
+                          page: 1,
+                        }))
+                      }
+                      className="rounded-full p-0.5 hover:bg-black/10 transition-colors"
+                      type="button"
+                      aria-label="Remove From Date"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                )}
+                {params.toDate && (
+                  <Badge
+                    variant="outline"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-medium text-xs bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                  >
+                    <span className="max-w-[120px] truncate">
+                      To: {new Date(params.toDate).toLocaleString()}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setParams((prev) => ({ ...prev, toDate: "", page: 1 }))
+                      }
+                      className="rounded-full p-0.5 hover:bg-black/10 transition-colors"
+                      type="button"
+                      aria-label="Remove To Date"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                )}
               </div>
               <Button
                 variant="ghost"
@@ -339,7 +325,7 @@ function Page() {
 
         {/* Content */}
         <div className="p-4 lg:p-6">
-          <NewsSummaryCardList posts={newsSummaryData as any} />
+          <NewsSummaryCardList posts={posts || []} loading={postsLoading} />
         </div>
       </div>
     </div>

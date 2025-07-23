@@ -7,7 +7,8 @@ import type {
   UserNewsPostResponse,
   UserNewsPost,
   UserNewsPostSummaryListResponse,
-  UserNewsPostSummary
+  UserNewsPostSummary,
+  GetNewsPostsParams,
 } from "./post.interface";
 import type { APIResponse } from "@/lib/types/api-response";
 
@@ -49,7 +50,9 @@ export async function getUserFeedPostDetailApi(id: string | number) {
 }
 
 // USER NEWS POST
-export async function createUserNewsPostApi(body: CreateUserNewsPostRequest): Promise<UserNewsPostResponse> {
+export async function createUserNewsPostApi(
+  body: CreateUserNewsPostRequest
+): Promise<UserNewsPostResponse> {
   return postApi<UserNewsPost>("/post/user-news", body);
 }
 
@@ -57,11 +60,15 @@ export async function getSelfUserNewsPostsApi(): Promise<UserNewsPostSummaryList
   return getApi<UserNewsPostSummary[]>("/post/self/user-news");
 }
 
-export async function getUserNewsPostsApi(userId: string): Promise<UserNewsPostSummaryListResponse> {
+export async function getUserNewsPostsApi(
+  userId: string
+): Promise<UserNewsPostSummaryListResponse> {
   return getApi<UserNewsPostSummary[]>(`/post/user-news/${userId}`);
 }
 
-export async function getUserNewsPostDetailApi(postId: string): Promise<UserNewsPostResponse> {
+export async function getUserNewsPostDetailApi(
+  postId: string
+): Promise<UserNewsPostResponse> {
   return getApi<UserNewsPost>(`/post/user-news/detail/${postId}`);
 }
 
@@ -119,4 +126,15 @@ export async function getCompanyFeedPostDetailApi(
   return getApi<CompanyFeedPost>(
     `/post/company-feed/${id}?companyId=${companyId}`
   );
+}
+
+export async function getNewsPostsApi(
+  params: GetNewsPostsParams = {}
+): Promise<UserNewsPostSummaryListResponse> {
+  // Xử lý tagIds nếu là mảng
+  const queryParams = { ...params };
+  if (Array.isArray(queryParams.tagIds)) {
+    queryParams.tagIds = queryParams.tagIds.join(",");
+  }
+  return getApi<UserNewsPostSummary[]>("/post/news", { params: queryParams });
 }
