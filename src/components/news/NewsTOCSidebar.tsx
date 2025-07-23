@@ -7,7 +7,12 @@ interface NewsTOCSidebarProps {
   isMobile: boolean;
 }
 
-export function NewsTOCSidebar({ toc, activeId, tocWidth, isMobile }: NewsTOCSidebarProps) {
+export function NewsTOCSidebar({
+  toc,
+  activeId,
+  tocWidth,
+  isMobile,
+}: NewsTOCSidebarProps) {
   if (isMobile) return null;
 
   return (
@@ -19,9 +24,9 @@ export function NewsTOCSidebar({ toc, activeId, tocWidth, isMobile }: NewsTOCSid
         maxWidth: tocWidth,
       }}
     >
-      <div className="fixed h-[calc(100vh-4rem)]">
+      <div className="sticky h-[calc(100vh-4rem)]">
         <NewsTOC toc={toc} activeId={activeId} />
       </div>
     </aside>
   );
-} 
+}

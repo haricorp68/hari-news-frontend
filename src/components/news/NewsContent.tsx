@@ -1,4 +1,3 @@
-import { Separator } from "@/components/ui/separator";
 import { NewsBlockRenderer } from "./NewsBlockRenderer";
 
 interface Block {
@@ -24,7 +23,6 @@ export function NewsContent({ blocks, slugify }: NewsContentProps) {
       {blocks.map((block) => (
         <NewsBlockRenderer key={block.id} block={block} slugify={slugify} />
       ))}
-      <Separator />
     </div>
   );
 }
