@@ -15,14 +15,19 @@ interface NewsHeaderProps {
   summary?: string;
 }
 
-export function NewsHeader({ title, user, createdAt, summary }: NewsHeaderProps) {
+export function NewsHeader({
+  title,
+  user,
+  createdAt,
+  summary,
+}: NewsHeaderProps) {
   return (
-    <div className="w-full max-w-3xl mx-auto px-2">
+    <div className="w-full max-w-4xl mx-auto px-2">
       {/* Title */}
       <h1 className="text-3xl md:text-4xl font-bold mb-2 leading-tight mt-8">
         {title ?? ""}
       </h1>
-      
+
       {/* Meta info */}
       <div className="flex flex-wrap items-center gap-3 mb-2">
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -30,13 +35,8 @@ export function NewsHeader({ title, user, createdAt, summary }: NewsHeaderProps)
             <>
               <UserProfileLink user={user} avatarOnly>
                 <Avatar className="w-9 h-9">
-                  <AvatarImage
-                    src={user.avatar || undefined}
-                    alt={user.name}
-                  />
-                  <AvatarFallback>
-                    {user.name[0]}
-                  </AvatarFallback>
+                  <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                  <AvatarFallback>{user.name[0]}</AvatarFallback>
                 </Avatar>
               </UserProfileLink>
               <UserProfileLink
@@ -49,16 +49,12 @@ export function NewsHeader({ title, user, createdAt, summary }: NewsHeaderProps)
           )}
         </div>
         <div className="flex flex-col items-end text-xs text-gray-500 min-w-fit">
-          <span>
-            {createdAt ? formatFullTime(createdAt) : ""}
-          </span>
+          <span>{createdAt ? formatFullTime(createdAt) : ""}</span>
         </div>
       </div>
-      
+
       {/* Summary */}
-      <div className="text-lg text-gray-700 mb-6">
-        {summary ?? ""}
-      </div>
+      <div className="text-lg text-gray-700 mb-6">{summary ?? ""}</div>
     </div>
   );
-} 
+}

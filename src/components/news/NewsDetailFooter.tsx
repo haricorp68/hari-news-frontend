@@ -128,7 +128,8 @@ export function NewsDetailFooter({ post }: NewsDetailFooterProps) {
       </form>
 
       {/* Comment List */}
-      <div className="mt-4">
+      <div className="mt-4 border-r border-l p-4">
+        <p className="text-sm font-semibold mb-2">Bình luận</p>
         {commentsLoading ? (
           <div className="text-center text-muted-foreground py-8">
             Đang tải bình luận...

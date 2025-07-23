@@ -9,6 +9,7 @@ import type {
   ReactionSummary,
   ReactionType,
 } from "@/lib/modules/post/post.interface";
+import { Separator } from "../ui/separator";
 
 interface Block {
   id: string;
@@ -31,7 +32,7 @@ interface NewsDetailLayoutProps {
     id: string; // ID là bắt buộc
     title?: string;
     cover_image?: string;
-    user?: User;
+    user: User;
     created_at?: string;
     summary?: string;
     blocks?: Block[];
@@ -75,7 +76,7 @@ export function NewsDetailLayout({
 
             {/* Tags */}
             {post.tags && post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4 w-full max-w-3xl mx-auto px-2">
+              <div className="flex flex-wrap gap-2 mb-4 w-full max-w-4xl mx-auto px-2">
                 {post.tags.map((tag) => (
                   <Badge key={tag.id} variant="secondary">
                     #{tag.name}
@@ -85,10 +86,13 @@ export function NewsDetailLayout({
             )}
 
             {/* Content */}
-            <div className="w-full max-w-3xl mx-auto px-2">
-              <NewsContent blocks={post.blocks} slugify={slugify} />
-
-              {/* --- FOOTER: REACTION & COMMENT SECTION --- */}
+            <div className="w-full max-w-4xl mx-auto px-2">
+              <NewsContent
+                blocks={post.blocks}
+                slugify={slugify}
+                user={post.user}
+              />
+              <Separator />
               <NewsDetailFooter post={post} />
             </div>
           </div>
