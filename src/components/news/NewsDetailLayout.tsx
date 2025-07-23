@@ -2,9 +2,13 @@ import { NewsCoverImage } from "./NewsCoverImage";
 import { NewsHeader } from "./NewsHeader";
 import { NewsContent } from "./NewsContent";
 import { NewsTOCSidebar } from "./NewsTOCSidebar";
+import { NewsDetailFooter } from "./NewsDetailFooter";
 import { TocItem } from "./NewsTOC";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "../ui/separator";
+import type {
+  ReactionSummary,
+  ReactionType,
+} from "@/lib/modules/post/post.interface";
 
 interface Block {
   id: string;
@@ -24,6 +28,7 @@ interface User {
 
 interface NewsDetailLayoutProps {
   post: {
+    id: string; // ID là bắt buộc
     title?: string;
     cover_image?: string;
     user?: User;
@@ -31,6 +36,9 @@ interface NewsDetailLayoutProps {
     summary?: string;
     blocks?: Block[];
     tags?: { id: string; name: string }[];
+    reactionSummary?: ReactionSummary;
+    commentCount?: number;
+    userReaction?: ReactionType;
   };
   toc: TocItem[];
   activeId?: string;
@@ -64,6 +72,7 @@ export function NewsDetailLayout({
               createdAt={post.created_at}
               summary={post.summary}
             />
+
             {/* Tags */}
             {post.tags && post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4 w-full max-w-3xl mx-auto px-2">
@@ -72,13 +81,15 @@ export function NewsDetailLayout({
                     #{tag.name}
                   </Badge>
                 ))}
-                <Separator />
               </div>
             )}
 
             {/* Content */}
             <div className="w-full max-w-3xl mx-auto px-2">
               <NewsContent blocks={post.blocks} slugify={slugify} />
+
+              {/* --- FOOTER: REACTION & COMMENT SECTION --- */}
+              <NewsDetailFooter post={post} />
             </div>
           </div>
         </div>

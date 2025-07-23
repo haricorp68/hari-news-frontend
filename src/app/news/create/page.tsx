@@ -38,7 +38,6 @@ import {
   File,
   Plus,
   Trash2,
-  Eye,
   SquarePlus,
 } from "lucide-react";
 import type { DragEndEvent } from "@dnd-kit/core";
@@ -49,9 +48,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { NewsDetailLayout } from "@/components/news/NewsDetailLayout";
-import { useAuth } from "@/lib/modules/auth/useAuth";
 import { Input } from "@/components/ui/input";
 import { TagAutoCompleteInput } from "@/components/tag/TagAutoCompleteInput";
 import {
@@ -221,7 +217,6 @@ export default function CreateNewsPage() {
   const { rootCategories, rootCategoriesLoading } = useCategory(undefined, {
     enabledRoot: true,
   });
-  const { profile } = useAuth();
 
   // Form state
   const [title, setTitle] = useState("");
@@ -230,7 +225,6 @@ export default function CreateNewsPage() {
   const [categoryId, setCategoryId] = useState("");
   const [blocks, setBlocks] = useState<NewsBlock[]>([]);
   const [tags, setTags] = useState<NewsTag[]>([]); // Sửa thành NewsTag[]
-  const [previewOpen, setPreviewOpen] = useState(false);
 
   // DnD-kit setup
   const sensors = useSensors(
@@ -773,15 +767,6 @@ export default function CreateNewsPage() {
         {/* Nút tạo bài viết ở dưới cùng */}
         <div className="flex gap-2 w-full mt-8">
           <Button
-            type="button"
-            variant="outline"
-            className="flex-1"
-            onClick={() => setPreviewOpen(true)}
-          >
-            <Eye />
-            Xem preview
-          </Button>
-          <Button
             type="submit"
             disabled={useCreateNewsPost.isPending}
             className="flex-1"
@@ -791,36 +776,6 @@ export default function CreateNewsPage() {
           </Button>
         </div>
       </form>
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-4xl w-full p-0 overflow-hidden">
-          <NewsDetailLayout
-            post={{
-              title,
-              cover_image: coverImage?.secure_url,
-              user: profile
-                ? {
-                    id: profile.id,
-                    name: profile.name,
-                    avatar: profile.avatar || null,
-                  }
-                : undefined,
-              created_at: undefined,
-              summary,
-              blocks: blocks.map((block) => ({
-                ...block,
-                media_url: block.media_url || null,
-                file_size: block.file_size || null,
-                file_name: block.file_name || null,
-              })),
-            }}
-            toc={[]}
-            activeId={undefined}
-            tocWidth={"0"}
-            isMobile={true}
-            slugify={(str) => str.replace(/\s+/g, "-").toLowerCase()}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

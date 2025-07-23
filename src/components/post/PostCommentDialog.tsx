@@ -19,6 +19,7 @@ import { CommentList } from "@/components/ui/comment-list";
 import { formatFullTime } from "@/utils/formatTime";
 import { PostStatsBar } from "./PostStatsBar";
 import { useQueryClient } from "@tanstack/react-query";
+import { ReactionType } from "../ui/reaction-icons";
 
 interface PostCommentDialogProps {
   post: UserFeedPost;
@@ -43,7 +44,9 @@ export function PostCommentDialog({
   const leaveTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Local state cho userReaction để cập nhật UI ngay
-  const [userReaction, setUserReaction] = useState<import("@/lib/modules/post/post.interface").ReactionType | "none">(post.userReaction ?? "none");
+  const [userReaction, setUserReaction] = useState<ReactionType | "none">(
+    post.userReaction ?? "none"
+  );
   useEffect(() => {
     setUserReaction(post.userReaction ?? "none");
   }, [post.userReaction, post.id]);
