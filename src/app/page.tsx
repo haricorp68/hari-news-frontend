@@ -36,6 +36,7 @@ export default function Home() {
             <label htmlFor="category" className="text-sm font-medium">
               Category
             </label>
+            <h1>HAHAHAHAHAHAHAHAHAHAHA</h1>
             <select
               id="category"
               value={params.categoryId}
