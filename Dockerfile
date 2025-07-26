@@ -4,7 +4,6 @@ FROM node:20-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-COPY .env.local ./
 
 # Copy package files and install deps
 COPY package*.json ./
