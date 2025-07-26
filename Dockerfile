@@ -12,6 +12,8 @@ RUN npm install
 # Copy all source code
 COPY . .
 
+ENV NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="haricorp"
+
 # Build the app
 RUN npm run build
 
