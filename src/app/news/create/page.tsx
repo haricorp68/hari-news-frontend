@@ -475,6 +475,7 @@ export default function CreateNewsPage() {
               showCopy
               label="Upload ảnh"
               description="Chọn hoặc kéo thả ảnh"
+              folder="news/images"
             />
           </div>
         );
@@ -517,6 +518,7 @@ export default function CreateNewsPage() {
               showCopy
               label="Upload video"
               description="Chọn hoặc kéo thả video"
+              folder="news/videos"
             />
           </div>
         );
@@ -568,6 +570,7 @@ export default function CreateNewsPage() {
               showCopy
               label="Upload file"
               description="Chọn hoặc kéo thả file"
+              folder="news/files"
             />
           </div>
         );
@@ -688,6 +691,7 @@ export default function CreateNewsPage() {
                 showCopy
                 label="Upload ảnh bìa"
                 description="Chọn hoặc kéo thả ảnh bìa cho bài viết"
+                folder="news/covers"
               />
             </div>
           </CardContent>

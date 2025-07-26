@@ -37,6 +37,7 @@ export interface CloudinaryUploadProps {
   className?: string;
   label?: string;
   description?: string;
+  folder?: string;
 }
 
 export function CloudinaryUpload({
@@ -55,6 +56,7 @@ export function CloudinaryUpload({
   className = "",
   label = "Upload file",
   description = "Chọn hoặc kéo thả file để upload",
+  folder,
 }: CloudinaryUploadProps) {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -156,6 +158,7 @@ export function CloudinaryUpload({
           resourceType,
           clientAllowedFormats: allowedFormats,
           maxFileSize: 100000000,
+          folder: folder,
         }}
       >
         {({ open }) => (
