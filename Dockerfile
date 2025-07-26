@@ -13,6 +13,7 @@ RUN npm install
 COPY . .
 
 ENV NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="haricorp"
+ENV NEXT_PUBLIC_BACKEND_URL="https://2handstore.id.vn/api"
 
 # Build the app
 RUN npm run build
