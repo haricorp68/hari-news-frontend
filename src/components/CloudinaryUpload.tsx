@@ -144,11 +144,7 @@ export function CloudinaryUpload({
         </div>
       )}
       <CldUploadWidget
-        uploadPreset={
-          uploadPreset ||
-          process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
-          "ml_default"
-        }
+        uploadPreset={uploadPreset || "haricorp"}
         onSuccess={handleUploadSuccess}
         onError={handleUploadError}
         onOpen={() => setLoading(true)}
