@@ -7,5 +7,6 @@ export function useUserFeedPostsById(userId: string, enabled: boolean = true) {
     queryKey: ["userFeedPosts", userId],
     queryFn: () => getUserFeedPostsApi({ userId }),
     enabled: !!userId && enabled,
+    staleTime: 5 * 60 * 1000,
   });
-} 
+}

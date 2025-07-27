@@ -26,9 +26,13 @@ export interface User {
   updated_at: string;
   followersCount: number;
   followingCount: number;
+  socialLinks: Partial<Record<SocialPlatform, string>>;
 }
 
-export type FindAllUsersResponse = APIResponse<User[], PaginationMetadata | undefined>;
+export type FindAllUsersResponse = APIResponse<
+  User[],
+  PaginationMetadata | undefined
+>;
 
 export type FindUserResponse = APIResponse<User, undefined>;
 
@@ -40,3 +44,72 @@ export interface UserConfig {
 }
 
 export type GetSelfUserConfigResponse = APIResponse<UserConfig, undefined>;
+
+export interface UpdateProfileDto {
+  name?: string;
+  avatar?: string;
+  coverImage?: string;
+  bio?: string;
+  socialLinks?: Partial<Record<SocialPlatform, string>>;
+  phone?: string;
+  dateOfBirth?: string;
+  gender?: "male" | "female" | "other";
+  address?: string;
+  city?: string;
+  alias?: string;
+}
+
+export enum SocialPlatform {
+  FACEBOOK = "facebook",
+  INSTAGRAM = "instagram",
+  X = "x",
+  TIKTOK = "tiktok",
+  YOUTUBE = "youtube",
+  LINKEDIN = "linkedin",
+  PINTEREST = "pinterest",
+  SNAPCHAT = "snapchat",
+  REDDIT = "reddit",
+  TUMBLR = "tumblr",
+  TWITCH = "twitch",
+  DISCORD = "discord",
+  GITHUB = "github",
+  GITLAB = "gitlab",
+  STACK_OVERFLOW = "stackoverflow",
+  MEDIUM = "medium",
+  SUBSTACK = "substack",
+  MASTODON = "mastodon",
+  BLUESKY = "bluesky",
+  FOURSQUARE = "foursquare",
+  VIMEO = "vimeo",
+  FLICKR = "flickr",
+  BEHANCE = "behance",
+  DRIBBBLE = "dribbble",
+  SOUNDCLOUD = "soundcloud",
+  SPOTIFY = "spotify",
+  APPLE_MUSIC = "appleMusic",
+  DEVIANTART = "deviantart",
+  ARTSTATION = "artstation",
+  KICK = "kick",
+  WECHAT = "wechat",
+  WHATSAPP = "whatsapp",
+  TELEGRAM = "telegram",
+  LINE = "line",
+  SKYPE = "skype",
+  QUORA = "quora",
+  GOODREADS = "goodreads",
+  ETSY = "etsy",
+  SHOPIFY = "shopify",
+  PATREON = "patreon",
+  KO_FI = "koFi",
+  BUY_ME_A_COFFEE = "buymeacoffee",
+  CASH_APP = "cashApp",
+  VENMO = "venmo",
+  PAYPAL = "paypal",
+  ONLYFANS = "onlyfans",
+  FANSLY = "fansly",
+
+  // Các liên kết chung/cá nhân
+  WEBSITE = "website",
+  PORTFOLIO = "portfolio",
+  BLOG = "blog",
+}

@@ -14,7 +14,9 @@ export function ProfileCover({ coverImage }: ProfileCoverProps) {
         src={coverImage}
         alt="Cover"
         className="w-full h-full object-cover"
+        width={160}
+        height={160}
       />
     </div>
   );
-} 
+}

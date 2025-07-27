@@ -30,10 +30,13 @@ import {
 import { APIResponse } from "@/lib/types/api-response";
 import type { CheckExistRequest } from "./auth.interface";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 
 export function useAuth() {
   const { setProfile, logout, profile } = useAuthStore();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Lấy profile nếu đã login (cookie đã có token)
   const profileQuery = useQuery<MeResponse, Error>({
@@ -41,6 +44,30 @@ export function useAuth() {
     queryFn: getProfileApi,
     retry: false,
   });
+
+  useEffect(() => {
+    if (profileQuery.isError && profileQuery.error) {
+      if (profileQuery.error instanceof AxiosError) {
+        if (profileQuery.error.response?.status === 401) {
+          // AccessToken hết hạn, thử refreshToken
+          refreshTokenApi()
+            .then(() => {
+              // RefreshToken thành công, retry getProfile
+              queryClient.invalidateQueries({ queryKey: ["profile"] });
+            })
+            .catch((refreshError) => {
+              // RefreshToken lỗi
+              if (
+                refreshError instanceof AxiosError &&
+                refreshError.response?.status === 403
+              ) {
+              }
+            });
+        } else if (profileQuery.error.response?.status === 403) {
+        }
+      }
+    }
+  }, [profileQuery.isError, profileQuery.error, router, queryClient]);
 
   // Đăng nhập
   const loginMutation = useMutation<APIResponse<null>, Error, LoginRequest>({
@@ -159,7 +186,12 @@ export function useAuth() {
         setProfile(profileQuery.data.data);
       }
     }
-  }, [profileQuery.data, profileQuery.isError, profileQuery.isFetched, setProfile]);
+  }, [
+    profileQuery.data,
+    profileQuery.isError,
+    profileQuery.isFetched,
+    setProfile,
+  ]);
 
   return {
     profile,

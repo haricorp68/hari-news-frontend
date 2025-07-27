@@ -7,5 +7,6 @@ export function useUserNewsPostsById(userId: string, enabled = true) {
     queryKey: ["userNewsPosts", userId],
     queryFn: () => getUserNewsPostsApi(userId),
     enabled,
+    staleTime: 5 * 60 * 1000,
   });
-} 
+}

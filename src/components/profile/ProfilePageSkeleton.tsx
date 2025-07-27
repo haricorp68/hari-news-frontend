@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function ProfilePageSkeleton() {
   return (
-    <div className="max-w-3xl mx-auto pb-12">
+    <div className="max-w-5xl mx-auto pb-12">
       <div className="w-full h-40 md:h-60 bg-muted mb-0" />
       <div className="flex flex-col md:flex-row md:items-center md:gap-12 gap-6 py-8 px-4 border-b bg-white">
         <Skeleton className="w-32 h-32 md:w-40 md:h-40 rounded-full" />
@@ -24,4 +24,4 @@ export function ProfilePageSkeleton() {
       </div>
     </div>
   );
-} 
+}
