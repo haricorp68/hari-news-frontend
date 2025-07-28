@@ -14,6 +14,7 @@ COPY . .
 
 ENV NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="haricorp"
 ENV NEXT_PUBLIC_BACKEND_URL="https://2handstore.id.vn/api"
+ENV NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET="hari-news-upload"
 
 # Build the app
 RUN npm run build
