@@ -29,6 +29,26 @@ export interface UserFeedPostUser {
   avatar: string | null;
 }
 
+export interface Block {
+  id: string;
+  type: string;
+  content: string;
+  media_url?: string | null; // Changed to optional with string
+  file_size?: number | null; // Changed to optional with number
+  file_name?: string | null; // Changed to optional with string | null
+  order: number;
+}
+
+export interface UserNewsPostBlock {
+  id: string;
+  type: UserNewsPostBlockType;
+  content: string;
+  media_url?: string | null; // Changed to optional with string | null
+  file_name?: string | null; // Changed to optional with string | null
+  file_size?: number | null; // Changed to optional with number | null
+  order: number;
+}
+
 export interface UserFeedPost {
   id: string;
   caption: string;
@@ -98,16 +118,6 @@ export enum UserNewsPostBlockType {
   HEADING_1 = "heading_1",
   HEADING_2 = "heading_2",
   HEADING_3 = "heading_3",
-}
-
-export interface UserNewsPostBlock {
-  id: string;
-  type: UserNewsPostBlockType;
-  content: string;
-  media_url: string | null;
-  file_name: string | null;
-  file_size: number | null;
-  order: number;
 }
 
 export interface CreateUserNewsPostBlockRequest {

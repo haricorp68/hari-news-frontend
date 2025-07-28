@@ -33,12 +33,7 @@ api.interceptors.response.use(
     // Lấy config từ error
     const config = error.config || {};
     // Nếu có disableToast thì bỏ qua toast
-    if (
-      !config.disableToast &&
-      error.response &&
-      error.response.data &&
-      ![401, 403].includes(error.response.status)
-    ) {
+    if (!config.disableToast && error.response && error.response.data) {
       const errData = error.response.data;
       // Có thể kiểm tra và xử lý tuỳ ý, ví dụ log, toast, redirect...
       if (typeof window !== "undefined") {

@@ -1,22 +1,13 @@
+import { Block } from "@/lib/modules/post/post.interface";
 import Image from "next/image";
-
-interface Block {
-  id: string;
-  type: string;
-  content: string;
-  media_url: string | null;
-  file_size: number | null;
-  file_name: string | null;
-  order: number;
-}
 
 interface NewsBlockRendererProps {
   block: Block;
-  slugify: (str: string) => string;
+  slugify?: (str: string) => string;
 }
 
 export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
-  if (block?.type === "heading_1")
+  if (block?.type === "heading_1" && slugify)
     return (
       <h2
         key={block.id}
@@ -27,7 +18,7 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
       </h2>
     );
 
-  if (block?.type === "heading_2")
+  if (block?.type === "heading_2" && slugify)
     return (
       <h3
         key={block.id}
@@ -38,7 +29,7 @@ export function NewsBlockRenderer({ block, slugify }: NewsBlockRendererProps) {
       </h3>
     );
 
-  if (block?.type === "heading_3")
+  if (block?.type === "heading_3" && slugify)
     return (
       <h4
         key={block.id}

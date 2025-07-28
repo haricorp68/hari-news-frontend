@@ -1,16 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { UserProfileLink } from "../ui/user-profile-link";
 import { NewsBlockRenderer } from "./NewsBlockRenderer";
-
-interface Block {
-  id: string;
-  type: string;
-  content: string;
-  media_url: string | null;
-  file_size: number | null;
-  file_name: string | null;
-  order: number;
-}
+import { Block } from "@/lib/modules/post/post.interface";
 
 interface User {
   id: string;

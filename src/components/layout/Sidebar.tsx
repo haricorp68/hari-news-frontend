@@ -28,6 +28,7 @@ import {
   SquarePlus,
 } from "lucide-react";
 import { useAuth } from "@/lib/modules/auth/useAuth";
+import { useAuthStore } from "@/lib/modules/auth/auth.store";
 import Link from "next/link";
 import Image from "next/image";
 import { AuthDialog } from "@/components/auth/AuthDialog";
@@ -53,7 +54,6 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-
 import { Header } from "./Header";
 import {
   Collapsible,
@@ -75,8 +75,7 @@ export const SIDEBAR_WIDTH = "16rem";
 export const SIDEBAR_WIDTH_MOBILE = "18rem";
 export const SIDEBAR_WIDTH_ICON = "3rem";
 
-// Data cho navigation
-const navData = {
+const getNavData = (isAuthenticated: boolean) => ({
   navMain: [
     {
       title: "Trang chủ",
@@ -128,36 +127,44 @@ const navData = {
         },
       ],
     },
-    {
-      title: "Đăng bài",
-      url: "/post",
-      icon: SquarePlus,
-      items: [
-        {
-          title: "Bài viết (Feed)",
-          url: "/post/feed",
-        },
-        {
-          title: "Bài báo (News)",
-          url: "/news/create",
-        },
-      ],
-    },
-    {
-      title: "Tin nhắn",
-      url: "/messages",
-      icon: FileText,
-      items: [
-        {
-          title: "Hộp thư",
-          url: "/messages",
-        },
-        {
-          title: "Đã gửi",
-          url: "/messages/sent",
-        },
-      ],
-    },
+    ...(isAuthenticated
+      ? [
+          {
+            title: "Đăng bài",
+            url: "/post",
+            icon: SquarePlus,
+            items: [
+              {
+                title: "Bài viết (Feed)",
+                url: "/post/feed",
+              },
+              {
+                title: "Bài báo (News)",
+                url: "/news/create",
+              },
+            ],
+          },
+        ]
+      : []),
+    ...(isAuthenticated
+      ? [
+          {
+            title: "Tin nhắn",
+            url: "/messages",
+            icon: FileText,
+            items: [
+              {
+                title: "Hộp thư",
+                url: "/messages",
+              },
+              {
+                title: "Đã gửi",
+                url: "/messages/sent",
+              },
+            ],
+          },
+        ]
+      : []),
   ],
   projects: [
     {
@@ -176,9 +183,8 @@ const navData = {
       icon: TrendingUp,
     },
   ],
-};
+});
 
-// Component NavProjects
 function NavProjects({
   projects,
 }: {
@@ -237,7 +243,6 @@ function NavProjects({
   );
 }
 
-// Component NavUser với logic hiện tại
 function NavUser({
   user,
   setOpenConfirmLogout,
@@ -279,7 +284,7 @@ function NavUser({
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+              className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
               side={isMobile ? "bottom" : "right"}
               align="end"
               sideOffset={4}
@@ -335,7 +340,6 @@ function NavUser({
   );
 }
 
-// Component LoginButton
 function LoginButton() {
   const { state } = useSidebar();
 
@@ -359,7 +363,6 @@ function LoginButton() {
   );
 }
 
-// Component TeamSwitcher (Logo switcher)
 function TeamSwitcher() {
   const { isMobile } = useSidebar();
 
@@ -389,7 +392,7 @@ function TeamSwitcher() {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             align="start"
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
@@ -416,7 +419,6 @@ function TeamSwitcher() {
   );
 }
 
-// Thêm state mở dialog post feed ở SidebarWithContext
 function SidebarWithContext({
   user,
   handleLogout,
@@ -441,7 +443,9 @@ function SidebarWithContext({
   const [openConfirmLogout, setOpenConfirmLogout] = React.useState(false);
   const [openPostFeed, setOpenPostFeed] = React.useState(false);
 
-  // Custom NavMain để handle click "Bài viết (Feed)"
+  // Get navigation data based on authentication status
+  const navData = getNavData(!!user);
+
   function NavMainWithPostDialog({ items }: { items: typeof navData.navMain }) {
     return (
       <SidebarGroup>
@@ -536,8 +540,7 @@ function SidebarWithContext({
   );
 }
 
-// BottomNavBar cho mobile
-function BottomNavBar() {
+function BottomNavBar({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 bg-sidebar text-sidebar-foreground border-t border-border md:hidden">
       <Link
@@ -561,13 +564,15 @@ function BottomNavBar() {
         <TrendingUp className="h-5 w-5" />
         <span className="text-xs">Khám phá</span>
       </Link>
-      <Link
-        href="/messages"
-        className="flex-1 flex flex-col items-center justify-center"
-      >
-        <FileText className="h-5 w-5" />
-        <span className="text-xs">Tin nhắn</span>
-      </Link>
+      {isAuthenticated && (
+        <Link
+          href="/messages"
+          className="flex-1 flex flex-col items-center justify-center"
+        >
+          <FileText className="h-5 w-5" />
+          <span className="text-xs">Tin nhắn</span>
+        </Link>
+      )}
       <AuthDialog
         trigger={
           <button className="flex-1 flex flex-col items-center justify-center">
@@ -582,6 +587,7 @@ function BottomNavBar() {
 
 export function AppSidebar({ children }: { children?: React.ReactNode }) {
   const { profile, logout, profileLoading } = useAuth();
+  const { showLoginDialog } = useAuthStore();
 
   const handleLogout = () => {
     logout();
@@ -590,7 +596,12 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
   const isMobile = useIsMobile();
   const collapsible = isMobile ? "offcanvas" : isTablet ? "icon" : "offcanvas";
 
-  // Nếu đang loading profile lần đầu, chỉ render skeleton hoặc null để tránh render SidebarWithContext sớm
+  const handleAuthDialogClose = (open: boolean) => {
+    if (!open) {
+      useAuthStore.setState({ showLoginDialog: false });
+    }
+  };
+
   if (profileLoading && !profile) {
     return (
       <SidebarProvider>
@@ -605,7 +616,13 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
           <Header />
           <main>{children}</main>
         </SidebarInset>
-        <BottomNavBar />
+        <BottomNavBar isAuthenticated={false} />
+        {showLoginDialog && (
+          <AuthDialog
+            open={showLoginDialog}
+            onOpenChange={handleAuthDialogClose}
+          />
+        )}
       </SidebarProvider>
     );
   }
@@ -622,7 +639,13 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
         <Header />
         <main>{children}</main>
       </SidebarInset>
-      <BottomNavBar />
+      <BottomNavBar isAuthenticated={!!profile} />
+      {showLoginDialog && (
+        <AuthDialog
+          open={showLoginDialog}
+          onOpenChange={handleAuthDialogClose}
+        />
+      )}
     </SidebarProvider>
   );
 }

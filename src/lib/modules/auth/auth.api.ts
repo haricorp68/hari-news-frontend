@@ -45,7 +45,9 @@ export async function logoutApi(): Promise<LogoutResponse> {
 }
 
 export async function refreshTokenApi(): Promise<RefreshTokenResponse> {
-  return postApi<null>("/auth/refresh-token");
+  return postApi<null>("/auth/refresh-token", undefined, {
+    disableToast: true,
+  });
 }
 
 export async function forgotPasswordApi(

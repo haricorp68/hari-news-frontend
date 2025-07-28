@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { CloudinaryUpload, UploadResult } from "@/components/CloudinaryUpload";
 import { useCreateUserNewsPost } from "@/lib/modules/post/hooks/useCreateUserNewsPost";
 import { useCategory } from "@/lib/modules/category/useCategory";
-import { UserNewsPostBlockType } from "@/lib/modules/post/post.interface";
+import {
+  ReactionSummary,
+  UserNewsPostBlock,
+  UserNewsPostBlockType,
+} from "@/lib/modules/post/post.interface";
 import { NewsTag } from "@/lib/modules/newsTag/newsTag.interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,7 +42,10 @@ import {
   File,
   Plus,
   Trash2,
-  SquarePlus,
+  BookOpen,
+  Eye,
+  UploadCloud,
+  Download,
 } from "lucide-react";
 import type { DragEndEvent } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -57,15 +64,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import templates from "../../../../news-template.json";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import { NewsDetailLayout } from "@/components/news/NewsDetailLayout";
+import { useAuthStore } from "@/lib/modules/auth/auth.store";
 
 interface NewsBlock {
   id: string;
   type: UserNewsPostBlockType;
   content: string;
+  placeholderContent?: string;
   media_url?: string;
   file_name?: string;
   file_size?: number;
   order: number;
+}
+
+interface Template {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  blocks: {
+    type: UserNewsPostBlockType;
+    content: string;
+    order: number;
+  }[];
+}
+
+interface ImportedNewsData {
+  title: string;
+  summary: string;
+  cover_image?: string;
+  blocks: {
+    type: UserNewsPostBlockType;
+    content: string;
+    media_url?: string;
+    file_name?: string;
+    file_size?: number;
+    order: number;
+  }[];
+  categoryId: string;
+  tags?: string[];
 }
 
 const blockTypes = [
@@ -115,6 +163,7 @@ interface SortableBlockProps {
   listeners?: SyntheticListenerMap;
   attributes?: Record<string, any>;
   isDragging?: boolean;
+  isDragActive?: boolean;
 }
 
 function SortableBlock({
@@ -126,16 +175,58 @@ function SortableBlock({
   listeners,
   attributes,
   isDragging,
+  isDragActive,
 }: SortableBlockProps) {
+  if (isDragging || isDragActive) {
+    return (
+      <div
+        className={`border rounded-lg p-3 bg-white shadow-lg ${
+          isDragging
+            ? "border-blue-300 bg-blue-50"
+            : "border-gray-200 bg-gray-50"
+        }`}
+        style={{
+          position: isDragging ? "relative" : undefined,
+          zIndex: isDragging ? 10 : undefined,
+          height: "48px",
+          minHeight: "48px",
+          maxHeight: "48px",
+          overflow: "hidden",
+        }}
+        {...attributes}
+        {...listeners}
+      >
+        <div className="flex items-center gap-2 h-full">
+          <GripVertical
+            className={`w-4 h-4 cursor-grab flex-shrink-0 ${
+              isDragging ? "text-blue-600" : "text-gray-500"
+            }`}
+          />
+          <span
+            className={`text-sm font-medium flex-shrink-0 ${
+              isDragging ? "text-blue-800" : "text-gray-700"
+            }`}
+          >
+            Block {index + 1}
+          </span>
+          <Badge
+            variant="secondary"
+            className={`flex-shrink-0 ${
+              isDragging
+                ? "bg-blue-200 text-blue-800"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            {getBlockTypeName(block.type)}
+          </Badge>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`border rounded-lg p-4 space-y-3 bg-white flex flex-col ${
-        isDragging ? "opacity-60" : ""
-      }`}
-      style={{
-        position: isDragging ? "relative" : undefined,
-        zIndex: isDragging ? 10 : undefined,
-      }}
+      className="border rounded-lg p-4 space-y-3 bg-white flex flex-col"
       {...attributes}
       {...listeners}
     >
@@ -172,6 +263,7 @@ interface DraggableBlockProps {
   renderBlockContent: (block: NewsBlock) => React.ReactNode;
   getBlockTypeName: (type: UserNewsPostBlockType) => string;
   removeBlock: (id: string) => void;
+  isDragActive?: boolean;
 }
 
 function DraggableBlock({
@@ -180,6 +272,7 @@ function DraggableBlock({
   renderBlockContent,
   getBlockTypeName,
   removeBlock,
+  isDragActive,
 }: DraggableBlockProps) {
   const {
     attributes,
@@ -206,12 +299,14 @@ function DraggableBlock({
         listeners={listeners}
         attributes={attributes}
         isDragging={isDragging}
+        isDragActive={isDragActive}
       />
     </div>
   );
 }
 
 export default function CreateNewsPage() {
+  const { profile } = useAuthStore();
   const router = useRouter();
   const useCreateNewsPost = useCreateUserNewsPost();
   const { rootCategories, rootCategoriesLoading } = useCategory(undefined, {
@@ -224,14 +319,24 @@ export default function CreateNewsPage() {
   const [coverImage, setCoverImage] = useState<UploadResult | null>(null);
   const [categoryId, setCategoryId] = useState("");
   const [blocks, setBlocks] = useState<NewsBlock[]>([]);
-  const [tags, setTags] = useState<NewsTag[]>([]); // Sửa thành NewsTag[]
+  const [tags, setTags] = useState<NewsTag[]>([]);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [importJsonDialogOpen, setImportJsonDialogOpen] = useState(false);
+  const [importJsonError, setImportJsonError] = useState("");
 
   // DnD-kit setup
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
+  const handleDragStart = () => {
+    setIsDragActive(true);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setIsDragActive(false);
     const { active, over } = event;
     if (active.id !== over?.id) {
       const oldIndex = blocks.findIndex((b) => b.id === active.id);
@@ -247,6 +352,19 @@ export default function CreateNewsPage() {
 
   // Generate unique ID
   const generateId = () => Math.random().toString(36).substr(2, 9);
+
+  // Apply template
+  const applyTemplate = useCallback((template: Template) => {
+    const templateBlocks: NewsBlock[] = template.blocks.map((block, index) => ({
+      id: generateId(),
+      type: block.type,
+      content: "",
+      placeholderContent: block.content,
+      order: index,
+    }));
+    setBlocks(templateBlocks);
+    setTemplateDialogOpen(false);
+  }, []);
 
   // Add new block
   const addBlock = useCallback(
@@ -308,29 +426,139 @@ export default function CreateNewsPage() {
     setTags((prev) => prev.filter((tag) => tag.id !== tagToRemoveId));
   }, []);
 
+  // Hàm để tạo dữ liệu cho Preview
+  const generatePreviewData = useCallback(() => {
+    const userForPreview = profile || {
+      id: "anonymous-user",
+      name: "Người dùng ẩn danh",
+      avatar: null,
+    };
+    const previewBlocks: UserNewsPostBlock[] = blocks.map((block) => ({
+      ...block,
+      content: block.content.trim() || block.placeholderContent || "",
+    }));
+
+    const previewPost: any = {
+      id: "preview-id",
+      title: title.trim() || "Tiêu đề xem trước của bài viết",
+      cover_image: coverImage?.secure_url || "",
+      created_at: new Date().toISOString(),
+      summary:
+        summary.trim() || "Tóm tắt ngắn gọn về bản xem trước bài viết...",
+      blocks: previewBlocks,
+      tags: tags,
+      reactionSummary: {
+        like: 0,
+        love: 0,
+        haha: 0,
+        wow: 0,
+        sad: 0,
+        angry: 0,
+      } as ReactionSummary,
+      commentCount: 0,
+      userReaction: undefined,
+      user: userForPreview,
+    };
+
+    return { previewPost };
+  }, [title, summary, coverImage, blocks, tags, profile]);
+
+  const handleImportJson = useCallback((jsonString: string) => {
+    setImportJsonError("");
+    try {
+      const data: ImportedNewsData = JSON.parse(jsonString);
+
+      setTitle(data.title);
+      setSummary(data.summary);
+      setCoverImage(null); // Clear for re-upload
+      setCategoryId(data.categoryId);
+      setTags([]); // Clear tags for re-selection
+
+      const importedBlocks: NewsBlock[] = data.blocks.map((block, index) => {
+        const newBlock: NewsBlock = {
+          id: generateId(),
+          type: block.type,
+          content: block.content || "",
+          order: block.order !== undefined ? block.order : index,
+        };
+
+        if (
+          block.type === UserNewsPostBlockType.Image ||
+          block.type === UserNewsPostBlockType.Video ||
+          block.type === UserNewsPostBlockType.File
+        ) {
+          newBlock.media_url = undefined;
+          newBlock.file_name = undefined;
+          newBlock.file_size = undefined;
+        } else {
+          newBlock.media_url = undefined;
+          newBlock.file_name = undefined;
+          newBlock.file_size = undefined;
+        }
+        return newBlock;
+      });
+
+      importedBlocks.sort((a, b) => a.order - b.order);
+      setBlocks(importedBlocks);
+      setImportJsonDialogOpen(false);
+      alert("Import dữ liệu thành công!");
+    } catch (error: any) {
+      console.error("Lỗi khi import JSON:", error);
+      setImportJsonError(
+        `Lỗi: ${error.message}. Vui lòng kiểm tra định dạng JSON.`
+      );
+    }
+  }, []);
+
   // Handle form submission
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
 
       if (!title.trim()) {
+        alert("Vui lòng nhập tiêu đề bài viết.");
         return;
       }
 
       if (!summary.trim()) {
+        alert("Vui lòng nhập tóm tắt bài viết.");
         return;
       }
 
       if (!categoryId) {
+        alert("Vui lòng chọn danh mục.");
         return;
       }
 
       if (blocks.length === 0) {
+        alert("Vui lòng thêm nội dung cho bài viết.");
         return;
       }
 
-      const invalidBlocks = blocks.filter((block) => !block.content.trim());
-      if (invalidBlocks.length > 0) {
+      const invalidTextBlocks = blocks.filter(
+        (block) =>
+          (block.type === UserNewsPostBlockType.Text ||
+            block.type.startsWith("heading")) &&
+          !block.content.trim()
+      );
+
+      if (invalidTextBlocks.length > 0) {
+        alert(
+          "Vui lòng điền đầy đủ nội dung cho các block văn bản và tiêu đề."
+        );
+        return;
+      }
+
+      const invalidMediaBlocks = blocks.filter(
+        (block) =>
+          (block.type === UserNewsPostBlockType.Image ||
+            block.type === UserNewsPostBlockType.Video ||
+            block.type === UserNewsPostBlockType.File) &&
+          !block.media_url
+      );
+
+      if (invalidMediaBlocks.length > 0) {
+        alert("Vui lòng upload file hoặc hình ảnh cho các block media.");
         return;
       }
 
@@ -347,12 +575,15 @@ export default function CreateNewsPage() {
           file_size: block.file_size,
           order: block.order,
         })),
-        tags: tags.map((tag) => tag.id), // Gửi tag id
+        tags: tags.map((tag) => tag.id),
       };
 
       useCreateNewsPost.mutate(requestData, {
         onSuccess: () => {
           router.push("/");
+        },
+        onError: (error) => {
+          console.error("Failed to create news post:", error);
         },
       });
     },
@@ -390,7 +621,7 @@ export default function CreateNewsPage() {
     }
   };
 
-  // Get block placeholder
+  // Get block default placeholder (if no template placeholder is provided)
   const getBlockPlaceholder = (type: UserNewsPostBlockType) => {
     switch (type) {
       case "heading_1":
@@ -423,7 +654,7 @@ export default function CreateNewsPage() {
     const commonProps = {
       value: block.content,
       onChange: handleChange,
-      placeholder: getBlockPlaceholder(block.type),
+      placeholder: block.placeholderContent || getBlockPlaceholder(block.type),
       className: "w-full",
     };
 
@@ -442,7 +673,7 @@ export default function CreateNewsPage() {
             <Textarea
               {...commonProps}
               rows={2}
-              placeholder="Mô tả ảnh (tùy chọn)"
+              placeholder={block.placeholderContent || "Mô tả ảnh (tùy chọn)"}
             />
             <CloudinaryUpload
               value={
@@ -485,7 +716,7 @@ export default function CreateNewsPage() {
             <Textarea
               {...commonProps}
               rows={2}
-              placeholder="Mô tả video (tùy chọn)"
+              placeholder={block.placeholderContent || "Mô tả video (tùy chọn)"}
             />
             <CloudinaryUpload
               value={
@@ -528,7 +759,7 @@ export default function CreateNewsPage() {
             <Textarea
               {...commonProps}
               rows={2}
-              placeholder="Mô tả file (tùy chọn)"
+              placeholder={block.placeholderContent || "Mô tả file (tùy chọn)"}
             />
             <CloudinaryUpload
               value={
@@ -580,27 +811,38 @@ export default function CreateNewsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+      {" "}
+      {/* Added p-4 for smaller screens */}
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {" "}
+        {/* Adjusted for small screen wrapping */}
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Tạo bài viết mới</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl md:text-2xl font-bold">Tạo bài viết mới</h1>{" "}
+            {/* Adjusted font size */}
+            <p className="text-muted-foreground text-sm md:text-base">
+              {" "}
+              {/* Adjusted font size */}
               Viết và chia sẻ bài viết của bạn
             </p>
           </div>
         </div>
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-6 pb-32">
         {/* Basic Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Thông tin cơ bản</CardTitle>
+            <CardTitle className="text-lg md:text-xl">
+              Thông tin cơ bản
+            </CardTitle>{" "}
+            {/* Adjusted font size */}
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              {" "}
+              {/* Changed to column on small screens */}
               <div className="flex-1 space-y-2">
                 <Label htmlFor="title">Tiêu đề bài viết *</Label>
                 <Textarea
@@ -624,7 +866,9 @@ export default function CreateNewsPage() {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              {" "}
+              {/* Changed to column on small screens */}
               <div className="flex-1 space-y-2">
                 <Label>Thẻ</Label>
                 <TagAutoCompleteInput
@@ -700,12 +944,266 @@ export default function CreateNewsPage() {
         {/* Content Blocks */}
         <Card>
           <CardHeader>
-            <CardTitle>Nội dung bài viết</CardTitle>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              {" "}
+              {/* Adjusted for small screen wrapping */}
+              <CardTitle className="text-lg md:text-xl">
+                Nội dung bài viết
+              </CardTitle>{" "}
+              {/* Adjusted font size */}
+              <div className="flex flex-wrap gap-2">
+                {" "}
+                {/* Allows buttons to wrap on smaller screens */}
+                <Dialog
+                  open={templateDialogOpen}
+                  onOpenChange={setTemplateDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="outline" size="sm">
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Chọn Template
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-full md:max-w-4xl max-h-[90vh] md:max-h-[80vh] overflow-y-auto">
+                    {" "}
+                    {/* Responsive width and height */}
+                    <DialogHeader>
+                      <DialogTitle>Chọn Template</DialogTitle>
+                      <DialogDescription>
+                        Chọn một template có sẵn để bắt đầu viết bài nhanh chóng
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      {templates.templates.map((template) => (
+                        <Card
+                          key={template.id}
+                          className="cursor-pointer hover:shadow-md transition-shadow"
+                          onClick={() => applyTemplate(template as any)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="text-2xl">{template.icon}</div>
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-base mb-1">
+                                  {template.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                  {template.description}
+                                </p>
+                                <div className="text-xs text-muted-foreground">
+                                  {template.blocks.length} blocks
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Dialog
+                  open={importJsonDialogOpen}
+                  onOpenChange={setImportJsonDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="outline" size="sm">
+                      <UploadCloud className="w-4 h-4 mr-2" />
+                      Import JSON
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="!max-w-none w-[95vw] md:w-[90vh] lg:w-[1000px] h-[95vh] md:h-[80vh] flex flex-col">
+                    <DialogHeader className="sticky top-0 z-10border-b pb-4">
+                      <DialogTitle>Import Dữ liệu từ JSON</DialogTitle>
+                      <DialogDescription>
+                        Dán nội dung JSON của bài viết vào đây để tự động điền
+                        thông tin.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex-1 overflow-y-auto">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                        <div className="space-y-4">
+                          <Label htmlFor="json-input">
+                            Nội dung JSON bài viết
+                          </Label>
+                          <Textarea
+                            id="json-input"
+                            placeholder='Dán JSON của bạn vào đây, ví dụ: {"title": "...", "summary": "...", "blocks": [...]}'
+                            rows={15}
+                            className="font-mono text-xs"
+                            onChange={() => {
+                              if (importJsonError) setImportJsonError("");
+                            }}
+                          />
+                          {importJsonError && (
+                            <p className="text-red-500 text-sm">
+                              {importJsonError}
+                            </p>
+                          )}
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                const jsonInput = document.getElementById(
+                                  "json-input"
+                                ) as HTMLTextAreaElement;
+                                if (jsonInput) {
+                                  handleImportJson(jsonInput.value);
+                                }
+                              }}
+                            >
+                              <Download />
+                              Import
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                const jsonInput = document.getElementById(
+                                  "json-input"
+                                ) as HTMLTextAreaElement;
+                                if (jsonInput) {
+                                  const emptyTemplate = {
+                                    title: "",
+                                    summary: "",
+                                    blocks: [
+                                      {
+                                        type: "text",
+                                        content: "",
+                                        order: 1,
+                                      },
+                                      {
+                                        type: "heading_1",
+                                        content: "",
+                                        order: 2,
+                                      },
+                                      {
+                                        type: "heading_2",
+                                        content: "",
+                                        order: 3,
+                                      },
+                                      {
+                                        type: "heading_3",
+                                        content: "",
+                                        order: 4,
+                                      },
+                                      {
+                                        type: "image",
+                                        content: "",
+                                        media_url: "",
+                                        order: 5,
+                                      },
+                                      {
+                                        type: "video",
+                                        content: "",
+                                        media_url: "",
+                                        order: 6,
+                                      },
+                                      {
+                                        type: "file",
+                                        content: "",
+                                        media_url: "",
+                                        file_name: "",
+                                        file_size: 0,
+                                        order: 7,
+                                      },
+                                    ],
+                                  };
+                                  jsonInput.value = JSON.stringify(
+                                    emptyTemplate,
+                                    null,
+                                    2
+                                  );
+                                }
+                              }}
+                            >
+                              <Plus />
+                              Khung data
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-4 text-sm text-muted-foreground md:border-l md:pl-4 pt-4 md:pt-0">
+                          <h4 className="font-semibold text-base text-foreground">
+                            Hướng dẫn nhập JSON
+                          </h4>
+                          <p>Vui lòng dán JSON theo cấu trúc sau:</p>
+                          <pre className="bg-gray-100 p-3 rounded-md overflow-auto text-xs">
+                            <code>
+                              {`{
+  "title": "Tiêu đề bài viết news",
+  "summary": "Tóm tắt ngắn gọn về bài viết",
+  "blocks": [
+    {
+      "type": "text",
+      "content": "Đây là đoạn văn bản đầu tiên của bài viết.",
+      "order": 1
+    },
+    {
+      "type": "image",
+      "content": "Mô tả cho hình ảnh",
+      "media_url": "https://example.com/image1.jpg", 
+      "order": 2
+    },
+    {
+      "type": "video",
+      "content": "Video giới thiệu sản phẩm",
+      "media_url": "https://example.com/video.mp4", 
+      "order": 4
+    },
+    {
+      "type": "file",
+      "content": "Tài liệu đính kèm",
+      "media_url": "https://example.com/document.pdf", 
+      "file_name": "document.pdf", 
+      "file_size": 1024000, 
+      "order": 5
+    }
+  ]
+}`}
+                            </code>
+                          </pre>
+                          <ul className="list-disc pl-5 space-y-1">
+                            <li>
+                              Đối với các block loại <code>image</code>,{" "}
+                              <code>video</code>, <code>file</code>:
+                              <ul className="list-circle pl-5 mt-1">
+                                <li>
+                                  Thuộc tính <code>media_url</code>,{" "}
+                                  <code>file_name</code>, <code>file_size</code>{" "}
+                                  sẽ bị bỏ qua.
+                                </li>
+                                <li>
+                                  Bạn sẽ cần tự tải lên lại các file media sau
+                                  khi import để bài viết hoàn chỉnh.
+                                </li>
+                              </ul>
+                            </li>
+                            <li>
+                              Mỗi block cần có <code>type</code> và{" "}
+                              <code>content</code>. <code>order</code> là tùy
+                              chọn, nếu không có sẽ dùng thứ tự trong JSON.
+                            </li>
+                            <li>
+                              Các loại <code>type</code> hợp lệ:{" "}
+                              <code>text</code>, <code>heading_1</code>,{" "}
+                              <code>heading_2</code>, <code>heading_3</code>,{" "}
+                              <code>image</code>, <code>video</code>,{" "}
+                              <code>file</code>.
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
               <SortableContext
@@ -719,7 +1217,7 @@ export default function CreateNewsPage() {
                     </div>
                     <p>Chưa có nội dung nào</p>
                     <p className="text-sm">
-                      Sử dụng nút bên dưới để thêm nội dung
+                      Sử dụng template hoặc nút bên dưới để thêm nội dung
                     </p>
                   </div>
                 ) : (
@@ -732,13 +1230,13 @@ export default function CreateNewsPage() {
                         renderBlockContent={renderBlockContent}
                         getBlockTypeName={getBlockTypeName}
                         removeBlock={removeBlock}
+                        isDragActive={isDragActive}
                       />
                     ))}
                   </div>
                 )}
               </SortableContext>
             </DndContext>
-            {/* Dropdown tạo block nằm ở dưới cùng card */}
             <div className="flex justify-center mt-8">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -747,19 +1245,18 @@ export default function CreateNewsPage() {
                     variant="outline"
                     className="w-full border-dashed border-2 border-muted-foreground flex items-center gap-2 px-6 py-3 text-base font-medium rounded-lg shadow-none hover:bg-muted"
                   >
-                    <Plus className="w-5 h-5" />
-                    Tạo block
+                    <Plus className="w-5 h-5 mr-1" />
+                    Thêm Block Nội dung
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="w-56">
-                  {blockTypes.map((block) => (
+                <DropdownMenuContent className="w-56">
+                  {blockTypes.map((type) => (
                     <DropdownMenuItem
-                      key={block.type}
-                      onClick={() => addBlock(block.type)}
-                      className="flex items-center gap-2 cursor-pointer"
+                      key={type.type}
+                      onSelect={() => addBlock(type.type)}
                     >
-                      {block.icon}
-                      <span>{block.label}</span>
+                      {type.icon}
+                      <span className="ml-2">{type.label}</span>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -768,14 +1265,39 @@ export default function CreateNewsPage() {
           </CardContent>
         </Card>
 
-        {/* Nút tạo bài viết ở dưới cùng */}
-        <div className="flex gap-2 w-full mt-8">
-          <Button
-            type="submit"
-            disabled={useCreateNewsPost.isPending}
-            className="flex-1"
-          >
-            <SquarePlus />
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-8">
+          {" "}
+          {/* Changed to column on small screens */}
+          <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+            <DialogTrigger asChild>
+              <Button type="button" variant="outline">
+                <Eye className="w-4 h-4 mr-2" />
+                Preview
+              </Button>
+            </DialogTrigger>
+            {/* Responsive DialogContent for Preview */}
+            <DialogContent className="!max-w-none w-[95vw] h-[95vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[80vh] lg:w-[70vw] lg:h-[70vh] p-0 flex flex-col">
+              <DialogHeader className="p-4 border-b">
+                <DialogTitle>Xem trước bài viết</DialogTitle>
+                <DialogDescription>
+                  Đây là bản xem trước bài viết của bạn.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto">
+                {" "}
+                {/* Ensures content scrolls within the dialog */}
+                {previewDialogOpen && (
+                  <NewsDetailLayout
+                    post={generatePreviewData().previewPost}
+                    isMobile={false}
+                    showFooter={false}
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button type="submit" disabled={useCreateNewsPost.isPending}>
             {useCreateNewsPost.isPending ? "Đang tạo..." : "Tạo bài viết"}
           </Button>
         </div>
