@@ -478,47 +478,86 @@ function SidebarWithContext({
   );
 }
 
-function BottomNavBar({ isAuthenticated }: { isAuthenticated: boolean }) {
+function BottomNavBar({
+  isAuthenticated,
+  user,
+  profileLoading,
+}: {
+  isAuthenticated: boolean;
+  user?: any;
+  profileLoading: boolean;
+}) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 bg-sidebar text-sidebar-foreground border-t border-border md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 bg-sidebar text-sidebar-foreground border-t border-border md:hidden">
       <Link
         href="/"
-        className="flex-1 flex flex-col items-center justify-center"
+        className="flex-1 flex flex-col items-center justify-center py-1"
       >
         <Home className="h-5 w-5" />
-        <span className="text-xs">Trang chủ</span>
+        <span className="text-xs mt-1">Trang chủ</span>
       </Link>
       <Link
         href="/news"
-        className="flex-1 flex flex-col items-center justify-center"
+        className="flex-1 flex flex-col items-center justify-center py-1"
       >
         <Newspaper className="h-5 w-5" />
-        <span className="text-xs">Tin tức</span>
+        <span className="text-xs mt-1">Tin tức</span>
       </Link>
       <Link
         href="/explore"
-        className="flex-1 flex flex-col items-center justify-center"
+        className="flex-1 flex flex-col items-center justify-center py-1"
       >
         <TrendingUp className="h-5 w-5" />
-        <span className="text-xs">Khám phá</span>
+        <span className="text-xs mt-1">Khám phá</span>
       </Link>
       {isAuthenticated && (
         <Link
           href="/messages"
-          className="flex-1 flex flex-col items-center justify-center"
+          className="flex-1 flex flex-col items-center justify-center py-1"
         >
           <FileText className="h-5 w-5" />
-          <span className="text-xs">Tin nhắn</span>
+          <span className="text-xs mt-1">Tin nhắn</span>
         </Link>
       )}
-      <AuthDialog
-        trigger={
-          <button className="flex-1 flex flex-col items-center justify-center">
+
+      {/* Profile/Login section - Modified */}
+      <Link
+        href={isAuthenticated && user ? `/profile/${user.id}` : "#"}
+        onClick={(e) => {
+          if (!isAuthenticated) {
+            e.preventDefault();
+            useAuthStore.setState({ showLoginDialog: true });
+          }
+        }}
+        className="flex-1 flex flex-col items-center justify-center py-1"
+      >
+        {profileLoading ? (
+          <div className="flex flex-col items-center">
+            <Skeleton className="h-5 w-5 rounded-full" />
+            <span className="text-xs mt-1">Đang tải...</span>
+          </div>
+        ) : isAuthenticated && user ? (
+          <>
+            <Avatar className="h-5 w-5">
+              <AvatarImage
+                src={user?.avatar || "https://picsum.photos/32"}
+                alt={user?.name || "User"}
+              />
+              <AvatarFallback className="text-xs">
+                {user?.name?.[0] || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs mt-1 truncate max-w-12">
+              {user?.name || "Tài khoản"}
+            </span>
+          </>
+        ) : (
+          <>
             <UserIcon className="h-5 w-5" />
-            <span className="text-xs">Tài khoản</span>
-          </button>
-        }
-      />
+            <span className="text-xs mt-1">Đăng nhập</span>
+          </>
+        )}
+      </Link>
     </nav>
   );
 }
@@ -552,9 +591,13 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
         </Sidebar>
         <SidebarInset>
           <Header />
-          <main>{children}</main>
+          <main className="pb-16 md:pb-0">{children}</main>
         </SidebarInset>
-        <BottomNavBar isAuthenticated={false} />
+        <BottomNavBar
+          isAuthenticated={false}
+          user={null}
+          profileLoading={profileLoading}
+        />
         {showLoginDialog && (
           <AuthDialog
             open={showLoginDialog}
@@ -575,9 +618,13 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
       />
       <SidebarInset>
         <Header />
-        <main>{children}</main>
+        <main className="pb-16 md:pb-0">{children}</main>
       </SidebarInset>
-      <BottomNavBar isAuthenticated={!!profile} />
+      <BottomNavBar
+        isAuthenticated={!!profile}
+        user={profile}
+        profileLoading={profileLoading}
+      />
       {showLoginDialog && (
         <AuthDialog
           open={showLoginDialog}

@@ -154,7 +154,7 @@ export function ProfileHeader({
                 key={user.bio}
                 text={user.bio}
                 textColors={["##FFF"]}
-                typingSpeed={50}
+                typingSpeed={80}
                 pauseDuration={1500}
                 showCursor={true}
                 cursorCharacter="_"
