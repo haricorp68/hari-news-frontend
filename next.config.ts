@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
       "images.unsplash.com",
       "i1-kinhdoanh.vnecdn.net",
       "res.cloudinary.com",
+      "example.com",
     ],
   },
 };

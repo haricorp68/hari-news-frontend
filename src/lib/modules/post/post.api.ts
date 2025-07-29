@@ -131,10 +131,25 @@ export async function getCompanyFeedPostDetailApi(
 export async function getNewsPostsApi(
   params: GetNewsPostsParams = {}
 ): Promise<UserNewsPostSummaryListResponse> {
-  // Xử lý tagIds nếu là mảng
-  const queryParams = { ...params };
-  if (Array.isArray(queryParams.tagIds)) {
-    queryParams.tagIds = queryParams.tagIds.join(",");
+  const queryParts: string[] = [];
+
+  for (const key in params) {
+    if (Object.prototype.hasOwnProperty.call(params, key)) {
+      const value = params[key as keyof GetNewsPostsParams];
+      if (value !== undefined && value !== null) {
+        if (key === "tagIds" && Array.isArray(value)) {
+          value.forEach((tagId) => {
+            queryParts.push(`${key}=${encodeURIComponent(tagId)}`);
+          });
+        } else {
+          queryParts.push(`${key}=${encodeURIComponent(String(value))}`);
+        }
+      }
+    }
   }
-  return getApi<UserNewsPostSummary[]>("/post/news", { params: queryParams });
+
+  const queryString = queryParts.join("&");
+  const url = queryString ? `/post/news?${queryString}` : "/post/news";
+
+  return getApi<UserNewsPostSummary[]>(url); // Giả sử getApi có thể nhận full URL
 }

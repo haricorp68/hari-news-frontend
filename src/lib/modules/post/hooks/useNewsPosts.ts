@@ -7,7 +7,7 @@ import type {
 
 export function useNewsPosts(params: GetNewsPostsParams = {}, enabled = true) {
   const query = useQuery<UserNewsPostSummaryListResponse, Error>({
-    queryKey: ["newsPosts", params],
+    queryKey: ["userNewsPosts", params],
     queryFn: () => getNewsPostsApi(params),
     enabled,
     placeholderData: keepPreviousData,
