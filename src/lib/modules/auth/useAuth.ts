@@ -136,6 +136,7 @@ export function useAuth() {
       logout();
       setProfile(null);
       queryClient.invalidateQueries({ queryKey: ["profile"] });
+      router.push("/");
     },
   });
 

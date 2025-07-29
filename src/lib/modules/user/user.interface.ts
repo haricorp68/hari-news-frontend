@@ -26,6 +26,8 @@ export interface User {
   updated_at: string;
   followersCount: number;
   followingCount: number;
+  newsPostsCount: number;
+  feedPostsCount: number;
   socialLinks: Partial<Record<SocialPlatform, string>>;
   alias: string | null; // Thêm trường alias
 }

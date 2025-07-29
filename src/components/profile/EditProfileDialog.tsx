@@ -9,6 +9,7 @@ import {
   Globe,
   Save,
   X,
+  Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +53,12 @@ import {
   User,
 } from "@/lib/modules/user/user.interface";
 import { useUpdateProfile } from "@/lib/modules/user/hooks/useUpdateProfile";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+  DrawerClose,
+} from "@/components/ui/drawer";
 
 const settingsNav = [
   { name: "Thông tin cơ bản", icon: UserIcon, key: "basic" },
@@ -90,21 +97,29 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
   } = useUpdateProfile();
 
   const handleInputChange = (field: keyof UpdateProfileDto, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    if (field === "bio") {
+      const lines = value.split("\n");
+      if (lines.length <= 3) {
+        setFormData((prev) => ({
+          ...prev,
+          [field]: value,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
   const handleSubmit = () => {
     updateProfile({ data: formData });
   };
 
-  // Xử lý khi cập nhật thành công
   React.useEffect(() => {
     if (updateProfileSuccess) {
       setOpen(false);
-      // Reset form data về giá trị ban đầu nếu cần
       setFormData({
         name: user.name,
         bio: user.bio || undefined,
@@ -120,7 +135,6 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
     }
   }, [updateProfileSuccess, user]);
 
-  // Hiển thị lỗi nếu có
   React.useEffect(() => {
     if (updateProfileError) {
       console.error("Lỗi cập nhật profile:", updateProfileError);
@@ -148,7 +162,8 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
                 value={formData.bio || ""}
                 onChange={(e) => handleInputChange("bio", e.target.value)}
                 placeholder="Viết vài dòng về bản thân..."
-                rows={4}
+                rows={3}
+                className="resize-none max-w-[90vh]"
               />
             </div>
             <div className="space-y-2">
@@ -312,28 +327,51 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
             </SidebarContent>
           </Sidebar>
           <main className="flex h-[580px] flex-1 flex-col overflow-hidden">
-            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-              <div className="flex items-center gap-2 px-4">
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem className="hidden md:block">
-                      <BreadcrumbLink href="#">Cài đặt</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator className="hidden md:block" />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>
-                        {
-                          settingsNav.find((item) => item.key === activeSection)
-                            ?.name
-                        }
-                      </BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
+            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 px-4">
+              <div className="md:hidden">
+                <Drawer>
+                  <DrawerTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <Menu className="h-4 w-4" />
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <div className="p-4">
+                      <h4 className="mb-4 text-lg font-semibold">Cài đặt</h4>
+                      {settingsNav.map((item) => (
+                        <DrawerClose asChild key={item.key}>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start mb-2"
+                            onClick={() => setActiveSection(item.key)}
+                          >
+                            <item.icon className="mr-2 h-4 w-4" />
+                            {item.name}
+                          </Button>
+                        </DrawerClose>
+                      ))}
+                    </div>
+                  </DrawerContent>
+                </Drawer>
               </div>
+              <Breadcrumb className="flex-1">
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">Cài đặt</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>
+                      {
+                        settingsNav.find((item) => item.key === activeSection)
+                          ?.name
+                      }
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
             </header>
             <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
-              {/* Hiển thị thông báo lỗi nếu có */}
               {updateProfileError && (
                 <div className="bg-destructive/10 border border-destructive/20 text-destructive px-3 py-2 rounded-md text-sm">
                   <strong>Lỗi:</strong>{" "}

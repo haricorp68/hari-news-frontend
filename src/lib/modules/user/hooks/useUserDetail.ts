@@ -8,7 +8,6 @@ interface UseUserDetailOptions {
 }
 
 export function useUserDetail(userId?: string, options?: UseUserDetailOptions) {
-  console.log("Hook useUserDetail đã được gọi!");
   const query = useQuery<FindUserResponse, Error>({
     queryKey: ["user", userId],
     queryFn: () => getUserByIdApi(userId!),
