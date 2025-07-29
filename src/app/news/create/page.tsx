@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CloudinaryUpload, UploadResult } from "@/components/CloudinaryUpload";
 import { useCreateUserNewsPost } from "@/lib/modules/post/hooks/useCreateUserNewsPost";
@@ -46,6 +46,7 @@ import {
   Eye,
   UploadCloud,
   Download,
+  RotateCcw,
 } from "lucide-react";
 import type { DragEndEvent } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -73,9 +74,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
 import { NewsDetailLayout } from "@/components/news/NewsDetailLayout";
 import { useAuthStore } from "@/lib/modules/auth/auth.store";
+import {
+  useCreateNewsTitle,
+  useCreateNewsSummary,
+  useCreateNewsCoverImage,
+  useCreateNewsCategoryId,
+  useCreateNewsBlocks,
+  useCreateNewsTags,
+  useSetTitle,
+  useSetSummary,
+  useSetCoverImage,
+  useSetCategoryId,
+  useAddBlock,
+  useUpdateBlock,
+  useRemoveBlock,
+  useReorderBlocks,
+  useAddTag,
+  useRemoveTag,
+  useLoadFromTemplate,
+  useLoadFromJSON,
+  useClearAll,
+} from "@/lib/modules/post/post.store";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface NewsBlock {
   id: string;
@@ -313,18 +336,44 @@ export default function CreateNewsPage() {
     enabledRoot: true,
   });
 
-  // Form state
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [coverImage, setCoverImage] = useState<UploadResult | null>(null);
-  const [categoryId, setCategoryId] = useState("");
-  const [blocks, setBlocks] = useState<NewsBlock[]>([]);
-  const [tags, setTags] = useState<NewsTag[]>([]);
+  // Store data
+  const title = useCreateNewsTitle();
+  const summary = useCreateNewsSummary();
+  const coverImage = useCreateNewsCoverImage();
+  const categoryId = useCreateNewsCategoryId();
+  const blocks = useCreateNewsBlocks();
+  const tags = useCreateNewsTags();
+
+  // Store actions
+  const setTitle = useSetTitle();
+  const setSummary = useSetSummary();
+  const setCoverImage = useSetCoverImage();
+  const setCategoryId = useSetCategoryId();
+  const addBlockAction = useAddBlock();
+  const updateBlockAction = useUpdateBlock();
+  const removeBlockAction = useRemoveBlock();
+  const reorderBlocks = useReorderBlocks();
+  const addTagAction = useAddTag();
+  const removeTagAction = useRemoveTag();
+  const loadFromTemplate = useLoadFromTemplate();
+  const loadFromJSON = useLoadFromJSON();
+  const clearAll = useClearAll();
+
+  // Local state
   const [isDragActive, setIsDragActive] = useState(false);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [importJsonDialogOpen, setImportJsonDialogOpen] = useState(false);
   const [importJsonError, setImportJsonError] = useState("");
+  const [clearDataDialogOpen, setClearDataDialogOpen] = useState(false);
+
+  // Handler xác nhận xóa data
+  const handleClearData = useCallback(() => {
+    clearAll();
+    setClearDataDialogOpen(false);
+    // Có thể thêm toast notification
+    toast.success("Đã reset tất cả dữ liệu!");
+  }, [clearAll]);
 
   // DnD-kit setup
   const sensors = useSensors(
@@ -341,64 +390,66 @@ export default function CreateNewsPage() {
     if (active.id !== over?.id) {
       const oldIndex = blocks.findIndex((b) => b.id === active.id);
       const newIndex = blocks.findIndex((b) => b.id === over?.id);
-      setBlocks((prev) =>
-        arrayMove(prev, oldIndex, newIndex).map((block, idx) => ({
-          ...block,
-          order: idx,
-        }))
-      );
+      const reorderedBlocksArray = arrayMove(blocks, oldIndex, newIndex);
+      reorderBlocks(reorderedBlocksArray);
     }
   };
 
-  // Generate unique ID
-  const generateId = () => Math.random().toString(36).substr(2, 9);
+  useEffect(() => {
+    // Chỉ chạy khi đã load xong categories và có categoryId
+    if (!rootCategoriesLoading && rootCategories && categoryId) {
+      const categoryExists = rootCategories.find(
+        (cat) => cat.id === categoryId
+      );
+      if (!categoryExists) {
+        // Reset categoryId nếu category không tồn tại
+        setCategoryId("");
+        console.warn(
+          `Category with ID ${categoryId} no longer exists. Resetting selection.`
+        );
+      }
+    }
+  }, [rootCategoriesLoading, rootCategories, categoryId, setCategoryId]);
 
   // Apply template
-  const applyTemplate = useCallback((template: Template) => {
-    const templateBlocks: NewsBlock[] = template.blocks.map((block, index) => ({
-      id: generateId(),
-      type: block.type,
-      content: "",
-      placeholderContent: block.content,
-      order: index,
-    }));
-    setBlocks(templateBlocks);
-    setTemplateDialogOpen(false);
-  }, []);
+  const applyTemplate = useCallback(
+    (template: Template) => {
+      loadFromTemplate(template.blocks);
+      setTemplateDialogOpen(false);
+    },
+    [loadFromTemplate]
+  );
 
   // Add new block
   const addBlock = useCallback(
     (type: UserNewsPostBlockType) => {
-      const newBlock: NewsBlock = {
-        id: generateId(),
-        type,
-        content: "",
-        order: blocks.length,
-      };
-      setBlocks((prev) => [...prev, newBlock]);
+      addBlockAction(type);
     },
-    [blocks.length]
+    [addBlockAction]
   );
 
   // Update block content
-  const updateBlock = useCallback((id: string, updates: Partial<NewsBlock>) => {
-    setBlocks((prev) =>
-      prev.map((block) => (block.id === id ? { ...block, ...updates } : block))
-    );
-  }, []);
+  const updateBlock = useCallback(
+    (id: string, updates: Partial<NewsBlock>) => {
+      updateBlockAction(id, updates);
+    },
+    [updateBlockAction]
+  );
 
   // Remove block
-  const removeBlock = useCallback((id: string) => {
-    setBlocks((prev) =>
-      prev
-        .filter((block) => block.id !== id)
-        .map((block, index) => ({ ...block, order: index }))
-    );
-  }, []);
+  const removeBlock = useCallback(
+    (id: string) => {
+      removeBlockAction(id);
+    },
+    [removeBlockAction]
+  );
 
-  const handleCoverImageUpload = useCallback((result: UploadResult) => {
-    setCoverImage(result);
-  }, []);
+  const handleCoverImageUpload = useCallback(
+    (result: UploadResult) => {
+      setCoverImage(result);
+    },
+    [setCoverImage]
+  );
 
   const handleBlockMediaUpload = useCallback(
     (blockId: string, result: UploadResult) => {
@@ -412,21 +463,22 @@ export default function CreateNewsPage() {
   );
 
   // Handle tag selection
-  const handleTagSelect = useCallback((tag: NewsTag) => {
-    setTags((prev) => {
-      if (!prev.some((t) => t.id === tag.id)) {
-        return [...prev, tag];
-      }
-      return prev;
-    });
-  }, []);
+  const handleTagSelect = useCallback(
+    (tag: NewsTag) => {
+      addTagAction(tag);
+    },
+    [addTagAction]
+  );
 
   // Remove tag
-  const removeTag = useCallback((tagToRemoveId: string) => {
-    setTags((prev) => prev.filter((tag) => tag.id !== tagToRemoveId));
-  }, []);
+  const removeTag = useCallback(
+    (tagToRemoveId: string) => {
+      removeTagAction(tagToRemoveId);
+    },
+    [removeTagAction]
+  );
 
-  // Hàm để tạo dữ liệu cho Preview
+  // Generate preview data
   const generatePreviewData = useCallback(() => {
     const userForPreview = profile || {
       id: "anonymous-user",
@@ -463,52 +515,23 @@ export default function CreateNewsPage() {
     return { previewPost };
   }, [title, summary, coverImage, blocks, tags, profile]);
 
-  const handleImportJson = useCallback((jsonString: string) => {
-    setImportJsonError("");
-    try {
-      const data: ImportedNewsData = JSON.parse(jsonString);
-
-      setTitle(data.title);
-      setSummary(data.summary);
-      setCoverImage(null); // Clear for re-upload
-      setCategoryId(data.categoryId);
-      setTags([]); // Clear tags for re-selection
-
-      const importedBlocks: NewsBlock[] = data.blocks.map((block, index) => {
-        const newBlock: NewsBlock = {
-          id: generateId(),
-          type: block.type,
-          content: block.content || "",
-          order: block.order !== undefined ? block.order : index,
-        };
-
-        if (
-          block.type === UserNewsPostBlockType.Image ||
-          block.type === UserNewsPostBlockType.Video ||
-          block.type === UserNewsPostBlockType.File
-        ) {
-          newBlock.media_url = undefined;
-          newBlock.file_name = undefined;
-          newBlock.file_size = undefined;
-        } else {
-          newBlock.media_url = undefined;
-          newBlock.file_name = undefined;
-          newBlock.file_size = undefined;
-        }
-        return newBlock;
-      });
-
-      importedBlocks.sort((a, b) => a.order - b.order);
-      setBlocks(importedBlocks);
-      setImportJsonDialogOpen(false);
-      alert("Import dữ liệu thành công!");
-    } catch (error: any) {
-      console.error("Lỗi khi import JSON:", error);
-      setImportJsonError(
-        `Lỗi: ${error.message}. Vui lòng kiểm tra định dạng JSON.`
-      );
-    }
-  }, []);
+  const handleImportJson = useCallback(
+    (jsonString: string) => {
+      setImportJsonError("");
+      try {
+        const data: ImportedNewsData = JSON.parse(jsonString);
+        loadFromJSON(data);
+        setImportJsonDialogOpen(false);
+        toast.success("Import dữ liệu thành công!");
+      } catch (error: any) {
+        console.error("Lỗi khi import JSON:", error);
+        setImportJsonError(
+          `Lỗi: ${error.message}. Vui lòng kiểm tra định dạng JSON.`
+        );
+      }
+    },
+    [loadFromJSON]
+  );
 
   // Handle form submission
   const handleSubmit = useCallback(
@@ -516,22 +539,22 @@ export default function CreateNewsPage() {
       e.preventDefault();
 
       if (!title.trim()) {
-        alert("Vui lòng nhập tiêu đề bài viết.");
+        toast.warning("Vui lòng nhập tiêu đề bài viết.");
         return;
       }
 
       if (!summary.trim()) {
-        alert("Vui lòng nhập tóm tắt bài viết.");
+        toast.warning("Vui lòng nhập tóm tắt bài viết.");
         return;
       }
 
       if (!categoryId) {
-        alert("Vui lòng chọn danh mục.");
+        toast.warning("Vui lòng chọn danh mục.");
         return;
       }
 
       if (blocks.length === 0) {
-        alert("Vui lòng thêm nội dung cho bài viết.");
+        toast.warning("Vui lòng thêm nội dung cho bài viết.");
         return;
       }
 
@@ -543,7 +566,7 @@ export default function CreateNewsPage() {
       );
 
       if (invalidTextBlocks.length > 0) {
-        alert(
+        toast.warning(
           "Vui lòng điền đầy đủ nội dung cho các block văn bản và tiêu đề."
         );
         return;
@@ -558,7 +581,9 @@ export default function CreateNewsPage() {
       );
 
       if (invalidMediaBlocks.length > 0) {
-        alert("Vui lòng upload file hoặc hình ảnh cho các block media.");
+        toast.warning(
+          "Vui lòng upload file hoặc hình ảnh cho các block media."
+        );
         return;
       }
 
@@ -580,6 +605,7 @@ export default function CreateNewsPage() {
 
       useCreateNewsPost.mutate(requestData, {
         onSuccess: () => {
+          clearAll(); // Clear draft after successful submission
           router.push("/");
         },
         onError: (error) => {
@@ -596,6 +622,7 @@ export default function CreateNewsPage() {
       coverImage,
       tags,
       useCreateNewsPost,
+      clearAll,
     ]
   );
 
@@ -621,7 +648,7 @@ export default function CreateNewsPage() {
     }
   };
 
-  // Get block default placeholder (if no template placeholder is provided)
+  // Get block default placeholder
   const getBlockPlaceholder = (type: UserNewsPostBlockType) => {
     switch (type) {
       case "heading_1":
@@ -812,37 +839,28 @@ export default function CreateNewsPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
-      {" "}
-      {/* Added p-4 for smaller screens */}
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        {" "}
-        {/* Adjusted for small screen wrapping */}
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold">Tạo bài viết mới</h1>{" "}
-            {/* Adjusted font size */}
+            <h1 className="text-xl md:text-2xl font-bold">Tạo bài viết mới</h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              {" "}
-              {/* Adjusted font size */}
               Viết và chia sẻ bài viết của bạn
             </p>
           </div>
         </div>
       </div>
+
       <form onSubmit={handleSubmit} className="space-y-6 pb-32">
         {/* Basic Information */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg md:text-xl">
               Thông tin cơ bản
-            </CardTitle>{" "}
-            {/* Adjusted font size */}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
-              {" "}
-              {/* Changed to column on small screens */}
               <div className="flex-1 space-y-2">
                 <Label htmlFor="title">Tiêu đề bài viết *</Label>
                 <Textarea
@@ -867,10 +885,8 @@ export default function CreateNewsPage() {
             </div>
 
             <div className="flex flex-col md:flex-row gap-4">
-              {" "}
-              {/* Changed to column on small screens */}
               <div className="flex-1 space-y-2">
-                <Label>Thẻ</Label>
+                <Label>Thẻ *</Label>
                 <TagAutoCompleteInput
                   onSelectTag={handleTagSelect}
                   placeholder="Tìm kiếm thẻ..."
@@ -893,32 +909,50 @@ export default function CreateNewsPage() {
               </div>
               <div className="flex-1 space-y-2">
                 <Label>Danh mục *</Label>
-                <Select
-                  value={categoryId}
-                  onValueChange={setCategoryId}
-                  required
-                >
-                  <SelectTrigger className="w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <SelectValue placeholder="Chọn danh mục" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {rootCategoriesLoading ? (
-                      <SelectItem value="loading" disabled>
-                        Đang tải...
-                      </SelectItem>
-                    ) : rootCategories && rootCategories.length > 0 ? (
-                      rootCategories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
+                {rootCategoriesLoading ? (
+                  // Skeleton loading
+                  <Skeleton className="w-full h-10 bg-gray-200 animate-pulse rounded-lg"></Skeleton>
+                ) : (
+                  <Select
+                    value={categoryId}
+                    onValueChange={setCategoryId}
+                    required
+                  >
+                    <SelectTrigger className="w-full border border-gray-300 rounded-lg focus:outline-none">
+                      <SelectValue placeholder="Chọn danh mục">
+                        {/* Hiển thị tên category đã chọn khi có categoryId */}
+                        {categoryId && rootCategories
+                          ? rootCategories.find((cat) => cat.id === categoryId)
+                              ?.name || "Danh mục không tồn tại"
+                          : null}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rootCategories && rootCategories.length > 0 ? (
+                        rootCategories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-categories" disabled>
+                          Không có danh mục
                         </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="no-categories" disabled>
-                        Không có danh mục
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {/* Hiển thị warning nếu categoryId có nhưng không tìm thấy trong danh sách */}
+                {categoryId &&
+                  rootCategories &&
+                  !rootCategoriesLoading &&
+                  !rootCategories.find((cat) => cat.id === categoryId) && (
+                    <p className="text-sm text-amber-600">
+                      ⚠️ Danh mục đã chọn không còn tồn tại. Vui lòng chọn danh
+                      mục khác.
+                    </p>
+                  )}
               </div>
             </div>
 
@@ -945,15 +979,10 @@ export default function CreateNewsPage() {
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              {" "}
-              {/* Adjusted for small screen wrapping */}
               <CardTitle className="text-lg md:text-xl">
                 Nội dung bài viết
-              </CardTitle>{" "}
-              {/* Adjusted font size */}
+              </CardTitle>
               <div className="flex flex-wrap gap-2">
-                {" "}
-                {/* Allows buttons to wrap on smaller screens */}
                 <Dialog
                   open={templateDialogOpen}
                   onOpenChange={setTemplateDialogOpen}
@@ -1267,36 +1296,93 @@ export default function CreateNewsPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-end gap-4 mt-8">
-          {" "}
-          {/* Changed to column on small screens */}
-          <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-            <DialogTrigger asChild>
-              <Button type="button" variant="outline">
-                <Eye className="w-4 h-4 mr-2" />
-                Preview
-              </Button>
-            </DialogTrigger>
-            {/* Responsive DialogContent for Preview */}
-            <DialogContent className="!max-w-none w-[95vw] h-[95vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[80vh] lg:w-[70vw] lg:h-[70vh] p-0 flex flex-col">
-              <DialogHeader className="p-4 border-b">
-                <DialogTitle>Xem trước bài viết</DialogTitle>
-                <DialogDescription>
-                  Đây là bản xem trước bài viết của bạn.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex-1 overflow-y-auto">
-                {" "}
-                {/* Ensures content scrolls within the dialog */}
-                {previewDialogOpen && (
-                  <NewsDetailLayout
-                    post={generatePreviewData().previewPost}
-                    isMobile={false}
-                    showFooter={false}
-                  />
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
+          <div className="flex flex-col sm:flex-row gap-2">
+            {/* Clear Data Button */}
+            <Dialog
+              open={clearDataDialogOpen}
+              onOpenChange={setClearDataDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Xóa nháp
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <RotateCcw className="w-5 h-5 text-red-600" />
+                    Xác nhận xóa dữ liệu
+                  </DialogTitle>
+                  <DialogDescription className="text-left pt-2">
+                    Bạn có chắc chắn muốn xóa tất cả dữ liệu đã nhập?
+                    <br />
+                    <span className="text-red-600 font-medium">
+                      Hành động này không thể hoàn tác.
+                    </span>
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 pt-4">
+                  {/* Action buttons */}
+                  <div className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setClearDataDialogOpen(false)}
+                      className="flex-1"
+                    >
+                      Hủy
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={handleClearData}
+                      className="flex-1"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Xác nhận
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Dialog
+              open={previewDialogOpen}
+              onOpenChange={setPreviewDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button type="button" variant="outline">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Preview
+                </Button>
+              </DialogTrigger>
+              {/* Responsive DialogContent for Preview */}
+              <DialogContent className="!max-w-none w-[95vw] h-[95vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[80vh] lg:w-[70vw] lg:h-[70vh] p-0 flex flex-col">
+                <DialogHeader className="p-4 border-b">
+                  <DialogTitle>Xem trước bài viết</DialogTitle>
+                  <DialogDescription>
+                    Đây là bản xem trước bài viết của bạn.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto">
+                  {" "}
+                  {/* Ensures content scrolls within the dialog */}
+                  {previewDialogOpen && (
+                    <NewsDetailLayout
+                      post={generatePreviewData().previewPost}
+                      isMobile={false}
+                      showFooter={false}
+                    />
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
           <Button type="submit" disabled={useCreateNewsPost.isPending}>
             {useCreateNewsPost.isPending ? "Đang tạo..." : "Tạo bài viết"}
           </Button>
