@@ -46,7 +46,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UpdateProfileDto, User } from "@/lib/modules/user/user.interface";
+import {
+  Gender,
+  UpdateProfileDto,
+  User,
+} from "@/lib/modules/user/user.interface";
 import { useUpdateProfile } from "@/lib/modules/user/hooks/useUpdateProfile";
 
 const settingsNav = [
@@ -67,14 +71,15 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
   const [activeSection, setActiveSection] = React.useState("basic");
   const [formData, setFormData] = React.useState<UpdateProfileDto>({
     name: user.name,
-    bio: user.bio || "",
-    avatar: user.avatar || "",
-    coverImage: user.coverImage || "",
-    phone: user.phone || "",
-    dateOfBirth: user.dateOfBirth || "",
-    gender: user.gender as "male" | "female" | "other" | undefined,
-    address: user.address || "",
-    city: user.city || "",
+    bio: user.bio || undefined,
+    avatar: user.avatar || undefined,
+    coverImage: user.coverImage || undefined,
+    phone: user.phone || undefined,
+    dateOfBirth: user.dateOfBirth || undefined,
+    gender: user.gender as Gender | undefined,
+    address: user.address || undefined,
+    city: user.city || undefined,
+    alias: user.alias || undefined,
   });
 
   const {
@@ -102,14 +107,15 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
       // Reset form data về giá trị ban đầu nếu cần
       setFormData({
         name: user.name,
-        bio: user.bio || "",
-        avatar: user.avatar || "",
-        coverImage: user.coverImage || "",
-        phone: user.phone || "",
-        dateOfBirth: user.dateOfBirth || "",
-        gender: user.gender as "male" | "female" | "other" | undefined,
-        address: user.address || "",
-        city: user.city || "",
+        bio: user.bio || undefined,
+        avatar: user.avatar || undefined,
+        coverImage: user.coverImage || undefined,
+        phone: user.phone || undefined,
+        dateOfBirth: user.dateOfBirth || undefined,
+        gender: user.gender as Gender | undefined,
+        address: user.address || undefined,
+        city: user.city || undefined,
+        alias: user.alias || undefined,
       });
     }
   }, [updateProfileSuccess, user]);
@@ -143,6 +149,15 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
                 onChange={(e) => handleInputChange("bio", e.target.value)}
                 placeholder="Viết vài dòng về bản thân..."
                 rows={4}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="alias">Biệt danh</Label>
+              <Input
+                id="alias"
+                value={formData.alias || ""}
+                onChange={(e) => handleInputChange("alias", e.target.value)}
+                placeholder="Nhập alias của bạn"
               />
             </div>
           </div>
@@ -324,14 +339,6 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
                   <strong>Lỗi:</strong>{" "}
                   {updateProfileError.message ||
                     "Có lỗi xảy ra khi cập nhật thông tin"}
-                </div>
-              )}
-
-              {/* Hiển thị thông báo thành công nếu có */}
-              {updateProfileSuccess && (
-                <div className="bg-green-50 border border-green-200 text-green-800 px-3 py-2 rounded-md text-sm">
-                  <strong>Thành công:</strong> Thông tin cá nhân đã được cập
-                  nhật!
                 </div>
               )}
 

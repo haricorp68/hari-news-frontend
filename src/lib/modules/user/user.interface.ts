@@ -27,6 +27,7 @@ export interface User {
   followersCount: number;
   followingCount: number;
   socialLinks: Partial<Record<SocialPlatform, string>>;
+  alias: string | null; // Thêm trường alias
 }
 
 export type FindAllUsersResponse = APIResponse<
@@ -53,10 +54,16 @@ export interface UpdateProfileDto {
   socialLinks?: Partial<Record<SocialPlatform, string>>;
   phone?: string;
   dateOfBirth?: string;
-  gender?: "male" | "female" | "other";
+  gender?: Gender;
   address?: string;
   city?: string;
   alias?: string;
+}
+
+export enum Gender {
+  MALE = "male",
+  FEMALE = "female",
+  OTHER = "other",
 }
 
 export enum SocialPlatform {

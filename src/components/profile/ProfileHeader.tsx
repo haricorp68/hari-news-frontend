@@ -2,7 +2,7 @@
 
 import { User } from "@/lib/modules/user/user.interface";
 import { Button } from "@/components/ui/button";
-import { Settings, User as UserIcon, Edit2 } from "lucide-react";
+import { Settings, User as UserIcon, Edit2, AtSign } from "lucide-react";
 import Image from "next/image";
 import { EditProfileDialog } from "./EditProfileDialog";
 
@@ -94,9 +94,14 @@ export function ProfileHeader({
               <span className="font-semibold">{user.followingCount}</span>
             </span>
           </div>
-          {/* Bio */}
+          {/* Bio va alias */}
           <div className="space-y-1">
-            <div className="font-medium">{user.name}</div>
+            {user.alias && (
+              <div className="text-sm font-semibold flex items-center gap-0.5 bg-slate-50 p-1 w-fit border-2 rounded-xl">
+                <AtSign className="w-4 h-4" strokeWidth={2.5} />
+                {user.alias}
+              </div>
+            )}
             {user.bio && (
               <div className="text-muted-foreground">{user.bio}</div>
             )}
