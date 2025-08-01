@@ -2,7 +2,14 @@
 
 import { User } from "@/lib/modules/user/user.interface";
 import { Button } from "@/components/ui/button";
-import { Settings, User as UserIcon, Edit2, AtSign } from "lucide-react";
+import {
+  Settings,
+  Edit2,
+  AtSign,
+  Camera,
+  UserPlus,
+  Loader2,
+} from "lucide-react";
 import Image from "next/image";
 import { EditProfileDialog } from "./EditProfileDialog";
 import TextType from "../ui/TextType/TextType";
@@ -21,9 +28,13 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"; // Import Dialog components
+} from "@/components/ui/dialog";
 import { useAuth } from "@/lib/modules/auth/useAuth";
-import React from "react"; // Import React for useState
+import React from "react";
+import { useUpdateProfile } from "@/lib/modules/user/hooks/useUpdateProfile";
+import { CldUploadWidget } from "next-cloudinary";
+import { toast } from "sonner";
+import { UploadResult } from "../CloudinaryUpload";
 
 interface ProfileHeaderProps {
   user: User;
@@ -31,34 +42,92 @@ interface ProfileHeaderProps {
   coverImage?: string | null;
 }
 
-export function ProfileHeader({
-  user,
-  isOwnProfile,
-  coverImage,
-}: ProfileHeaderProps) {
+export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
   const { logout, logoutLoading } = useAuth();
-  const [showLogoutDialog, setShowLogoutDialog] = React.useState(false); // State to control dialog visibility
+  const [showLogoutDialog, setShowLogoutDialog] = React.useState(false);
+  const [avatarLoading, setAvatarLoading] = React.useState(false);
+  const [coverLoading, setCoverLoading] = React.useState(false);
+  const { updateProfile } = useUpdateProfile();
 
   const handleLogout = () => {
     logout();
   };
 
+  const handleAvatarUploadSuccess = (result: any) => {
+    const imageData: UploadResult = result.info;
+    if (imageData && imageData.secure_url) {
+      updateProfile({ data: { avatar: imageData.secure_url } });
+      toast.success("Cập nhật avatar thành công!");
+    } else {
+      toast.error("Không tìm thấy URL ảnh sau khi upload.");
+    }
+    setAvatarLoading(false);
+  };
+
+  const handleCoverUploadSuccess = (result: any) => {
+    const imageData: UploadResult = result.info;
+    if (imageData && imageData.secure_url) {
+      updateProfile({ data: { coverImage: imageData.secure_url } });
+      toast.success("Cập nhật ảnh bìa thành công!");
+    } else {
+      toast.error("Không tìm thấy URL ảnh sau khi upload.");
+    }
+    setCoverLoading(false);
+  };
+
   return (
     <div>
-      {coverImage && (
-        <div className="w-full h-40 md:h-60 bg-muted mb-0">
+      {/* Cover Image Section */}
+      <div className="w-full h-40 md:h-60 bg-muted mb-0 relative">
+        {user.coverImage ? (
           <Image
-            src={coverImage}
+            src={user.coverImage}
             alt="Cover"
             className="w-full h-full object-cover"
             width={160}
             height={160}
           />
-        </div>
-      )}
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center" />
+        )}
+        {isOwnProfile && (
+          <CldUploadWidget
+            uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+            onSuccess={handleCoverUploadSuccess}
+            onOpen={() => setCoverLoading(true)}
+            onClose={() => setCoverLoading(false)}
+            options={{
+              maxFiles: 1,
+              resourceType: "image",
+              clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "gif"],
+              folder: `users/${user.id}/covers`,
+            }}
+          >
+            {({ open }) => {
+              return (
+                <Button
+                  className="absolute bottom-4 right-4"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => open()}
+                  disabled={coverLoading}
+                >
+                  {coverLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4 mr-2" />
+                  )}
+                  {user.coverImage ? "Cập nhật" : "Thêm ảnh bìa"}
+                </Button>
+              );
+            }}
+          </CldUploadWidget>
+        )}
+      </div>
+
       <div className="flex flex-col md:flex-row md:items-center md:gap-12 gap-6 py-8 px-4 bg-white">
         {/* Avatar */}
-        <div className="flex justify-center md:block">
+        <div className="flex justify-center md:block relative">
           <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-gray-200">
             {user.avatar ? (
               <Image
@@ -74,6 +143,38 @@ export function ProfileHeader({
               </div>
             )}
           </div>
+          {isOwnProfile && (
+            <CldUploadWidget
+              uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+              onSuccess={handleAvatarUploadSuccess}
+              onOpen={() => setAvatarLoading(true)}
+              onClose={() => setAvatarLoading(false)}
+              options={{
+                maxFiles: 1,
+                resourceType: "image",
+                clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "gif"],
+                folder: `users/${user.id}/avatars`,
+              }}
+            >
+              {({ open }) => {
+                return (
+                  <Button
+                    className="absolute bottom-2 right-2 rounded-full"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => open()}
+                    disabled={avatarLoading}
+                  >
+                    {avatarLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Camera className="w-4 h-4" />
+                    )}
+                  </Button>
+                );
+              }}
+            </CldUploadWidget>
+          )}
         </div>
         {/* Info */}
         <div className="flex-1 flex flex-col gap-4">
@@ -102,7 +203,7 @@ export function ProfileHeader({
                 />
               ) : (
                 <Button size="sm">
-                  <UserIcon className="w-4 h-4 mr-2" />
+                  <UserPlus className="w-4 h-4" />
                   Theo dõi
                 </Button>
               )}
@@ -121,7 +222,7 @@ export function ProfileHeader({
                     <DropdownMenuItem
                       className=" font-semibold"
                       variant="destructive"
-                      onClick={() => setShowLogoutDialog(true)} // Open dialog on click
+                      onClick={() => setShowLogoutDialog(true)}
                     >
                       Đăng xuất
                     </DropdownMenuItem>
@@ -134,9 +235,9 @@ export function ProfileHeader({
           <div className="flex gap-8 text-sm">
             <span>
               <span className="font-semibold">
-                {user.newsPostsCount + user.feedPostsCount}
+                {user.userNewsPostsCount + user.userFeedPostsCount}
               </span>{" "}
-              bài viết
+              bài đăng
             </span>
             <span>
               <span className="font-semibold">{user.followersCount}</span> người

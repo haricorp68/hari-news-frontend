@@ -5,9 +5,11 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
+  SidebarMenuAction,
   SidebarMenuItem,
   SidebarProvider,
   useSidebar,
@@ -17,13 +19,15 @@ import {
   Home,
   Newspaper,
   TrendingUp,
-  FileText,
+  SquarePlus,
   User as UserIcon,
   ChevronRight,
   MoreHorizontal,
   ChevronsUpDown,
+  PenTool,
+  FileText,
   type LucideIcon,
-  SquarePlus,
+  Home as House,
 } from "lucide-react";
 import { useAuth } from "@/lib/modules/auth/useAuth";
 import { useAuthStore } from "@/lib/modules/auth/auth.store";
@@ -57,14 +61,13 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  SidebarGroupLabel,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarMenuAction,
 } from "@/components/ui/sidebar";
 import { PostCreateDialog } from "@/components/post/PostCreateDialog";
 import { useIsTablet, useIsMobile } from "@/hooks/use-mobile";
+import { usePathname } from "next/navigation";
 
 export const SIDEBAR_WIDTH = "16rem";
 export const SIDEBAR_WIDTH_MOBILE = "18rem";
@@ -76,85 +79,34 @@ const getNavData = (isAuthenticated: boolean) => ({
       title: "Trang chủ",
       url: "/",
       icon: Home,
-      isActive: true,
-      items: [
-        {
-          title: "Dashboard",
-          url: "/",
-        },
-        {
-          title: "Thống kê",
-          url: "/stats",
-        },
-      ],
     },
     {
       title: "Tin tức",
       url: "/news",
       icon: Newspaper,
-      items: [
-        {
-          title: "Tin mới nhất",
-          url: "/news",
-        },
-        {
-          title: "Tin nổi bật",
-          url: "/news/featured",
-        },
-        {
-          title: "Danh mục",
-          url: "/news/categories",
-        },
-      ],
     },
     {
       title: "Khám phá",
       url: "/explore",
       icon: TrendingUp,
-      items: [
-        {
-          title: "Xu hướng",
-          url: "/explore/trending",
-        },
-        {
-          title: "Phổ biến",
-          url: "/explore/popular",
-        },
-      ],
     },
     ...(isAuthenticated
       ? [
           {
-            title: "Đăng bài",
-            url: "/post",
+            title: "Tạo",
+            url: "/create",
             icon: SquarePlus,
+            hasDropdown: true,
             items: [
               {
                 title: "Bài viết (Feed)",
-                url: "/post/feed",
+                action: "openPostFeed",
+                icon: PenTool,
               },
               {
                 title: "Bài báo (News)",
                 url: "/news/create",
-              },
-            ],
-          },
-        ]
-      : []),
-    ...(isAuthenticated
-      ? [
-          {
-            title: "Tin nhắn",
-            url: "/messages",
-            icon: FileText,
-            items: [
-              {
-                title: "Hộp thư",
-                url: "/messages",
-              },
-              {
-                title: "Đã gửi",
-                url: "/messages/sent",
+                icon: FileText,
               },
             ],
           },
@@ -190,16 +142,26 @@ function NavProjects({
   }[];
 }) {
   const { isMobile } = useSidebar();
+  const pathname = usePathname();
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Danh mục</SidebarGroupLabel>
-      <SidebarMenu>
+    <SidebarGroup className="group-data-[collapsible=icon]:hidden py-4">
+      <SidebarGroupLabel className="text-sm font-semibold mb-2 px-4">
+        Danh mục
+      </SidebarGroupLabel>
+      <SidebarMenu className="">
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton
+              asChild
+              className={`px-4 py-3 text-base font-medium min-h-[48px] gap-3 ${
+                pathname === item.url
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : ""
+              }`}
+            >
               <Link href={item.url}>
-                <item.icon />
+                <item.icon className="w-5 h-5" />
                 <span>{item.name}</span>
               </Link>
             </SidebarMenuButton>
@@ -215,11 +177,11 @@ function NavProjects({
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
-                <DropdownMenuItem>
+                <DropdownMenuItem className="py-3 px-4">
                   <TrendingUp className="text-muted-foreground" />
                   <span>Xem danh mục</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem className="py-3 px-4">
                   <TrendingUp className="text-muted-foreground" />
                   <span>Chia sẻ</span>
                 </DropdownMenuItem>
@@ -228,8 +190,8 @@ function NavProjects({
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontal className="text-sidebar-foreground/70" />
+          <SidebarMenuButton className="text-sidebar-foreground/70 px-4 py-3 text-base font-medium min-h-[48px] gap-3">
+            <MoreHorizontal className="text-sidebar-foreground/70 w-5 h-5" />
             <span>Thêm</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -244,26 +206,36 @@ function NavUser({
   user: any;
   setOpenConfirmLogout: (open: boolean) => void;
 }) {
+  const pathname = usePathname();
+
   return (
     <>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild size="lg">
+          <SidebarMenuButton
+            asChild
+            size="lg"
+            className={`px-4 py-3 min-h-[56px] gap-3 ${
+              pathname.startsWith(`/profile/${user.id}`)
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : ""
+            }`}
+          >
             <Link
-              href={`/profile/${user?.id}`}
+              href={user?.id ? `/profile/${user.id}` : "#"}
               className="w-full flex items-center justify-start"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar className="h-9 w-9 rounded-md">
                 <AvatarImage
                   src={user?.avatar || "https://picsum.photos/32"}
                   alt={user?.name || "User"}
                 />
-                <AvatarFallback className="rounded-lg">
+                <AvatarFallback className="rounded-md text-xs">
                   {user?.name?.[0] || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight ml-3">
-                <span className="truncate font-medium">
+              <div className="grid flex-1 text-left leading-tight">
+                <span className="truncate font-medium text-sm">
                   {user?.name || "Guest"}
                 </span>
                 <span className="truncate text-xs">
@@ -289,7 +261,7 @@ function LoginButton() {
             <SidebarMenuButton
               size="lg"
               tooltip="Đăng nhập"
-              className="w-full justify-center data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground border-2"
+              className="w-full justify-center data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground border-2 px-4 py-3 min-h-[48px] gap-3 text-sm font-medium"
             >
               <UserIcon className="h-4 w-4" />
               {state === "expanded" && <span>Đăng nhập</span>}
@@ -311,9 +283,9 @@ function TeamSwitcher() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground px-4 py-3 min-h-[56px] gap-3"
             >
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
                 <Image
                   src="https://picsum.photos/40"
                   alt="Logo"
@@ -322,8 +294,8 @@ function TeamSwitcher() {
                   height={24}
                 />
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">Hari News</span>
+              <div className="grid flex-1 text-left leading-tight">
+                <span className="truncate font-medium text-sm">Hari News</span>
                 <span className="truncate text-xs">Tin tức hàng ngày</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
@@ -338,7 +310,7 @@ function TeamSwitcher() {
             <DropdownMenuLabel className="text-muted-foreground text-xs">
               Ứng dụng
             </DropdownMenuLabel>
-            <DropdownMenuItem className="gap-2 p-2">
+            <DropdownMenuItem className="gap-2 p-3">
               <div className="flex size-6 items-center justify-center rounded-md border">
                 <Image
                   src="https://picsum.photos/40"
@@ -361,6 +333,7 @@ function SidebarWithContext({
   user,
   handleLogout,
   profileLoading,
+  collapsible,
 }: {
   user: any;
   handleLogout: () => void;
@@ -369,88 +342,194 @@ function SidebarWithContext({
 }) {
   const { setOpen } = useSidebar();
   const isTablet = useIsTablet();
-  const isMobile = useIsMobile();
+  const isMobileHook = useIsMobile();
+  const pathname = usePathname();
+
   React.useEffect(() => {
-    if (isTablet && !isMobile) {
+    if (isTablet && !isMobileHook) {
       setOpen(false);
-    } else if (!isTablet && !isMobile) {
+    } else if (!isTablet && !isMobileHook) {
       setOpen(true);
     }
-  }, [isTablet, isMobile, setOpen]);
+  }, [isTablet, isMobileHook, setOpen]);
 
   const [openConfirmLogout, setOpenConfirmLogout] = React.useState(false);
   const [openPostFeed, setOpenPostFeed] = React.useState(false);
 
-  // Get navigation data based on authentication status
   const navData = getNavData(!!user);
 
-  function NavMainWithPostDialog({ items }: { items: typeof navData.navMain }) {
+  function NavMain({ items }: { items: typeof navData.navMain }) {
+    const iconSize = 48;
+    const isSelectedClass = (url: string) =>
+      pathname === url ? "font-bold" : "font-medium";
+    const strokeWidth = (url: string) => (pathname === url ? 3 : 1.25);
+    const getIcon = (icon: LucideIcon, url: string) => {
+      if (icon === Home)
+        return <House size={iconSize} strokeWidth={strokeWidth(url)} />;
+      if (icon === Newspaper)
+        return <Newspaper size={iconSize} strokeWidth={strokeWidth(url)} />;
+      if (icon === TrendingUp)
+        return <TrendingUp size={iconSize} strokeWidth={strokeWidth(url)} />;
+      if (icon === SquarePlus)
+        return <SquarePlus size={iconSize} strokeWidth={strokeWidth(url)} />;
+      return;
+    };
+
     return (
-      <SidebarGroup>
-        <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-        <SidebarMenu>
-          {items.map((item) => (
-            <Collapsible
-              key={item.title}
-              asChild
-              defaultOpen={item.isActive}
-              className="group/collapsible"
-            >
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={item.title}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {item.items?.map((subItem) =>
-                      subItem.title === "Bài viết (Feed)" ? (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <button
-                              type="button"
-                              onClick={() => setOpenPostFeed(true)}
-                              className="w-full text-left"
-                            >
-                              <span>{subItem.title}</span>
-                            </button>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ) : (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <Link href={subItem.url}>
-                              <span>{subItem.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      )
-                    )}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
+      <SidebarGroup className="py-4">
+        <SidebarMenu className="">
+          {items.map((item) =>
+            item.hasDropdown && item.items ? (
+              <SidebarMenuItem key={item.title}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton
+                      className={`cursor-pointer px-4 py-3 text-base font-medium min-h-[48px] gap-3 ${
+                        pathname.startsWith(item.url)
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : ""
+                      }`}
+                    >
+                      {item.icon && <item.icon className="w-5 h-5" />}
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-48 rounded-lg"
+                    side="bottom"
+                    align="start"
+                  >
+                    {item.items.map((subItem) => (
+                      <DropdownMenuItem
+                        key={subItem.title}
+                        className="py-3 px-4"
+                        onClick={() => {
+                          if (subItem.action === "openPostFeed") {
+                            setOpenPostFeed(true);
+                          }
+                        }}
+                        asChild={subItem.url ? true : false}
+                      >
+                        {subItem.url ? (
+                          <Link
+                            href={subItem.url}
+                            className="flex items-center gap-3"
+                          >
+                            {subItem.icon && (
+                              <subItem.icon className="h-4 w-4" />
+                            )}
+                            <span>{subItem.title}</span>
+                          </Link>
+                        ) : (
+                          <div className="flex items-center gap-3 cursor-pointer">
+                            {subItem.icon && (
+                              <subItem.icon className="h-4 w-4" />
+                            )}
+                            <span>{subItem.title}</span>
+                          </div>
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </SidebarMenuItem>
-            </Collapsible>
-          ))}
+            ) : item.items ? (
+              <Collapsible
+                key={item.title}
+                asChild
+                defaultOpen={false}
+                className="group/collapsible"
+              >
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      className={`px-4 py-3 text-base font-medium min-h-[48px] gap-3 ${
+                        pathname.startsWith(item.url)
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : ""
+                      }`}
+                    >
+                      {item.icon && <item.icon className="w-5 h-5" />}
+                      <span>{item.title}</span>
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub className="ml-4 mt-2">
+                      {item.items.map((subItem) =>
+                        subItem.action === "openPostFeed" ? (
+                          <SidebarMenuSubItem
+                            key={subItem.title}
+                            className="py-1"
+                          >
+                            <SidebarMenuSubButton asChild>
+                              <button
+                                type="button"
+                                onClick={() => setOpenPostFeed(true)}
+                                className="w-full text-left py-2 px-3 text-sm"
+                              >
+                                <span>{subItem.title}</span>
+                              </button>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ) : (
+                          <SidebarMenuSubItem
+                            key={subItem.title}
+                            className="py-1"
+                          >
+                            <SidebarMenuSubButton asChild>
+                              <Link
+                                href={subItem.url || "#"}
+                                className="py-2 px-3 text-sm"
+                              >
+                                <span>{subItem.title}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        )
+                      )}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            ) : (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  asChild
+                  className={`px-4 py-3 text-base font-medium min-h-[48px] gap-3 ${
+                    pathname === item.url
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : ""
+                  }`}
+                >
+                  <Link href={item.url || "#"}>
+                    {item.icon && getIcon(item.icon, item.url)}
+                    <span className={isSelectedClass(item.url)}>
+                      {item.title}
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          )}
         </SidebarMenu>
       </SidebarGroup>
     );
   }
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible={collapsible}>
       <SidebarHeader>
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMainWithPostDialog items={navData.navMain} />
+        <NavMain items={navData.navMain} />
         <NavProjects projects={navData.projects} />
       </SidebarContent>
       <SidebarFooter>
         {profileLoading ? (
-          <Skeleton className="h-8 w-full rounded-md" />
+          <Skeleton className="h-10 w-full rounded-md" />
         ) : user ? (
           <NavUser user={user} setOpenConfirmLogout={setOpenConfirmLogout} />
         ) : (
@@ -487,40 +566,60 @@ function BottomNavBar({
   user?: any;
   profileLoading: boolean;
 }) {
+  const pathname = usePathname();
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 bg-sidebar text-sidebar-foreground border-t border-border md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 bg-sidebar text-sidebar-foreground border-t border-border md:hidden">
       <Link
         href="/"
-        className="flex-1 flex flex-col items-center justify-center py-1"
+        className={`flex-1 flex flex-col items-center justify-center py-1 ${
+          pathname === "/"
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : ""
+        }`}
       >
-        <Home className="h-5 w-5" />
+        <Home className="h-4 w-4" />
         <span className="text-xs mt-1">Trang chủ</span>
       </Link>
       <Link
         href="/news"
-        className="flex-1 flex flex-col items-center justify-center py-1"
+        className={`flex-1 flex flex-col items-center justify-center py-1 ${
+          pathname.startsWith("/news")
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : ""
+        }`}
       >
-        <Newspaper className="h-5 w-5" />
+        <Newspaper className="h-4 w-4" />
         <span className="text-xs mt-1">Tin tức</span>
       </Link>
       <Link
         href="/explore"
-        className="flex-1 flex flex-col items-center justify-center py-1"
+        className={`flex-1 flex flex-col items-center justify-center py-1 ${
+          pathname === "/explore"
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : ""
+        }`}
       >
-        <TrendingUp className="h-5 w-5" />
+        <TrendingUp className="h-4 w-4" />
         <span className="text-xs mt-1">Khám phá</span>
       </Link>
-      {isAuthenticated && (
-        <Link
-          href="/messages"
-          className="flex-1 flex flex-col items-center justify-center py-1"
-        >
-          <FileText className="h-5 w-5" />
-          <span className="text-xs mt-1">Tin nhắn</span>
-        </Link>
-      )}
-
-      {/* Profile/Login section - Modified */}
+      <Link
+        href={isAuthenticated ? "/create" : "#"}
+        onClick={(e) => {
+          if (!isAuthenticated) {
+            e.preventDefault();
+            useAuthStore.setState({ showLoginDialog: true });
+          }
+        }}
+        className={`flex-1 flex flex-col items-center justify-center py-1 ${
+          pathname.startsWith("/create")
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : ""
+        }`}
+      >
+        <SquarePlus className="h-4 w-4" />
+        <span className="text-xs mt-1">Tạo</span>
+      </Link>
       <Link
         href={isAuthenticated && user ? `/profile/${user.id}` : "#"}
         onClick={(e) => {
@@ -529,16 +628,20 @@ function BottomNavBar({
             useAuthStore.setState({ showLoginDialog: true });
           }
         }}
-        className="flex-1 flex flex-col items-center justify-center py-1"
+        className={`flex-1 flex flex-col items-center justify-center py-1 ${
+          pathname.startsWith(`/profile/${user?.id}`)
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : ""
+        }`}
       >
         {profileLoading ? (
           <div className="flex flex-col items-center">
-            <Skeleton className="h-5 w-5 rounded-full" />
+            <Skeleton className="h-4 w-4 rounded-full" />
             <span className="text-xs mt-1">Đang tải...</span>
           </div>
         ) : isAuthenticated && user ? (
           <>
-            <Avatar className="h-5 w-5">
+            <Avatar className="h-4 w-4">
               <AvatarImage
                 src={user?.avatar || "https://picsum.photos/32"}
                 alt={user?.name || "User"}
@@ -553,7 +656,7 @@ function BottomNavBar({
           </>
         ) : (
           <>
-            <UserIcon className="h-5 w-5" />
+            <UserIcon className="h-4 w-4" />
             <span className="text-xs mt-1">Đăng nhập</span>
           </>
         )}
@@ -586,12 +689,12 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
           <SidebarHeader />
           <SidebarContent />
           <SidebarFooter className="p-4">
-            <Skeleton className="h-8 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
           <Header />
-          <main className="pb-16 md:pb-0">{children}</main>
+          <main className="pb-14 md:pb-0">{children}</main>
         </SidebarInset>
         <BottomNavBar
           isAuthenticated={false}
@@ -618,7 +721,7 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
       />
       <SidebarInset>
         <Header />
-        <main className="pb-16 md:pb-0">{children}</main>
+        <main className="pb-14 md:pb-0">{children}</main>
       </SidebarInset>
       <BottomNavBar
         isAuthenticated={!!profile}

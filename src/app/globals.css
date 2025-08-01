@@ -125,6 +125,8 @@
   body {
     @apply bg-background text-foreground;
     overscroll-behavior: none;
+    /* THÊM DÒNG NÀY ĐỂ ÁP DỤNG FONT MONTSERRAT */
+    /* font-family: var(--font-montserrat), sans-serif; */
   }
   html {
     scroll-behavior: smooth;

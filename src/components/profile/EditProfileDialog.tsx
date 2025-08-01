@@ -3,7 +3,6 @@
 import * as React from "react";
 import {
   User as UserIcon,
-  Camera,
   Mail,
   FileText,
   Globe,
@@ -48,21 +47,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Gender,
-  UpdateProfileDto,
-  User,
-} from "@/lib/modules/user/user.interface";
-import { useUpdateProfile } from "@/lib/modules/user/hooks/useUpdateProfile";
-import {
   Drawer,
   DrawerContent,
   DrawerTrigger,
   DrawerClose,
 } from "@/components/ui/drawer";
+import {
+  Gender,
+  UpdateProfileDto,
+  User,
+} from "@/lib/modules/user/user.interface";
+import { useUpdateProfile } from "@/lib/modules/user/hooks/useUpdateProfile";
 
 const settingsNav = [
   { name: "Thông tin cơ bản", icon: UserIcon, key: "basic" },
-  { name: "Ảnh đại diện & bìa", icon: Camera, key: "images" },
   { name: "Liên hệ", icon: Mail, key: "contact" },
   { name: "Mạng xã hội", icon: Globe, key: "social" },
   { name: "Thông tin cá nhân", icon: FileText, key: "personal" },
@@ -120,6 +118,7 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
   React.useEffect(() => {
     if (updateProfileSuccess) {
       setOpen(false);
+      // Reset form data
       setFormData({
         name: user.name,
         bio: user.bio || undefined,
@@ -173,32 +172,6 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
                 value={formData.alias || ""}
                 onChange={(e) => handleInputChange("alias", e.target.value)}
                 placeholder="Nhập alias của bạn"
-              />
-            </div>
-          </div>
-        );
-
-      case "images":
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="avatar">URL Ảnh đại diện</Label>
-              <Input
-                id="avatar"
-                value={formData.avatar || ""}
-                onChange={(e) => handleInputChange("avatar", e.target.value)}
-                placeholder="https://example.com/avatar.jpg"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="coverImage">URL Ảnh bìa</Label>
-              <Input
-                id="coverImage"
-                value={formData.coverImage || ""}
-                onChange={(e) =>
-                  handleInputChange("coverImage", e.target.value)
-                }
-                placeholder="https://example.com/cover.jpg"
               />
             </div>
           </div>
@@ -294,7 +267,7 @@ export function EditProfileDialog({ user, trigger }: EditProfileDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="overflow-hidden p-0 md:max-h-[600px] md:max-w-[800px] lg:max-w-[900px]">
+      <DialogContent className="overflow-hidden p-0 md:max-h-[600px] md:max-w-[800px] lg:max-w-[900px] z-50">
         <DialogTitle className="sr-only">
           Chỉnh sửa thông tin cá nhân
         </DialogTitle>

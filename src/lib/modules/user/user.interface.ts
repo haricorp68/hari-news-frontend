@@ -26,10 +26,11 @@ export interface User {
   updated_at: string;
   followersCount: number;
   followingCount: number;
-  newsPostsCount: number;
-  feedPostsCount: number;
   socialLinks: Partial<Record<SocialPlatform, string>>;
   alias: string | null; // Thêm trường alias
+  userFeedPostsCount: number;
+  userNewsPostsCount: number;
+  isCompletedTutorial: boolean;
 }
 
 export type FindAllUsersResponse = APIResponse<
@@ -60,6 +61,7 @@ export interface UpdateProfileDto {
   address?: string;
   city?: string;
   alias?: string;
+  isCompletedTutorial?: boolean; // Mặc định là false
 }
 
 export enum Gender {
