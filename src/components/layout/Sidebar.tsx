@@ -362,7 +362,7 @@ function SidebarWithContext({
     const iconSize = 48;
     const isSelectedClass = (url: string) =>
       pathname === url ? "font-bold" : "font-medium";
-    const strokeWidth = (url: string) => (pathname === url ? 3 : 1.25);
+    const strokeWidth = (url: string) => (pathname === url ? 3 : 2.25);
     const getIcon = (icon: LucideIcon, url: string) => {
       if (icon === Home)
         return <House size={iconSize} strokeWidth={strokeWidth(url)} />;
