@@ -49,11 +49,6 @@ export function NewsDetailLayout({
   slugify,
   showFooter = true,
 }: NewsDetailLayoutProps) {
-  // Sử dụng slugify được truyền vào hoặc hàm defaultSlugify
-  console.log(
-    "🔍 ~ NewsDetailLayout ~ src/components/news/NewsDetailLayout.tsx:43 ~ post:",
-    post
-  );
   const effectiveSlugify = slugify || defaultSlugify;
 
   // Kiểm tra có TOC hay không

@@ -42,10 +42,6 @@ export function PostCreateDialog({
   const { mutate: createUserFeedPost, isPending: createLoading } =
     useCreateUserFeedPost();
   const { uploadMedia, isUploading } = useUpload();
-  console.log(
-    "🔍 ~ PostCreateDialog ~ src/components/post/PostCreateDialog.tsx:44 ~ isUploading:",
-    isUploading
-  );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
