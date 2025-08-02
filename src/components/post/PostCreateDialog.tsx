@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef } from "react";
 import {
   Dialog,
@@ -10,9 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useCreateUserFeedPost } from "@/lib/modules/post/hooks/useCreateUserFeedPost";
 import { Loader2, Camera, X } from "lucide-react";
-import { toast } from "sonner";
 import Image from "next/image";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useUpload } from "@/lib/modules/upload/hooks/useUpload";
+import { toast } from "sonner";
 
 type PostCreateDialogProps = {
   open?: boolean;
@@ -35,56 +38,30 @@ export function PostCreateDialog({
     controlledSetOpen !== undefined ? controlledSetOpen : setUncontrolledOpen;
   const [caption, setCaption] = useState("");
   const [uploadedMedia, setUploadedMedia] = useState<UploadResult[]>([]);
-  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { mutate: createUserFeedPost, isPending: createLoading } =
     useCreateUserFeedPost();
-
-  const uploadToCloudinary = async (file: File): Promise<UploadResult> => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append(
-      "upload_preset",
-      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || ""
-    );
-    formData.append("folder", "posts");
-
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Upload failed");
-    }
-
-    const data = await response.json();
-    return {
-      public_id: data.public_id,
-      secure_url: data.secure_url,
-      resource_type: data.resource_type,
-    };
-  };
+  const { uploadMedia, isUploading } = useUpload();
+  console.log(
+    "🔍 ~ PostCreateDialog ~ src/components/post/PostCreateDialog.tsx:44 ~ isUploading:",
+    isUploading
+  );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    setUploading(true);
     try {
-      const uploadPromises = Array.from(files).map((file) =>
-        uploadToCloudinary(file)
-      );
+      const uploadPromises = Array.from(files).map((file) => uploadMedia(file));
       const results = await Promise.all(uploadPromises);
       setUploadedMedia((prev) => [...prev, ...results]);
-      toast.success("Upload thành công!");
     } catch (error) {
-      toast.error(`Có lỗi xảy ra khi upload file ${error}`);
+      toast.error(
+        `Có lỗi xảy ra khi tải lên: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
-      setUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -109,6 +86,17 @@ export function PostCreateDialog({
   };
 
   const renderMediaPreview = () => {
+    // Thêm logic hiển thị loading khi chưa có ảnh nào và đang tải lên
+    if (isUploading && uploadedMedia.length === 0) {
+      return (
+        <div className="relative">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 flex flex-col items-center justify-center">
+            <Loader2 className="w-12 h-12 mx-auto  animate-spin mb-2" />
+          </div>
+        </div>
+      );
+    }
+
     if (uploadedMedia.length === 0) {
       return (
         <div className="relative">
@@ -167,11 +155,11 @@ export function PostCreateDialog({
             type="button"
             size="sm"
             variant="secondary"
-            disabled={uploading}
+            disabled={isUploading}
             className="h-9 px-3 rounded-lg bg-white/95 hover:bg-white shadow-lg border border-gray-200 flex items-center gap-2"
             onClick={() => fileInputRef.current?.click()}
           >
-            {uploading ? (
+            {isUploading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span className="text-sm">Đang tải...</span>
@@ -305,7 +293,7 @@ export function PostCreateDialog({
           multiple
           accept="image/*,video/*"
           onChange={handleFileChange}
-          disabled={uploading}
+          disabled={isUploading}
           className="hidden"
         />
 
@@ -314,11 +302,17 @@ export function PostCreateDialog({
           className="w-full"
           disabled={
             createLoading ||
-            uploading ||
+            isUploading ||
             (!caption.trim() && uploadedMedia.length === 0)
           }
         >
-          {createLoading ? "Đang đăng..." : "Đăng bài"}
+          {createLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang đăng...
+            </>
+          ) : (
+            "Đăng bài"
+          )}
         </Button>
       </DialogContent>
     </Dialog>

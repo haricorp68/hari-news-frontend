@@ -27,7 +27,10 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
   const isVideo = firstMedia?.type.startsWith("video");
 
   // Fetch post detail when dialog is open
-  const { data: postDetail, refetch } = useUserFeedPostDetail(post.id, showDialog);
+  const { data: postDetail, refetch } = useUserFeedPostDetail(
+    post.id,
+    showDialog
+  );
 
   // Tổng số reaction
   const reactionCount = Object.values(post.reactionSummary || {}).reduce(
