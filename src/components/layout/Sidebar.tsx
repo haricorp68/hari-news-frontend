@@ -561,64 +561,85 @@ function BottomNavBar({
   isAuthenticated,
   user,
   profileLoading,
+  setOpenPostFeed,
 }: {
   isAuthenticated: boolean;
   user?: any;
   profileLoading: boolean;
+  setOpenPostFeed: (open: boolean) => void;
 }) {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 bg-sidebar text-sidebar-foreground border-t border-border md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 bg-sidebar text-sidebar-foreground border-t border-border md:hidden items-center justify-around px-2">
       <Link
         href="/"
         className={`flex-1 flex flex-col items-center justify-center py-1 ${
-          pathname === "/"
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : ""
+          pathname === "/" ? "text-sidebar-accent-foreground" : ""
         }`}
       >
-        <Home className="h-4 w-4" />
+        <Home className="h-5 w-5" />
         <span className="text-xs mt-1">Trang chủ</span>
       </Link>
       <Link
         href="/news"
         className={`flex-1 flex flex-col items-center justify-center py-1 ${
-          pathname.startsWith("/news")
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : ""
+          pathname.startsWith("/news") ? "text-sidebar-accent-foreground" : ""
         }`}
       >
-        <Newspaper className="h-4 w-4" />
+        <Newspaper className="h-5 w-5" />
         <span className="text-xs mt-1">Tin tức</span>
       </Link>
+
+      {/* Nút Tạo nổi bật ở giữa */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            aria-label="Create new content"
+            className="flex-shrink-0 mx-4 cursor-pointer focus:outline-none"
+          >
+            <div className="bg-primary text-primary-foreground h-14 w-14 rounded-full flex items-center justify-center border-4 border-sidebar shadow-lg">
+              <SquarePlus className="h-7 w-7" />
+            </div>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="w-48 rounded-lg mb-8"
+          side="top"
+          align="center"
+          sideOffset={10}
+        >
+          {/* Item 1: Bài viết (Feed) */}
+          <DropdownMenuItem
+            className="py-3 px-4 flex items-center gap-3 cursor-pointer"
+            onClick={() => setOpenPostFeed(true)}
+          >
+            <PenTool className="h-4 w-4" />
+            <span>Bài viết (Feed)</span>
+          </DropdownMenuItem>
+          {/* Item 2: Bài báo (News) */}
+          <Link href="/news/create" passHref>
+            <DropdownMenuItem
+              asChild
+              className="py-3 px-4 flex items-center gap-3"
+            >
+              <div>
+                <FileText className="h-4 w-4" />
+                <span>Bài báo (News)</span>
+              </div>
+            </DropdownMenuItem>
+          </Link>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <Link
         href="/explore"
         className={`flex-1 flex flex-col items-center justify-center py-1 ${
-          pathname === "/explore"
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : ""
+          pathname === "/explore" ? "text-sidebar-accent-foreground" : ""
         }`}
       >
-        <TrendingUp className="h-4 w-4" />
+        <TrendingUp className="h-5 w-5" />
         <span className="text-xs mt-1">Khám phá</span>
-      </Link>
-      <Link
-        href={isAuthenticated ? "/create" : "#"}
-        onClick={(e) => {
-          if (!isAuthenticated) {
-            e.preventDefault();
-            useAuthStore.setState({ showLoginDialog: true });
-          }
-        }}
-        className={`flex-1 flex flex-col items-center justify-center py-1 ${
-          pathname.startsWith("/create")
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : ""
-        }`}
-      >
-        <SquarePlus className="h-4 w-4" />
-        <span className="text-xs mt-1">Tạo</span>
       </Link>
       <Link
         href={isAuthenticated && user ? `/profile/${user.id}` : "#"}
@@ -630,18 +651,18 @@ function BottomNavBar({
         }}
         className={`flex-1 flex flex-col items-center justify-center py-1 ${
           pathname.startsWith(`/profile/${user?.id}`)
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            ? "text-sidebar-accent-foreground"
             : ""
         }`}
       >
         {profileLoading ? (
           <div className="flex flex-col items-center">
-            <Skeleton className="h-4 w-4 rounded-full" />
-            <span className="text-xs mt-1">Đang tải...</span>
+            <Skeleton className="h-5 w-5 rounded-full" />
+            <span className="text-xs mt-1">Tải...</span>
           </div>
         ) : isAuthenticated && user ? (
           <>
-            <Avatar className="h-4 w-4">
+            <Avatar className="h-5 w-5">
               <AvatarImage
                 src={user?.avatar || "https://picsum.photos/32"}
                 alt={user?.name || "User"}
@@ -656,7 +677,7 @@ function BottomNavBar({
           </>
         ) : (
           <>
-            <UserIcon className="h-4 w-4" />
+            <UserIcon className="h-5 w-5" />
             <span className="text-xs mt-1">Đăng nhập</span>
           </>
         )}
@@ -675,6 +696,7 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
   const isTablet = useIsTablet();
   const isMobile = useIsMobile();
   const collapsible = isMobile ? "offcanvas" : isTablet ? "icon" : "offcanvas";
+  const [openPostFeed, setOpenPostFeed] = React.useState(false);
 
   const handleAuthDialogClose = (open: boolean) => {
     if (!open) {
@@ -700,6 +722,7 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
           isAuthenticated={false}
           user={null}
           profileLoading={profileLoading}
+          setOpenPostFeed={setOpenPostFeed}
         />
         {showLoginDialog && (
           <AuthDialog
@@ -727,6 +750,7 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
         isAuthenticated={!!profile}
         user={profile}
         profileLoading={profileLoading}
+        setOpenPostFeed={setOpenPostFeed}
       />
       {showLoginDialog && (
         <AuthDialog
@@ -734,6 +758,7 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
           onOpenChange={handleAuthDialogClose}
         />
       )}
+      <PostCreateDialog open={openPostFeed} setOpen={setOpenPostFeed} />
     </SidebarProvider>
   );
 }

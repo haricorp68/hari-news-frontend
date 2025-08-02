@@ -159,8 +159,10 @@ export function PostCommentDialog({
             <div className="px-4 py-2 border-t flex-shrink-0">
               {/* Post Content */}
               {post.caption && (
-                <div className="">
-                  <span className="text-sm">{post.caption}</span>
+                <div className="mb-2 max-h-16 overflow-y-auto pr-2">
+                  <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
+                    {post.caption}
+                  </p>
                 </div>
               )}
 

@@ -30,7 +30,10 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
   const leaveTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch post detail when dialog is open
-  const { data: postDetail, refetch } = useUserFeedPostDetail(post.id, showComments);
+  const { data: postDetail, refetch } = useUserFeedPostDetail(
+    post.id,
+    showComments
+  );
 
   // Hover logic for react button
   const handleReactMouseEnter = () => {

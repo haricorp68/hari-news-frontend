@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Copy, Upload, Check, FileIcon, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import Image from "next/image";
 
 export interface UploadResult {
   public_id: string;
@@ -108,10 +109,12 @@ export function CloudinaryUpload({
     if (!value) return null;
     if (value.resource_type === "image") {
       return (
-        <img
+        <Image
           src={value.secure_url}
           alt={value.public_id}
           className="w-full max-w-xs h-auto rounded-lg border object-contain"
+          width={value.width}
+          height={value.height}
         />
       );
     }
