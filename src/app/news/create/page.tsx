@@ -1162,29 +1162,29 @@ export default function CreateNewsPage() {
   "title": "Tiêu đề bài viết news",
   "summary": "Tóm tắt ngắn gọn về bài viết",
   "blocks": [
+  {
+      "type": "heading_1",
+      "content": "Đây là heading 1 của bài viết.",
+      "order": 1
+    },
+    {
+      "type": "heading_2",
+      "content": "Đây là heading 2 của bài viết.",
+      "order": 2
+    },
     {
       "type": "text",
       "content": "Đây là đoạn văn bản đầu tiên của bài viết.",
-      "order": 1
+      "order": 3
     },
     {
       "type": "image",
       "content": "Mô tả cho hình ảnh",
-      "media_url": "https://example.com/image1.jpg", 
-      "order": 2
+      "order": 4
     },
     {
       "type": "video",
       "content": "Video giới thiệu sản phẩm",
-      "media_url": "https://example.com/video.mp4", 
-      "order": 4
-    },
-    {
-      "type": "file",
-      "content": "Tài liệu đính kèm",
-      "media_url": "https://example.com/document.pdf", 
-      "file_name": "document.pdf", 
-      "file_size": 1024000, 
       "order": 5
     }
   ]
