@@ -2,14 +2,7 @@
 
 import { User } from "@/lib/modules/user/user.interface";
 import { Button } from "@/components/ui/button";
-import {
-  Settings,
-  Edit2,
-  AtSign,
-  Camera,
-  UserPlus,
-  Loader2,
-} from "lucide-react";
+import { Settings, Edit2, AtSign, Camera, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { EditProfileDialog } from "./EditProfileDialog";
 import TextType from "../ui/TextType/TextType";
@@ -35,6 +28,9 @@ import { useUpdateProfile } from "@/lib/modules/user/hooks/useUpdateProfile";
 import { CldUploadWidget } from "next-cloudinary";
 import { toast } from "sonner";
 import { UploadResult } from "../CloudinaryUpload";
+import { FollowButton } from "./FollowButton";
+import { UserListDialog } from "./UserListDialog";
+import { useFollowStats } from "@/lib/modules/follow/hooks/useFollowStats";
 
 interface ProfileHeaderProps {
   user: User;
@@ -47,7 +43,16 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
   const [showLogoutDialog, setShowLogoutDialog] = React.useState(false);
   const [avatarLoading, setAvatarLoading] = React.useState(false);
   const [coverLoading, setCoverLoading] = React.useState(false);
+  const [userListDialog, setUserListDialog] = React.useState<{
+    open: boolean;
+    type: "followers" | "following";
+    title: string;
+  }>({ open: false, type: "followers", title: "" });
+
   const { updateProfile } = useUpdateProfile();
+
+  // Lấy thống kê follow realtime
+  const { followStats } = useFollowStats(user.id);
 
   const handleLogout = () => {
     logout();
@@ -74,6 +79,28 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
     }
     setCoverLoading(false);
   };
+
+  const openFollowersDialog = () => {
+    setUserListDialog({
+      open: true,
+      type: "followers",
+      title: "Người theo dõi",
+    });
+  };
+
+  const openFollowingDialog = () => {
+    setUserListDialog({
+      open: true,
+      type: "following",
+      title: "Đang theo dõi",
+    });
+  };
+
+  // Sử dụng followStats nếu có, fallback về user data
+  const displayFollowersCount =
+    followStats?.followersCount ?? user.followersCount;
+  const displayFollowingCount =
+    followStats?.followingCount ?? user.followingCount;
 
   return (
     <div>
@@ -176,6 +203,7 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
             </CldUploadWidget>
           )}
         </div>
+
         {/* Info */}
         <div className="flex-1 flex flex-col gap-4">
           {/* Username + alias + actions */}
@@ -202,10 +230,7 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
                   }
                 />
               ) : (
-                <Button size="sm">
-                  <UserPlus className="w-4 h-4" />
-                  Theo dõi
-                </Button>
+                <FollowButton userId={user.id} />
               )}
               {isOwnProfile && (
                 <DropdownMenu>
@@ -231,6 +256,7 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
               )}
             </div>
           </div>
+
           {/* Stats */}
           <div className="flex gap-8 text-sm">
             <span>
@@ -239,15 +265,24 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
               </span>{" "}
               bài đăng
             </span>
-            <span>
-              <span className="font-semibold">{user.followersCount}</span> người
-              theo dõi
-            </span>
-            <span>
+
+            <button
+              onClick={openFollowersDialog}
+              className="hover:underline cursor-pointer"
+            >
+              <span className="font-semibold">{displayFollowersCount}</span>{" "}
+              người theo dõi
+            </button>
+
+            <button
+              onClick={openFollowingDialog}
+              className="hover:underline cursor-pointer"
+            >
               Đang theo dõi{" "}
-              <span className="font-semibold">{user.followingCount}</span>
-            </span>
+              <span className="font-semibold">{displayFollowingCount}</span>
+            </button>
           </div>
+
           {/* Bio */}
           <div className="space-y-1">
             {user.bio && (
@@ -266,6 +301,17 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
           </div>
         </div>
       </div>
+
+      {/* User List Dialog */}
+      <UserListDialog
+        open={userListDialog.open}
+        onOpenChange={(open) =>
+          setUserListDialog((prev) => ({ ...prev, open }))
+        }
+        userId={user.id}
+        type={userListDialog.type}
+        title={userListDialog.title}
+      />
 
       {/* Logout Confirmation Dialog */}
       <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>

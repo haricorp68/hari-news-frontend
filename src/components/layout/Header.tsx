@@ -24,8 +24,8 @@ export function Header() {
         <Link href="/" className="flex items-center h-full">
           <div className="relative h-9 aspect-[1.5] rounded">
             <Image
-              src="https://picsum.photos/60/40"
-              alt="Hari News Logo"
+              src="https://res.cloudinary.com/haricorp/image/upload/v1754348466/Gemini_Generated_Image_1owgb01owgb01owg_knc0fr.png"
+              alt="Hari Social Logo"
               fill
               className="object-contain rounded-md"
             />

@@ -64,7 +64,7 @@ function CommentItem({
   return (
     <div
       id={`comment-${c.id}`}
-      className={`flex gap-3 items-start flex-col ${indentClass}`.trim()}
+      className={`flex gap-3 items-start flex-col mb-10 ${indentClass}`.trim()}
     >
       <div className="flex flex-row w-full gap-1">
         <UserProfileLink

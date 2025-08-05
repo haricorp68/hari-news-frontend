@@ -1,32 +1,38 @@
-"use client"
+"use client";
 
-import { User } from "@/lib/modules/user/user.interface"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { MessageCircle, MoreHorizontal, Settings, UserPlus, UserMinus } from "lucide-react"
+import { User } from "@/lib/modules/user/user.interface";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  MessageCircle,
+  MoreHorizontal,
+  Settings,
+  UserPlus,
+  UserMinus,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 interface UserActionsProps {
-  user: User
-  className?: string
-  isFollowing?: boolean
-  isOwnProfile?: boolean
-  onFollow?: () => void
-  onUnfollow?: () => void
-  onMessage?: () => void
-  onEdit?: () => void
-  onBlock?: () => void
-  onReport?: () => void
+  user: User;
+  className?: string;
+  isFollowing?: boolean;
+  isOwnProfile?: boolean;
+  onFollow?: () => void;
+  onUnfollow?: () => void;
+  onMessage?: () => void;
+  onEdit?: () => void;
+  onBlock?: () => void;
+  onReport?: () => void;
 }
 
-export function UserActions({ 
-  className, 
+export function UserActions({
+  className,
   isFollowing = false,
   isOwnProfile = false,
   onFollow,
@@ -34,7 +40,7 @@ export function UserActions({
   onMessage,
   onEdit,
   onBlock,
-  onReport
+  onReport,
 }: UserActionsProps) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -107,5 +113,5 @@ export function UserActions({
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
-} 
+  );
+}

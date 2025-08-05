@@ -25,7 +25,7 @@ export function NewsSummaryCard({ post }: NewsSummaryCardProps) {
   const hasReactions =
     post.reactionSummary && Object.keys(post.reactionSummary).length > 0;
   return (
-    <Link href={`/news/${post.id}`}>
+    <Link href={`/news/${post.slug}`}>
       <Card className="w-full flex flex-col md:flex-row overflow-hidden py-0 shadow-none gap-0 cursor-pointer transition-all duration-200 hover:shadow-md hover:translate-y-[-2px]">
         <div className="relative w-full md:w-2/5 min-w-[112px] aspect-video md:aspect-auto block group">
           <Image

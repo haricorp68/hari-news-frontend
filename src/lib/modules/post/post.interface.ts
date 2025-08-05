@@ -159,6 +159,7 @@ export interface UserNewsPost {
   commentCount: number;
   userReaction?: ReactionType;
   tags: NewsTag[];
+  slug: string;
 }
 
 export interface UserNewsPostSummary {
@@ -173,6 +174,7 @@ export interface UserNewsPostSummary {
   reactionSummary: ReactionSummary;
   commentCount: number;
   tags?: NewsTag[];
+  slug: string;
 }
 
 // USER FEED

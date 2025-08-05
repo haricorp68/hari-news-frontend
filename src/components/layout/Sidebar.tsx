@@ -5,11 +5,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuAction,
   SidebarMenuItem,
   SidebarProvider,
   useSidebar,
@@ -22,8 +20,6 @@ import {
   SquarePlus,
   User as UserIcon,
   ChevronRight,
-  MoreHorizontal,
-  ChevronsUpDown,
   PenTool,
   FileText,
   type LucideIcon,
@@ -40,7 +36,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import React from "react";
 import {
@@ -132,74 +127,6 @@ const getNavData = (isAuthenticated: boolean) => ({
   ],
 });
 
-function NavProjects({
-  projects,
-}: {
-  projects: {
-    name: string;
-    url: string;
-    icon: LucideIcon;
-  }[];
-}) {
-  const { isMobile } = useSidebar();
-  const pathname = usePathname();
-
-  return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden py-4">
-      <SidebarGroupLabel className="text-sm font-semibold mb-2 px-4">
-        Danh mục
-      </SidebarGroupLabel>
-      <SidebarMenu className="">
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton
-              asChild
-              className={`px-4 py-3 text-base font-medium min-h-[48px] gap-3 ${
-                pathname === item.url
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : ""
-              }`}
-            >
-              <Link href={item.url}>
-                <item.icon className="w-5 h-5" />
-                <span>{item.name}</span>
-              </Link>
-            </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-48 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem className="py-3 px-4">
-                  <TrendingUp className="text-muted-foreground" />
-                  <span>Xem danh mục</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="py-3 px-4">
-                  <TrendingUp className="text-muted-foreground" />
-                  <span>Chia sẻ</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        ))}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70 px-4 py-3 text-base font-medium min-h-[48px] gap-3">
-            <MoreHorizontal className="text-sidebar-foreground/70 w-5 h-5" />
-            <span>Thêm</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarGroup>
-  );
-}
-
 function NavUser({
   user,
 }: {
@@ -227,7 +154,10 @@ function NavUser({
             >
               <Avatar className="h-9 w-9 rounded-md">
                 <AvatarImage
-                  src={user?.avatar || "https://picsum.photos/32"}
+                  src={
+                    user?.avatar ||
+                    "https://res.cloudinary.com/haricorp/image/upload/v1754348466/Gemini_Generated_Image_1owgb01owgb01owg_knc0fr.png"
+                  }
                   alt={user?.name || "User"}
                 />
                 <AvatarFallback className="rounded-md text-xs">
@@ -274,56 +204,30 @@ function LoginButton() {
 }
 
 function TeamSwitcher() {
-  const { isMobile } = useSidebar();
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground px-4 py-3 min-h-[56px] gap-3"
-            >
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
-                <Image
-                  src="https://picsum.photos/40"
-                  alt="Logo"
-                  className="h-6 w-6 rounded object-cover"
-                  width={24}
-                  height={24}
-                />
-              </div>
-              <div className="grid flex-1 text-left leading-tight">
-                <span className="truncate font-medium text-sm">Hari News</span>
-                <span className="truncate text-xs">Tin tức hàng ngày</span>
-              </div>
-              <ChevronsUpDown className="ml-auto" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            align="start"
-            side={isMobile ? "bottom" : "right"}
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="text-muted-foreground text-xs">
-              Ứng dụng
-            </DropdownMenuLabel>
-            <DropdownMenuItem className="gap-2 p-3">
-              <div className="flex size-6 items-center justify-center rounded-md border">
-                <Image
-                  src="https://picsum.photos/40"
-                  alt="Logo"
-                  className="h-6 w-6 rounded object-cover"
-                  width={24}
-                  height={24}
-                />
-              </div>
-              Hari News
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <SidebarMenuButton
+          asChild
+          size="lg"
+          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground px-4 py-3 min-h-[56px] gap-3"
+        >
+          <Link href="/" className="flex items-center gap-3">
+            <div className=" text-sidebar-primary-foreground flex aspect-square size-12 items-center justify-center rounded-md">
+              <Image
+                src="https://res.cloudinary.com/haricorp/image/upload/v1754348466/Gemini_Generated_Image_1owgb01owgb01owg_knc0fr.png"
+                alt="Logo"
+                className="rounded"
+                width={40}
+                height={40}
+              />
+            </div>
+            <div className="grid flex-1 text-left leading-tight">
+              <span className="truncate font-medium text-sm">Hari Social</span>
+              <span className="truncate text-xs">MXH - Thông tin thu nhỏ</span>
+            </div>
+          </Link>
+        </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
   );
@@ -361,7 +265,7 @@ function SidebarWithContext({
   function NavMain({ items }: { items: typeof navData.navMain }) {
     const iconSize = 48;
     const isSelectedClass = (url: string) =>
-      pathname === url ? "font-bold" : "font-medium";
+      pathname === url ? "font-bold" : "font-light";
     const strokeWidth = (url: string) => (pathname === url ? 3 : 2.25);
     const getIcon = (icon: LucideIcon, url: string) => {
       if (icon === Home)
@@ -384,7 +288,7 @@ function SidebarWithContext({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
-                      className={`cursor-pointer px-4 py-3 text-base font-medium min-h-[48px] gap-3 ${
+                      className={`cursor-pointer px-4 py-3 text-base font-light min-h-[48px] gap-3 ${
                         pathname.startsWith(item.url)
                           ? "bg-sidebar-accent text-sidebar-accent-foreground"
                           : ""
@@ -525,7 +429,6 @@ function SidebarWithContext({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navData.navMain} />
-        <NavProjects projects={navData.projects} />
       </SidebarContent>
       <SidebarFooter>
         {profileLoading ? (
