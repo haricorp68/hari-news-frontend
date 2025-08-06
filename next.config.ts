@@ -15,13 +15,16 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
   },
   images: {
-    domains: [
-      "picsum.photos",
-      "scontent.fhan20-1.fna.fbcdn.net",
-      "images.unsplash.com",
-      "i1-kinhdoanh.vnecdn.net",
-      "res.cloudinary.com",
-      "example.com",
+    // Sửa đổi domains thành remotePatterns để cho phép tất cả các domain
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
     ],
   },
 };

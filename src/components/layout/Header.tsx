@@ -22,12 +22,12 @@ export function Header() {
       {/* App Logo - Chỉ hiển thị trên mobile (theo yêu cầu ban đầu của bạn) */}
       {isMobile && (
         <Link href="/" className="flex items-center h-full">
-          <div className="relative h-9 aspect-[1.5] rounded">
+          <div className="relative h-9 aspect-[1.5]">
             <Image
               src="https://res.cloudinary.com/haricorp/image/upload/v1754348466/Gemini_Generated_Image_1owgb01owgb01owg_knc0fr.png"
               alt="Hari Social Logo"
               fill
-              className="object-contain rounded-md"
+              className="object-contain rounded"
             />
           </div>
         </Link>

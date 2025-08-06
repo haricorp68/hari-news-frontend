@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
-import { NewsSummaryCardList } from "@/components/post/NewsSummaryCardList";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -11,13 +10,49 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, ChevronRight, X, Filter } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Filter, Loader2 } from "lucide-react";
 
 import { useNewsTagList } from "@/lib/modules/newsTag/hooks/useNewsTagList";
 import { useRootCategories } from "@/lib/modules/category/hooks/useRootCategories";
 import { useAutocompleteNewsTags } from "@/lib/modules/newsTag/hooks/useNewsTagAutoComplete";
 import { useNewsPosts } from "@/lib/modules/post/hooks/useNewsPosts";
-import { FilterContent } from "./FilterContent";
+
+// Lazy loading components
+const NewsSummaryCardList = lazy(() =>
+  import("@/components/post/NewsSummaryCardList").then((module) => ({
+    default: module.NewsSummaryCardList,
+  }))
+);
+
+const FilterContent = lazy(() =>
+  import("./FilterContent").then((module) => ({
+    default: module.FilterContent,
+  }))
+);
+
+// Loading skeleton components
+const CardListSkeleton = () => (
+  <div className="space-y-4">
+    {Array.from({ length: 6 }).map((_, i) => (
+      <div key={i} className="animate-pulse">
+        <div className="bg-gray-200 h-32 rounded-lg mb-2"></div>
+        <div className="bg-gray-200 h-4 rounded w-3/4 mb-2"></div>
+        <div className="bg-gray-200 h-4 rounded w-1/2"></div>
+      </div>
+    ))}
+  </div>
+);
+
+const FilterSkeleton = () => (
+  <div className="space-y-4 animate-pulse">
+    <div className="bg-gray-200 h-8 rounded w-1/2"></div>
+    <div className="space-y-2">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="bg-gray-200 h-6 rounded"></div>
+      ))}
+    </div>
+  </div>
+);
 
 function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -28,27 +63,63 @@ function useDebounce<T>(value: T, delay: number) {
   return debouncedValue;
 }
 
+// Intersection Observer hook for infinite scrolling
+function useIntersectionObserver(
+  callback: () => void,
+  options: IntersectionObserverInit = {}
+) {
+  const [elementRef, setElementRef] = useState<Element | null>(null);
+
+  useEffect(() => {
+    if (!elementRef) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        callback();
+      }
+    }, options);
+
+    observer.observe(elementRef);
+    return () => observer.disconnect();
+  }, [elementRef, callback, options]);
+
+  return setElementRef;
+}
+
 function Page() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Lazy load hooks with enabled flags
+  const [enableCategoriesQuery, setEnableCategoriesQuery] = useState(false);
+
   const { tags, tagsLoading } = useNewsTagList();
   const {
     autocompleteNewsTags,
     autocompleteNewsTagsLoading,
     autocompleteNewsTagsData,
   } = useAutocompleteNewsTags();
-  const { rootCategories, rootCategoriesLoading } = useRootCategories();
+  const { rootCategories, rootCategoriesLoading } = useRootCategories(
+    enableCategoriesQuery
+  );
 
   const [params, setParams] = useState({
     page: 1,
-    pageSize: 20,
+    pageSize: 10,
     categoryId: "",
     tagIds: [] as string[],
     fromDate: "",
     toDate: "",
   });
 
-  const { posts, postsLoading } = useNewsPosts(params);
+  const {
+    posts,
+    postsLoading,
+    loadMore,
+    hasNextPage,
+    isFetchingNextPage,
+    postsFetching,
+  } = useNewsPosts(params);
 
   const [selectedCategories, setSelectedCategories] = useState<
     {
@@ -60,6 +131,26 @@ function Page() {
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);
+
+  // Enable queries when sidebar is opened or mobile filter is opened
+  useEffect(() => {
+    if (sidebarOpen || mobileFilterOpen) {
+      setEnableCategoriesQuery(true);
+    }
+  }, [sidebarOpen, mobileFilterOpen]);
+
+  // Infinite scroll callback
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      loadMore();
+    }
+  }, [hasNextPage, isFetchingNextPage, loadMore]);
+
+  // Intersection observer for infinite scroll
+  const loadMoreRef = useIntersectionObserver(handleLoadMore, {
+    threshold: 0.1,
+    rootMargin: "100px",
+  });
 
   useEffect(() => {
     setParams((prev) => ({
@@ -105,7 +196,7 @@ function Page() {
     setSelectedCategories([]);
     setParams({
       page: 1,
-      pageSize: 20,
+      pageSize: 5,
       categoryId: "",
       tagIds: [],
       fromDate: "",
@@ -124,7 +215,6 @@ function Page() {
     }
   }, [debouncedSearch, autocompleteNewsTags]);
 
-  // ✅ 2. Tạo một hàm xử lý chung cho việc thay đổi params ngày tháng
   const handleParamsChange = (newParams: Partial<typeof params>) => {
     setParams((prev) => ({
       ...prev,
@@ -133,9 +223,6 @@ function Page() {
     }));
   };
 
-  // ❌ Định nghĩa FilterContent đã được xóa khỏi đây và chuyển ra file riêng.
-
-  // ✅ 3. Gom tất cả props cho FilterContent vào một object để tái sử dụng
   const filterContentProps = {
     rootCategories,
     rootCategoriesLoading,
@@ -186,8 +273,9 @@ function Page() {
             }`}
           >
             <ScrollArea className="h-full">
-              {/* ✅ 4. Sử dụng FilterContent và truyền props vào */}
-              <FilterContent {...filterContentProps} />
+              <Suspense fallback={<FilterSkeleton />}>
+                <FilterContent {...filterContentProps} />
+              </Suspense>
             </ScrollArea>
           </div>
         </aside>
@@ -202,8 +290,9 @@ function Page() {
             </SheetHeader>
             <ScrollArea className="h-[calc(100vh-80px)]">
               <div className="p-6">
-                {/* ✅ 4. Sử dụng FilterContent và truyền props vào */}
-                <FilterContent {...filterContentProps} />
+                <Suspense fallback={<FilterSkeleton />}>
+                  <FilterContent {...filterContentProps} />
+                </Suspense>
               </div>
             </ScrollArea>
           </SheetContent>
@@ -325,7 +414,55 @@ function Page() {
 
         {/* Content */}
         <div className="p-4 lg:p-6">
-          <NewsSummaryCardList posts={posts || []} loading={postsLoading} />
+          <Suspense fallback={<CardListSkeleton />}>
+            <NewsSummaryCardList posts={posts || []} loading={postsLoading} />
+          </Suspense>
+
+          {/* Infinite Scroll Trigger and End of Content Message */}
+          {hasNextPage ? (
+            <div ref={loadMoreRef} className="flex justify-center py-6">
+              {isFetchingNextPage ? (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading more posts...
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={!hasNextPage}
+                  className="gap-2"
+                >
+                  Load More Posts
+                </Button>
+              )}
+            </div>
+          ) : (
+            // Show end of content message when there are no more pages and posts exist
+            posts &&
+            posts.length > 0 &&
+            !postsLoading && (
+              <div className="flex justify-center py-8">
+                <div className="text-center text-gray-500">
+                  <div className="w-12 h-0.5 bg-gray-300 mx-auto mb-4"></div>
+                  <p className="text-sm font-medium">
+                    Bạn đã xem hết tất cả bài viết
+                  </p>
+                  <p className="text-xs mt-1 text-gray-400">
+                    Không còn nội dung để hiển thị
+                  </p>
+                </div>
+              </div>
+            )
+          )}
+
+          {/* Loading indicator for background fetching */}
+          {postsFetching && !postsLoading && !isFetchingNextPage && (
+            <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Refreshing...
+            </div>
+          )}
         </div>
       </div>
     </div>

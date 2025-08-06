@@ -44,7 +44,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-5xl mx-auto pb-12">
       <ProfileHeader user={displayedUser} isOwnProfile={isOwnProfile} />
-      <ProfileTabs userId={userId} />
+      <ProfileTabs userId={userId} isOwnProfile={isOwnProfile} />
     </div>
   );
 }

@@ -217,7 +217,7 @@ export type CompanyFeedPostResponse = APIResponse<CompanyFeedPost, undefined>;
 
 export type UserNewsPostSummaryListResponse = APIResponse<
   UserNewsPostSummary[],
-  undefined
+  PaginationMetadata | undefined
 >;
 
 export type UserNewsPostResponse = APIResponse<UserNewsPost, undefined>;
@@ -229,4 +229,21 @@ export interface GetNewsPostsParams {
   tagIds?: string | string[];
   fromDate?: string;
   toDate?: string;
+}
+
+export interface UpdateNewsPostRequest {
+  title?: string;
+  summary?: string;
+  cover_image?: string;
+  categoryId?: string;
+  blocks?: UpdateNewsPostBlock[];
+}
+
+export interface UpdateNewsPostBlock {
+  type: "text" | "image" | "video" | "file";
+  content?: string;
+  media_url?: string;
+  file_name?: string;
+  file_size?: number;
+  order: number;
 }

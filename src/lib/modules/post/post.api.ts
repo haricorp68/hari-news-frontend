@@ -1,4 +1,4 @@
-import { getApi, postApi } from "@/lib/api/api";
+import { deleteApi, getApi, postApi, putApi } from "@/lib/api/api";
 import type {
   UserFeedPost,
   CommunityFeedPost,
@@ -9,6 +9,7 @@ import type {
   UserNewsPostSummaryListResponse,
   UserNewsPostSummary,
   GetNewsPostsParams,
+  UpdateNewsPostRequest,
 } from "./post.interface";
 import type { APIResponse } from "@/lib/types/api-response";
 
@@ -61,9 +62,16 @@ export async function getSelfUserNewsPostsApi(): Promise<UserNewsPostSummaryList
 }
 
 export async function getUserNewsPostsApi(
-  userId: string
+  userId: string,
+  page: number = 1,
+  pageSize: number = 10
 ): Promise<UserNewsPostSummaryListResponse> {
-  return getApi<UserNewsPostSummary[]>(`/post/user-news/${userId}`);
+  const params = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+  });
+
+  return getApi<UserNewsPostSummary[]>(`/post/user-news/${userId}?${params}`);
 }
 
 export async function getUserNewsPostDetailApi(
@@ -152,4 +160,15 @@ export async function getNewsPostsApi(
   const url = queryString ? `/post/news?${queryString}` : "/post/news";
 
   return getApi<UserNewsPostSummary[]>(url); // Giả sử getApi có thể nhận full URL
+}
+
+export async function updateNewsPostApi(
+  postId: string,
+  body: UpdateNewsPostRequest
+): Promise<APIResponse<UserNewsPost, undefined>> {
+  return putApi<UserNewsPost>(`/post/self/user-news/${postId}`, body);
+}
+
+export async function deleteNewsPostApi(postId: string) {
+  return deleteApi(`/post/self/user-news/${postId}`);
 }

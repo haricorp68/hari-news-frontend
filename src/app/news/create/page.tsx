@@ -1,21 +1,17 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { CloudinaryUpload, UploadResult } from "@/components/CloudinaryUpload";
 import { useCreateUserNewsPost } from "@/lib/modules/post/hooks/useCreateUserNewsPost";
-import { useCategory } from "@/lib/modules/category/useCategory";
 import {
-  ReactionSummary,
   UserNewsPostBlock,
   UserNewsPostBlockType,
+  ReactionSummary,
 } from "@/lib/modules/post/post.interface";
-import { NewsTag } from "@/lib/modules/newsTag/newsTag.interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   DndContext,
@@ -57,15 +53,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { TagAutoCompleteInput } from "@/components/tag/TagAutoCompleteInput";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import templates from "../../../../news-template.json";
 import {
   Dialog,
   DialogContent,
@@ -97,8 +84,13 @@ import {
   useLoadFromJSON,
   useClearAll,
 } from "@/lib/modules/post/post.store";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import templates from "../../../../news-template.json";
+import { Label } from "@/components/ui/label";
+import { NewsTag } from "@/lib/modules/newsTag/newsTag.interface";
+import { Badge } from "@/components/ui/badge";
+import { TagsInput } from "@/components/ui/TagsInput";
+import { CategorySelector } from "@/components/ui/CategorySelector";
 
 interface NewsBlock {
   id: string;
@@ -332,9 +324,6 @@ export default function CreateNewsPage() {
   const { profile } = useAuthStore();
   const router = useRouter();
   const useCreateNewsPost = useCreateUserNewsPost();
-  const { rootCategories, rootCategoriesLoading } = useCategory(undefined, {
-    enabledRoot: true,
-  });
 
   // Store data
   const title = useCreateNewsTitle();
@@ -371,7 +360,6 @@ export default function CreateNewsPage() {
   const handleClearData = useCallback(() => {
     clearAll();
     setClearDataDialogOpen(false);
-    // Có thể thêm toast notification
     toast.success("Đã reset tất cả dữ liệu!");
   }, [clearAll]);
 
@@ -394,22 +382,6 @@ export default function CreateNewsPage() {
       reorderBlocks(reorderedBlocksArray);
     }
   };
-
-  useEffect(() => {
-    // Chỉ chạy khi đã load xong categories và có categoryId
-    if (!rootCategoriesLoading && rootCategories && categoryId) {
-      const categoryExists = rootCategories.find(
-        (cat) => cat.id === categoryId
-      );
-      if (!categoryExists) {
-        // Reset categoryId nếu category không tồn tại
-        setCategoryId("");
-        console.warn(
-          `Category with ID ${categoryId} no longer exists. Resetting selection.`
-        );
-      }
-    }
-  }, [rootCategoriesLoading, rootCategories, categoryId, setCategoryId]);
 
   // Apply template
   const applyTemplate = useCallback(
@@ -605,7 +577,7 @@ export default function CreateNewsPage() {
 
       useCreateNewsPost.mutate(requestData, {
         onSuccess: () => {
-          clearAll(); // Clear draft after successful submission
+          clearAll();
           router.push("/");
         },
         onError: (error) => {
@@ -885,75 +857,15 @@ export default function CreateNewsPage() {
             </div>
 
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 space-y-2">
-                <Label>Thẻ *</Label>
-                <TagAutoCompleteInput
-                  onSelectTag={handleTagSelect}
-                  placeholder="Tìm kiếm thẻ..."
-                />
-                {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {tags.map((tag) => (
-                      <Badge
-                        key={tag.id}
-                        variant="secondary"
-                        className="cursor-pointer hover:bg-red-100"
-                        onClick={() => removeTag(tag.id)}
-                      >
-                        {tag.name}
-                        <span className="ml-1">×</span>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <Label>Danh mục *</Label>
-                {rootCategoriesLoading ? (
-                  // Skeleton loading
-                  <Skeleton className="w-full h-10 bg-gray-200 animate-pulse rounded-lg"></Skeleton>
-                ) : (
-                  <Select
-                    value={categoryId}
-                    onValueChange={setCategoryId}
-                    required
-                  >
-                    <SelectTrigger className="w-full border border-gray-300 rounded-lg focus:outline-none">
-                      <SelectValue placeholder="Chọn danh mục">
-                        {/* Hiển thị tên category đã chọn khi có categoryId */}
-                        {categoryId && rootCategories
-                          ? rootCategories.find((cat) => cat.id === categoryId)
-                              ?.name || "Danh mục không tồn tại"
-                          : null}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rootCategories && rootCategories.length > 0 ? (
-                        rootCategories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="no-categories" disabled>
-                          Không có danh mục
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
-
-                {/* Hiển thị warning nếu categoryId có nhưng không tìm thấy trong danh sách */}
-                {categoryId &&
-                  rootCategories &&
-                  !rootCategoriesLoading &&
-                  !rootCategories.find((cat) => cat.id === categoryId) && (
-                    <p className="text-sm text-amber-600">
-                      ⚠️ Danh mục đã chọn không còn tồn tại. Vui lòng chọn danh
-                      mục khác.
-                    </p>
-                  )}
-              </div>
+              <TagsInput
+                tags={tags}
+                onTagSelect={handleTagSelect}
+                onRemoveTag={removeTag}
+              />
+              <CategorySelector
+                categoryId={categoryId}
+                setCategoryId={setCategoryId}
+              />
             </div>
 
             <div className="space-y-2">
@@ -994,8 +906,6 @@ export default function CreateNewsPage() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-full md:max-w-4xl max-h-[90vh] md:max-h-[80vh] overflow-y-auto">
-                    {" "}
-                    {/* Responsive width and height */}
                     <DialogHeader>
                       <DialogTitle>Chọn Template</DialogTitle>
                       <DialogDescription>
@@ -1297,7 +1207,6 @@ export default function CreateNewsPage() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-end gap-4 mt-8">
           <div className="flex flex-col sm:flex-row gap-2">
-            {/* Clear Data Button */}
             <Dialog
               open={clearDataDialogOpen}
               onOpenChange={setClearDataDialogOpen}
@@ -1328,7 +1237,6 @@ export default function CreateNewsPage() {
                 </DialogHeader>
 
                 <div className="space-y-4 pt-4">
-                  {/* Action buttons */}
                   <div className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
                     <Button
                       type="button"
@@ -1361,7 +1269,6 @@ export default function CreateNewsPage() {
                   Preview
                 </Button>
               </DialogTrigger>
-              {/* Responsive DialogContent for Preview */}
               <DialogContent className="!max-w-none w-[95vw] h-[95vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[80vh] lg:w-[70vw] lg:h-[70vh] p-0 flex flex-col">
                 <DialogHeader className="p-4 border-b">
                   <DialogTitle>Xem trước bài viết</DialogTitle>
@@ -1370,8 +1277,6 @@ export default function CreateNewsPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="flex-1 overflow-y-auto">
-                  {" "}
-                  {/* Ensures content scrolls within the dialog */}
                   {previewDialogOpen && (
                     <NewsDetailLayout
                       post={generatePreviewData().previewPost}

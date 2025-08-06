@@ -152,7 +152,7 @@ function NavUser({
               href={user?.id ? `/profile/${user.id}` : "#"}
               className="w-full flex items-center justify-start"
             >
-              <Avatar className="h-9 w-9 rounded-md">
+              <Avatar className="h-8 w-8 rounded-md">
                 <AvatarImage
                   src={
                     user?.avatar ||
@@ -213,13 +213,13 @@ function TeamSwitcher() {
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground px-4 py-3 min-h-[56px] gap-3"
         >
           <Link href="/" className="flex items-center gap-3">
-            <div className=" text-sidebar-primary-foreground flex aspect-square size-12 items-center justify-center rounded-md">
+            <div className=" text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
               <Image
                 src="https://res.cloudinary.com/haricorp/image/upload/v1754348466/Gemini_Generated_Image_1owgb01owgb01owg_knc0fr.png"
                 alt="Logo"
                 className="rounded"
-                width={40}
-                height={40}
+                width={32}
+                height={32}
               />
             </div>
             <div className="grid flex-1 text-left leading-tight">
