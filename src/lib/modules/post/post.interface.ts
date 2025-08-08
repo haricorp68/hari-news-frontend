@@ -247,3 +247,13 @@ export interface UpdateNewsPostBlock {
   file_size?: number;
   order: number;
 }
+
+export interface UserNewsPostSearch {
+  id: string;
+  title: string;
+  summary: string;
+  slug: string;
+  categoryId: string;
+  cover_image: string;
+  tagIds: string[];
+}

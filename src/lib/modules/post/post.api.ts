@@ -10,6 +10,7 @@ import type {
   UserNewsPostSummary,
   GetNewsPostsParams,
   UpdateNewsPostRequest,
+  UserNewsPostSearch,
 } from "./post.interface";
 import type { APIResponse } from "@/lib/types/api-response";
 
@@ -136,6 +137,14 @@ export async function getCompanyFeedPostDetailApi(
   );
 }
 
+export async function getUserNewsPostSearchApi(
+  string: string
+): Promise<APIResponse<UserNewsPostSearch[]>> {
+  return getApi<UserNewsPostSearch[]>(
+    `/post/autocomplete-user-news?query=${string}`
+  );
+}
+
 export async function getNewsPostsApi(
   params: GetNewsPostsParams = {}
 ): Promise<UserNewsPostSummaryListResponse> {
@@ -171,4 +180,10 @@ export async function updateNewsPostApi(
 
 export async function deleteNewsPostApi(postId: string) {
   return deleteApi(`/post/self/user-news/${postId}`);
+}
+
+export async function getMainFeedPostsApi(): Promise<
+  APIResponse<UserFeedPost[]>
+> {
+  return getApi<UserFeedPost[]>("/post/followed-user-feed");
 }

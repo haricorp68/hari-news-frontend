@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, ChevronRight, X, Filter, Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { useNewsTagList } from "@/lib/modules/newsTag/hooks/useNewsTagList";
 import { useRootCategories } from "@/lib/modules/category/hooks/useRootCategories";
@@ -87,10 +88,12 @@ function useIntersectionObserver(
 }
 
 function Page() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  // Lazy load hooks with enabled flags
   const [enableCategoriesQuery, setEnableCategoriesQuery] = useState(false);
 
   const { tags, tagsLoading } = useNewsTagList();
@@ -132,37 +135,107 @@ function Page() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);
 
-  // Enable queries when sidebar is opened or mobile filter is opened
   useEffect(() => {
     if (sidebarOpen || mobileFilterOpen) {
       setEnableCategoriesQuery(true);
     }
   }, [sidebarOpen, mobileFilterOpen]);
 
-  // Infinite scroll callback
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       loadMore();
     }
   }, [hasNextPage, isFetchingNextPage, loadMore]);
 
-  // Intersection observer for infinite scroll
   const loadMoreRef = useIntersectionObserver(handleLoadMore, {
     threshold: 0.1,
     rootMargin: "100px",
   });
 
+  // Effect để cập nhật trạng thái từ URL
   useEffect(() => {
-    setParams((prev) => ({
-      ...prev,
-      categoryId:
-        selectedCategories.find((item) => item.type === "category")?.id || "",
-      tagIds: selectedCategories
-        .filter((item) => item.type === "tag")
-        .map((item) => item.id),
+    const categoryId = searchParams.get("categoryId");
+    const tagIds = searchParams.getAll("tagIds");
+    const fromDate = searchParams.get("fromDate");
+    const toDate = searchParams.get("toDate");
+
+    const newSelected: {
+      id: string;
+      name: string;
+      type: "category" | "tag";
+    }[] = [];
+
+    // Đảm bảo dữ liệu danh mục và thẻ đã được tải trước khi xử lý
+    if (rootCategories && categoryId) {
+      const category = rootCategories.find((cat) => cat.id === categoryId);
+      if (category) {
+        newSelected.push({
+          id: category.id,
+          name: category.name,
+          type: "category",
+        });
+      }
+    }
+
+    if (tags && tagIds) {
+      tagIds.forEach((id) => {
+        const tag = tags.find((t) => t.id === id);
+        if (tag) {
+          newSelected.push({ id: tag.id, name: tag.name, type: "tag" });
+        }
+      });
+    }
+
+    setSelectedCategories(newSelected);
+
+    setParams({
       page: 1,
-    }));
-  }, [selectedCategories]);
+      pageSize: 10,
+      categoryId: categoryId || "",
+      tagIds: tagIds || [],
+      fromDate: fromDate || "",
+      toDate: toDate || "",
+    });
+  }, [searchParams, rootCategories, tags]);
+
+  const updateUrl = useCallback(
+    (
+      newSelected: typeof selectedCategories,
+      newParams: Partial<typeof params>
+    ) => {
+      const currentParams = new URLSearchParams(searchParams.toString());
+
+      const newCategoryId =
+        newSelected.find((item) => item.type === "category")?.id || "";
+      if (newCategoryId) {
+        currentParams.set("categoryId", newCategoryId);
+      } else {
+        currentParams.delete("categoryId");
+      }
+
+      currentParams.delete("tagIds");
+      const newTagIds = newSelected
+        .filter((item) => item.type === "tag")
+        .map((item) => item.id);
+      newTagIds.forEach((id) => currentParams.append("tagIds", id));
+
+      if (newParams.fromDate) {
+        currentParams.set("fromDate", newParams.fromDate);
+      } else {
+        currentParams.delete("fromDate");
+      }
+      if (newParams.toDate) {
+        currentParams.set("toDate", newParams.toDate);
+      } else {
+        currentParams.delete("toDate");
+      }
+
+      currentParams.delete("page");
+
+      router.replace(`?${currentParams.toString()}`);
+    },
+    [router, searchParams]
+  );
 
   const handleItemClick = (
     item: { id: string; name: string },
@@ -172,24 +245,34 @@ function Page() {
       const exists = prev.find(
         (cat) => cat.id === item.id && cat.type === type
       );
+      let newSelected;
       if (exists) {
-        return prev.filter((cat) => !(cat.id === item.id && cat.type === type));
+        newSelected = prev.filter(
+          (cat) => !(cat.id === item.id && cat.type === type)
+        );
       } else {
         if (type === "category") {
-          return [
+          newSelected = [
             ...prev.filter((cat) => cat.type !== "category"),
             { ...item, type },
           ];
+        } else {
+          newSelected = [...prev, { ...item, type }];
         }
-        return [...prev, { ...item, type }];
       }
+      updateUrl(newSelected, params);
+      return newSelected;
     });
   };
 
   const handleRemoveItem = (id: string, type: "category" | "tag") => {
-    setSelectedCategories((prev) =>
-      prev.filter((cat) => !(cat.id === id && cat.type === type))
-    );
+    setSelectedCategories((prev) => {
+      const newSelected = prev.filter(
+        (cat) => !(cat.id === id && cat.type === type)
+      );
+      updateUrl(newSelected, params);
+      return newSelected;
+    });
   };
 
   const handleClearAll = () => {
@@ -203,6 +286,7 @@ function Page() {
       toDate: "",
     });
     setSearch("");
+    router.replace("/");
   };
 
   const isItemSelected = (id: string, type: "category" | "tag") => {
@@ -216,11 +300,15 @@ function Page() {
   }, [debouncedSearch, autocompleteNewsTags]);
 
   const handleParamsChange = (newParams: Partial<typeof params>) => {
-    setParams((prev) => ({
-      ...prev,
-      ...newParams,
-      page: 1,
-    }));
+    setParams((prev) => {
+      const updatedParams = {
+        ...prev,
+        ...newParams,
+        page: 1,
+      };
+      updateUrl(selectedCategories, updatedParams);
+      return updatedParams;
+    });
   };
 
   const filterContentProps = {
@@ -364,13 +452,7 @@ function Page() {
                       From: {new Date(params.fromDate).toLocaleString()}
                     </span>
                     <button
-                      onClick={() =>
-                        setParams((prev) => ({
-                          ...prev,
-                          fromDate: "",
-                          page: 1,
-                        }))
-                      }
+                      onClick={() => handleParamsChange({ fromDate: "" })}
                       className="rounded-full p-0.5 hover:bg-black/10 transition-colors"
                       type="button"
                       aria-label="Remove From Date"
@@ -388,9 +470,7 @@ function Page() {
                       To: {new Date(params.toDate).toLocaleString()}
                     </span>
                     <button
-                      onClick={() =>
-                        setParams((prev) => ({ ...prev, toDate: "", page: 1 }))
-                      }
+                      onClick={() => handleParamsChange({ toDate: "" })}
                       className="rounded-full p-0.5 hover:bg-black/10 transition-colors"
                       type="button"
                       aria-label="Remove To Date"
