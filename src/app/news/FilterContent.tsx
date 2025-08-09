@@ -1,11 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Category } from "@/lib/modules/category";
 import { NewsTag } from "@/lib/modules/newsTag/newsTag.interface";
-import { ScanSearch } from "lucide-react";
-// Giả sử bạn có thể import các type này, nếu không có thể dùng any[] | undefined
+import { ScanSearch, Calendar as CalendarIcon } from "lucide-react";
+import { format, parse } from "date-fns";
+import { vi } from "date-fns/locale";
+import { useState } from "react";
 
-// ✅ Sửa lỗi: Cho phép các props có thể là undefined
 type FilterContentProps = {
   rootCategories: Category[] | undefined;
   rootCategoriesLoading: boolean;
@@ -40,13 +47,53 @@ export function FilterContent({
   params,
   onParamsChange,
 }: FilterContentProps) {
-  // Phần JSX bên dưới không cần thay đổi
+  const [fromDateOpen, setFromDateOpen] = useState(false);
+  const [toDateOpen, setToDateOpen] = useState(false);
+
+  // Parse and format dates for display
+  const parseDateTime = (dateTime: string) => {
+    if (!dateTime) return { date: undefined, time: "" };
+    const parsed = parse(dateTime, "yyyy-MM-dd'T'HH:mm:ss", new Date());
+    return {
+      date: parsed,
+      time: format(parsed, "HH:mm"),
+    };
+  };
+
+  const formatDateTime = (date: Date | undefined, time: string) => {
+    if (!date) return "";
+    const [hours, minutes] = time.split(":").map(Number);
+    const newDate = new Date(date);
+    newDate.setHours(hours || 0, minutes || 0, 0);
+    return format(newDate, "yyyy-MM-dd'T'HH:mm:ss");
+  };
+
+  const { date: fromDate, time: fromTime } = parseDateTime(params.fromDate);
+  const { date: toDate, time: toTime } = parseDateTime(params.toDate);
+
+  const handleDateSelect = (
+    type: "fromDate" | "toDate",
+    selectedDate: Date | undefined
+  ) => {
+    const time = type === "fromDate" ? fromTime : toTime;
+    const newDateTime = formatDateTime(selectedDate, time);
+    onParamsChange({ [type]: newDateTime });
+    if (type === "fromDate") setFromDateOpen(false);
+    else setToDateOpen(false);
+  };
+
+  const handleTimeChange = (type: "fromDate" | "toDate", time: string) => {
+    const date = type === "fromDate" ? fromDate : toDate;
+    const newDateTime = formatDateTime(date, time);
+    onParamsChange({ [type]: newDateTime });
+  };
+
   return (
     <div className="space-y-6">
       {/* Categories Section */}
       <div>
         <div className="text-xs font-semibold uppercase tracking-wider mb-3 text-gray-500 flex items-center gap-2">
-          Categories
+          Danh mục
         </div>
         <div className="flex flex-wrap gap-2 min-h-[32px]">
           {rootCategoriesLoading && (
@@ -81,14 +128,14 @@ export function FilterContent({
       {/* Tags Section */}
       <div>
         <div className="text-xs font-semibold uppercase tracking-wider mb-3 text-gray-500">
-          Tags
+          Thẻ
         </div>
         <div className="relative mb-3">
           <span className="absolute left-0 top-0 w-8 h-8 flex items-center justify-center text-gray-500 pointer-events-none">
             <ScanSearch className="w-4 h-4" />
           </span>
           <Input
-            placeholder="Search for tags"
+            placeholder="Tìm kiếm thẻ"
             className="pl-8 h-8 text-xs rounded-full border-gray-200"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -138,7 +185,7 @@ export function FilterContent({
             !autocompleteNewsTagsLoading &&
             ((search.trim().length > 0 && !autocompleteNewsTagsData?.length) ||
               (search.trim().length === 0 && !tags?.length)) && (
-              <span className="text-xs text-gray-400">Không có tag nào</span>
+              <span className="text-xs text-gray-400">Không có thẻ nào</span>
             )}
         </div>
       </div>
@@ -146,34 +193,73 @@ export function FilterContent({
       {/* DateTime Range Filters */}
       <div>
         <div className="text-xs font-semibold uppercase tracking-wider mb-3 text-gray-500">
-          Date & Time Range
+          Khoảng thời gian
         </div>
         <div className="flex flex-col gap-4">
+          {/* From DateTime Picker */}
           <div className="flex flex-col">
-            <label htmlFor="fromDate" className="text-xs font-medium mb-1">
-              From Date & Time
-            </label>
-            <Input
-              id="fromDate"
-              type="datetime-local"
-              value={params.fromDate}
-              onChange={(e) => onParamsChange({ fromDate: e.target.value })}
-              className="h-8 text-xs rounded-full border-gray-200"
-              step="1"
-            />
+            <label className="text-xs font-medium mb-1">Từ ngày và giờ</label>
+            <div className="flex gap-2">
+              <Popover open={fromDateOpen} onOpenChange={setFromDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-8 text-xs rounded-full border-gray-200 flex items-center gap-2"
+                  >
+                    <CalendarIcon className="w-4 h-4" />
+                    {fromDate ? format(fromDate, "dd/MM/yy") : "Chọn ngày"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={fromDate}
+                    onSelect={(date) => handleDateSelect("fromDate", date)}
+                    locale={vi}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <Input
+                type="time"
+                value={fromTime}
+                onChange={(e) => handleTimeChange("fromDate", e.target.value)}
+                className="h-8 text-xs rounded-full border-gray-200 w-24"
+              />
+            </div>
           </div>
+
+          {/* To DateTime Picker */}
           <div className="flex flex-col">
-            <label htmlFor="toDate" className="text-xs font-medium mb-1">
-              To Date & Time
-            </label>
-            <Input
-              id="toDate"
-              type="datetime-local"
-              value={params.toDate}
-              onChange={(e) => onParamsChange({ toDate: e.target.value })}
-              className="h-8 text-xs rounded-full border-gray-200"
-              step="1"
-            />
+            <label className="text-xs font-medium mb-1">Đến ngày và giờ</label>
+            <div className="flex gap-2">
+              <Popover open={toDateOpen} onOpenChange={setToDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-8 text-xs rounded-full border-gray-200 flex items-center gap-2"
+                  >
+                    <CalendarIcon className="w-4 h-4" />
+                    {toDate ? format(toDate, "dd/MM/yy") : "Chọn ngày"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={toDate}
+                    onSelect={(date) => handleDateSelect("toDate", date)}
+                    locale={vi}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <Input
+                type="time"
+                value={toTime}
+                onChange={(e) => handleTimeChange("toDate", e.target.value)}
+                className="h-8 text-xs rounded-full border-gray-200 w-24"
+              />
+            </div>
           </div>
         </div>
       </div>

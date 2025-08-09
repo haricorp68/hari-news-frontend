@@ -39,7 +39,14 @@ export default function RootLayout({
         <QueryProvider>
           <AppSidebar>{children}</AppSidebar>
         </QueryProvider>
-        <Toaster position="top-right" richColors />
+        <Toaster
+          position="top-right"
+          richColors
+          visibleToasts={1}
+          toastOptions={{
+            duration: 1800,
+          }}
+        />
       </body>
     </html>
   );

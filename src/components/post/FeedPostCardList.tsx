@@ -57,9 +57,6 @@ const FeedPostCardList: React.FC<FeedPostCardListProps> = ({
         <div className="text-gray-500 text-lg font-medium mb-2">
           Chưa có bài viết nào
         </div>
-        <div className="text-gray-400 text-sm">
-          Hãy là người đầu tiên đăng bài nhé!
-        </div>
       </div>
     );
   }

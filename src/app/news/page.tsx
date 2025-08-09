@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState, useCallback, lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { useEffect, useState, useCallback, lazy } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -12,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, ChevronRight, X, Filter, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-
 import { useNewsTagList } from "@/lib/modules/newsTag/hooks/useNewsTagList";
 import { useRootCategories } from "@/lib/modules/category/hooks/useRootCategories";
 import { useAutocompleteNewsTags } from "@/lib/modules/newsTag/hooks/useNewsTagAutoComplete";
@@ -64,7 +64,6 @@ function useDebounce<T>(value: T, delay: number) {
   return debouncedValue;
 }
 
-// Intersection Observer hook for infinite scrolling
 function useIntersectionObserver(
   callback: () => void,
   options: IntersectionObserverInit = {}
@@ -87,13 +86,13 @@ function useIntersectionObserver(
   return setElementRef;
 }
 
-function Page() {
+// Component chứa logic sử dụng useSearchParams
+function NewsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-
   const [enableCategoriesQuery, setEnableCategoriesQuery] = useState(false);
 
   const { tags, tagsLoading } = useNewsTagList();
@@ -125,11 +124,7 @@ function Page() {
   } = useNewsPosts(params);
 
   const [selectedCategories, setSelectedCategories] = useState<
-    {
-      id: string;
-      name: string;
-      type: "category" | "tag";
-    }[]
+    { id: string; name: string; type: "category" | "tag" }[]
   >([]);
 
   const [search, setSearch] = useState("");
@@ -152,7 +147,6 @@ function Page() {
     rootMargin: "100px",
   });
 
-  // Effect để cập nhật trạng thái từ URL
   useEffect(() => {
     const categoryId = searchParams.get("categoryId");
     const tagIds = searchParams.getAll("tagIds");
@@ -165,7 +159,6 @@ function Page() {
       type: "category" | "tag";
     }[] = [];
 
-    // Đảm bảo dữ liệu danh mục và thẻ đã được tải trước khi xử lý
     if (rootCategories && categoryId) {
       const category = rootCategories.find((cat) => cat.id === categoryId);
       if (category) {
@@ -372,6 +365,20 @@ function Page() {
       {/* Mobile Filter Sheet */}
       <div className="lg:hidden">
         <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Filter className="w-4 h-4" />
+              Filters
+              {selectedCategories.length > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="ml-1 px-1.5 py-0.5 text-xs"
+                >
+                  {selectedCategories.length}
+                </Badge>
+              )}
+            </Button>
+          </SheetTrigger>
           <SheetContent side="left" className="w-80 p-0">
             <SheetHeader className="px-6 py-4 border-b">
               <SheetTitle className="text-left">Filters</SheetTitle>
@@ -498,7 +505,6 @@ function Page() {
             <NewsSummaryCardList posts={posts || []} loading={postsLoading} />
           </Suspense>
 
-          {/* Infinite Scroll Trigger and End of Content Message */}
           {hasNextPage ? (
             <div ref={loadMoreRef} className="flex justify-center py-6">
               {isFetchingNextPage ? (
@@ -518,7 +524,6 @@ function Page() {
               )}
             </div>
           ) : (
-            // Show end of content message when there are no more pages and posts exist
             posts &&
             posts.length > 0 &&
             !postsLoading && (
@@ -536,7 +541,6 @@ function Page() {
             )
           )}
 
-          {/* Loading indicator for background fetching */}
           {postsFetching && !postsLoading && !isFetchingNextPage && (
             <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -549,4 +553,11 @@ function Page() {
   );
 }
 
-export default Page;
+// Component chính của trang, bọc NewsContent trong Suspense
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Đang tải trang tin tức...</div>}>
+      <NewsContent />
+    </Suspense>
+  );
+}

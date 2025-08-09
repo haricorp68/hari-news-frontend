@@ -12,7 +12,7 @@ import type {
   UpdateNewsPostRequest,
   UserNewsPostSearch,
 } from "./post.interface";
-import type { APIResponse } from "@/lib/types/api-response";
+import type { APIResponse, PaginationMetadata } from "@/lib/types/api-response";
 
 // USER FEED
 export async function createUserFeedPostApi(body: {
@@ -182,8 +182,14 @@ export async function deleteNewsPostApi(postId: string) {
   return deleteApi(`/post/self/user-news/${postId}`);
 }
 
-export async function getMainFeedPostsApi(): Promise<
-  APIResponse<UserFeedPost[]>
-> {
-  return getApi<UserFeedPost[]>("/post/followed-user-feed");
+export async function getMainFeedPostsApi(
+  userId: string,
+  page: number = 1,
+  pageSize: number = 10
+): Promise<APIResponse<UserFeedPost[], PaginationMetadata | undefined>> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+  });
+  return getApi<UserFeedPost[]>(`/post/followed-user-feed?${params}`);
 }

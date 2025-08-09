@@ -12,6 +12,7 @@ import React from "react";
 import { useToggleReaction } from "@/lib/modules/reaction/hooks/useToggleReaction";
 import type { ReactionType } from "@/lib/modules/post/post.interface";
 import { useAuthStore } from "@/lib/modules/auth/auth.store";
+import { toast } from "sonner";
 
 const REACTS: {
   type: ReactionType;
@@ -70,6 +71,7 @@ export function PostReactButton({
 
   const handleMainButton = () => {
     if (!profile) {
+      toast.warning("Vui lòng đăng nhập để thực hiện hành động này");
       setShowLoginDialog(true); // Hiển thị dialog nếu chưa đăng nhập
       return;
     }

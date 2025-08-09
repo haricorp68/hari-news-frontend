@@ -5,6 +5,7 @@ import { UserPlus, UserMinus, Loader2 } from "lucide-react";
 import { useFollowStatus } from "@/lib/modules/follow/hooks/useFollowStatusCheck";
 import { useToggleFollow } from "@/lib/modules/follow/hooks/useToggleFollow";
 import { toast } from "sonner";
+import { useAuthStore } from "@/lib/modules/auth/auth.store";
 
 interface FollowButtonProps {
   userId: string;
@@ -23,13 +24,15 @@ export function FollowButton({
     loading: statusLoading,
     updateStatus,
   } = useFollowStatus(userId);
-  console.log(
-    "🔍 ~ FollowButton ~ src/components/profile/FollowButton.tsx:21 ~ isFollowing:",
-    isFollowing
-  );
   const { toggleFollow, toggleFollowLoading } = useToggleFollow();
+  const { setShowLoginDialog, profile } = useAuthStore();
 
   const handleToggleFollow = () => {
+    if (!profile) {
+      toast.warning("Vui lòng đăng nhập để theo dõi người dùng này");
+      setShowLoginDialog(true); // Hiển thị dialog nếu chưa đăng nhập
+      return;
+    }
     toggleFollow(userId, {
       onSuccess: (data) => {
         const newFollowStatus = data.data?.isFollowing ?? false;
@@ -38,7 +41,7 @@ export function FollowButton({
         toast.success(data.message);
       },
       onError: (error) => {
-        toast.error("Có lỗi xảy ra. Vui lòng thử lại!");
+        //mark
         console.error("Toggle follow error:", error);
       },
     });

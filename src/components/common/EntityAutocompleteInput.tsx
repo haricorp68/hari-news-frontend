@@ -21,10 +21,6 @@ export const EntityAutocompleteInput: React.FC<
 > = ({ onSelectCategory, onSelectTag, placeholder }) => {
   const [value, setValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  console.log(
-    "🔍 ~  ~ src/components/common/EntityAutocompleteInput.tsx:23 ~ showDropdown:",
-    showDropdown
-  );
 
   const [displayedCategories, setDisplayedCategories] = useState<Category[]>(
     []

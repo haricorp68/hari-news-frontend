@@ -22,12 +22,15 @@ import { PostCommentDialog } from "./PostCommentDialog";
 import { UserProfileLink } from "@/components/ui/user-profile-link";
 import { PostReactButton } from "./PostReactButton";
 import { useUserFeedPostDetail } from "@/lib/modules/post/hooks/useUserFeedPostDetail";
+import { useQueryClient } from "@tanstack/react-query"; // Import useQueryClient
 
 export function PostFeedItem({ post }: { post: UserFeedPost }) {
   const [showComments, setShowComments] = useState(false);
   const [showReacts, setShowReacts] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const leaveTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const queryClient = useQueryClient(); // Khởi tạo queryClient
 
   // Fetch post detail when dialog is open
   const { data: postDetail, refetch } = useUserFeedPostDetail(
@@ -43,6 +46,16 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
   const handleReactMouseLeave = () => {
     if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
     leaveTimeout.current = setTimeout(() => setShowReacts(false), 500);
+  };
+
+  // Hàm xử lý sau khi react thành công
+  const handleReacted = () => {
+    setShowReacts(false);
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+    if (leaveTimeout.current) clearTimeout(leaveTimeout.current);
+    queryClient.invalidateQueries({
+      queryKey: ["mainFeedPosts"],
+    });
   };
 
   return (
@@ -186,10 +199,8 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
                 )}
               </div>
             )}
-            {/* Layout mới cho 5 ảnh trở lên */}
             {post.media.length >= 5 && (
               <div className="h-96 flex flex-col gap-2">
-                {/* Phần trên: 60% chiều cao, 2 ảnh đầu */}
                 <div className="flex-[3] grid grid-cols-2 gap-2">
                   {post.media
                     .slice(0, 2)
@@ -213,7 +224,6 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
                       )
                     )}
                 </div>
-                {/* Phần dưới: 40% chiều cao, 3 ảnh tiếp theo */}
                 <div className="flex-[2] grid grid-cols-3 gap-2">
                   {post.media.slice(2, 5).map((m: any, idx: number) => (
                     <div key={idx} className="relative">
@@ -232,7 +242,6 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
                           className="rounded-lg object-cover w-full h-full"
                         />
                       )}
-                      {/* Overlay số ảnh còn lại cho ảnh cuối */}
                       {idx === 2 && post.media.length > 5 && (
                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
                           <span className="text-white text-xl font-bold">
@@ -262,15 +271,14 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
       <CardFooter className="flex-col px-0 pt-0">
         <Separator className="my-3" />
         <div className="flex w-full px-6">
-          {/* Reacts */}
           <PostReactButton
             postId={post.id}
             userReaction={post.userReaction ?? "none"}
             showReacts={showReacts}
             handleReactMouseEnter={handleReactMouseEnter}
             handleReactMouseLeave={handleReactMouseLeave}
+            onReacted={handleReacted} // Truyền hàm handleReacted
           />
-          {/* Comment */}
           <Button
             variant="ghost"
             size="lg"
@@ -279,7 +287,6 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
           >
             <MessageCircle className=" h-5 w-5" /> Bình luận
           </Button>
-          {/* Share */}
           <Button
             variant="ghost"
             size="lg"
@@ -288,7 +295,6 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
             <Share2 className=" h-5 w-5" /> Chia sẻ
           </Button>
         </div>
-        {/* Dialog bình luận */}
         <PostCommentDialog
           post={postDetail || post}
           open={showComments}

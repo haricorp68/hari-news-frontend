@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Bell, MessageSquare, Settings } from "lucide-react"; // Import thêm MessageSquare và Settings
+import { Suspense } from "react";
 
 export function Header() {
   const { profile } = useAuth();
@@ -38,7 +39,9 @@ export function Header() {
       <div className="flex-1 flex justify-center max-w-md mx-2">
         {" "}
         {/* Thêm mx-2 để tạo khoảng cách */}
-        <EntityAutocompleteInput />
+        <Suspense fallback={<div>Đang tải...</div>}>
+          <EntityAutocompleteInput />
+        </Suspense>
       </div>
 
       {/* Notification, Message, Setting Icons - Luôn hiển thị và căn phải */}

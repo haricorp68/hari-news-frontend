@@ -1,4 +1,3 @@
-// components/auth/AuthDialog.tsx
 "use client";
 import { useState, useEffect } from "react";
 import {
@@ -14,16 +13,7 @@ import { useLoginMutation } from "@/lib/modules/auth/hooks/useLoginMutation";
 import { useRegisterMutation } from "@/lib/modules/auth/hooks/useRegisterMutation";
 import { useSendEmailVerificationMutation } from "@/lib/modules/auth/hooks/useSendEmailVerificationMutation";
 import Image from "next/image";
-import {
-  Mail,
-  Lock,
-  User,
-  Eye,
-  EyeOff,
-  CheckCircle,
-  Shield,
-  Sparkles,
-} from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 
 export function AuthDialog({
   trigger,
@@ -115,53 +105,12 @@ export function AuthDialog({
             {/* Background Image */}
             <div className="absolute inset-0">
               <Image
-                src="https://picsum.photos/200/300" // Thay đổi đường dẫn ảnh tại đây
-                alt="Authentication background"
+                src="https://res.cloudinary.com/haricorp/image/upload/v1754348466/Gemini_Generated_Image_1owgb01owgb01owg_knc0fr.png"
+                alt="Hình nền xác thực"
                 fill
-                className="object-cover"
+                className="object-cover rounded"
                 priority
               />
-            </div>
-
-            {/* Dark Overlay for better text readability */}
-            <div className="absolute inset-0 bg-black/40"></div>
-
-            {/* Text Content overlaid on image */}
-            <div className="relative z-10 text-center text-white px-8">
-              <div className="flex justify-center mb-6">
-                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                  <Sparkles className="w-12 h-12 text-white" />
-                </div>
-              </div>
-              <h2 className="text-4xl font-bold mb-4 leading-tight drop-shadow-lg">
-                Welcome to Our
-                <br />
-                <span className="text-yellow-300">Amazing Platform</span>
-              </h2>
-              <p className="text-xl text-white/90 mb-8 leading-relaxed drop-shadow-md">
-                Join thousands of users who trust us with their digital
-                experience. Secure, fast, and reliable.
-              </p>
-              <div className="flex items-center justify-center space-x-8 text-white/90">
-                <div className="flex items-center space-x-2">
-                  <Shield className="w-5 h-5 drop-shadow-sm" />
-                  <span className="text-sm font-medium drop-shadow-sm">
-                    Secure
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 drop-shadow-sm" />
-                  <span className="text-sm font-medium drop-shadow-sm">
-                    Trusted
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Sparkles className="w-5 h-5 drop-shadow-sm" />
-                  <span className="text-sm font-medium drop-shadow-sm">
-                    Fast
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -170,12 +119,12 @@ export function AuthDialog({
             {/* Header */}
             <div className="text-center lg:text-left mb-2">
               <DialogTitle className="text-3xl lg:text-4xl font-bold text-foreground mb-2">
-                {tab === "register" ? "Create Account" : "Welcome Back"}
+                {tab === "register" ? "Đăng ký" : "Đăng nhập"}
               </DialogTitle>
               <p className="text-muted-foreground text-lg">
                 {tab === "register"
-                  ? "Join us today and start your journey"
-                  : "Sign in to continue to your account"}
+                  ? "Tham gia cùng chúng tôi hôm nay và bắt đầu hành trình của bạn"
+                  : "Đăng nhập để tiếp tục vào tài khoản của bạn"}
               </p>
             </div>
 
@@ -191,8 +140,8 @@ export function AuthDialog({
             {/* Tabs */}
             <Tabs value={tab} onValueChange={setTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-2">
-                <TabsTrigger value="login">Sign In</TabsTrigger>
-                <TabsTrigger value="register">Sign Up</TabsTrigger>
+                <TabsTrigger value="login">Đăng nhập</TabsTrigger>
+                <TabsTrigger value="register">Đăng ký</TabsTrigger>
               </TabsList>
 
               {/* Login Tab */}
@@ -201,13 +150,13 @@ export function AuthDialog({
                   {/* Email Input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
-                      Email Address
+                      Địa chỉ Email
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                       <Input
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="Nhập email của bạn"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         className="pl-11 h-12"
@@ -219,13 +168,13 @@ export function AuthDialog({
                   {/* Password Input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
-                      Password
+                      Mật khẩu
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                       <Input
                         type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
+                        placeholder="Nhập mật khẩu của bạn"
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         className="pl-11 pr-11 h-12"
@@ -251,7 +200,7 @@ export function AuthDialog({
                       type="button"
                       className="text-sm text-primary hover:text-primary/80 font-medium"
                     >
-                      Forgot password?
+                      Quên mật khẩu?
                     </button>
                   </div>
 
@@ -264,10 +213,10 @@ export function AuthDialog({
                     {loginMutation.isPending ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
-                        <span>Signing in...</span>
+                        <span>Đang đăng nhập...</span>
                       </div>
                     ) : (
-                      "Sign In"
+                      "Đăng nhập"
                     )}
                   </Button>
                 </form>
@@ -279,13 +228,13 @@ export function AuthDialog({
                   {/* Name Input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
-                      Full Name
+                      Họ và tên
                     </label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                       <Input
                         type="text"
-                        placeholder="Enter your full name"
+                        placeholder="Nhập họ và tên của bạn"
                         value={registerName}
                         onChange={(e) => setRegisterName(e.target.value)}
                         className="pl-11 h-12"
@@ -297,13 +246,13 @@ export function AuthDialog({
                   {/* Email Input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
-                      Email Address
+                      Địa chỉ Email
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                       <Input
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="Nhập email của bạn"
                         value={registerEmail}
                         onChange={(e) => setRegisterEmail(e.target.value)}
                         className="pl-11 h-12"
@@ -315,13 +264,13 @@ export function AuthDialog({
                   {/* Password Input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
-                      Password
+                      Mật khẩu
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                       <Input
                         type={showPassword ? "text" : "password"}
-                        placeholder="Create a password"
+                        placeholder="Tạo mật khẩu"
                         value={registerPassword}
                         onChange={(e) => setRegisterPassword(e.target.value)}
                         className="pl-11 pr-11 h-12"
@@ -344,13 +293,13 @@ export function AuthDialog({
                   {/* Confirm Password Input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
-                      Confirm Password
+                      Xác nhận Mật khẩu
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                       <Input
                         type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Confirm your password"
+                        placeholder="Xác nhận mật khẩu của bạn"
                         value={registerConfirmPassword}
                         onChange={(e) =>
                           setRegisterConfirmPassword(e.target.value)
@@ -377,12 +326,12 @@ export function AuthDialog({
                   {/* Verification Code */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
-                      Verification Code
+                      Mã xác nhận
                     </label>
                     <div className="flex gap-3">
                       <Input
                         type="text"
-                        placeholder="Enter verification code"
+                        placeholder="Nhập mã xác nhận"
                         value={token}
                         onChange={(e) => setToken(e.target.value)}
                         className="flex-1 h-12"
@@ -400,10 +349,10 @@ export function AuthDialog({
                         {sendEmailVerificationMutation.isPending ? (
                           <div className="flex items-center space-x-2">
                             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                            <span>Sending...</span>
+                            <span>Đang gửi...</span>
                           </div>
                         ) : (
-                          "Send Code"
+                          "Gửi mã"
                         )}
                       </Button>
                     </div>
@@ -436,10 +385,10 @@ export function AuthDialog({
                     {registerMutation.isPending ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
-                        <span>Creating account...</span>
+                        <span>Đang tạo tài khoản...</span>
                       </div>
                     ) : (
-                      "Create Account"
+                      "Tạo tài khoản"
                     )}
                   </Button>
                 </form>

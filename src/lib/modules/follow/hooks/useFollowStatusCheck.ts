@@ -15,10 +15,6 @@ export function useFollowStatus(userId: string) {
     gcTime: 0,
   });
 
-  console.log(
-    "🔍 ~ useFollowStatus ~ src/lib/modules/follow/hooks/useFollowStatusCheck.ts:10 ~ query:",
-    query
-  );
   const updateStatus = (newStatus: {
     isFollowing: boolean;
     followData?: any;

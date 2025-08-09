@@ -14,6 +14,8 @@ import { PostReactButton } from "../post/PostReactButton";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { CommentList } from "../ui/comment-list";
+import { useAuthStore } from "@/lib/modules/auth/auth.store";
+import { toast } from "sonner";
 
 interface NewsDetailFooterProps {
   post: {
@@ -26,6 +28,8 @@ interface NewsDetailFooterProps {
 
 export function NewsDetailFooter({ post }: NewsDetailFooterProps) {
   const queryClient = useQueryClient();
+  const { setShowLoginDialog, profile } = useAuthStore();
+
   const { comments, commentsLoading, refetchComments } = useCommentList(
     post.id,
     true
@@ -66,6 +70,11 @@ export function NewsDetailFooter({ post }: NewsDetailFooterProps) {
 
   const handleSubmitComment = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profile) {
+      toast.warning("Vui lòng đăng nhập");
+      setShowLoginDialog(true); // Hiển thị dialog nếu chưa đăng nhập
+      return;
+    }
     if (!content.trim()) return;
     createComment(
       { postId: post.id, content },
