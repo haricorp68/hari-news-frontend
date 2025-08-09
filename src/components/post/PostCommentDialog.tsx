@@ -20,6 +20,8 @@ import { formatFullTime } from "@/utils/formatTime";
 import { PostStatsBar } from "./PostStatsBar";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReactionType } from "../ui/reaction-icons";
+import { useAuthStore } from "@/lib/modules/auth/auth.store";
+import { toast } from "sonner";
 
 interface PostCommentDialogProps {
   post: UserFeedPost;
@@ -42,6 +44,7 @@ export function PostCommentDialog({
   const [showReacts, setShowReacts] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const leaveTimeout = useRef<NodeJS.Timeout | null>(null);
+  const { setShowLoginDialog, profile } = useAuthStore();
 
   // Local state cho userReaction để cập nhật UI ngay
   const [userReaction, setUserReaction] = useState<ReactionType | "none">(
@@ -70,6 +73,11 @@ export function PostCommentDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profile) {
+      toast.warning("Vui lòng đăng nhập để thực hiện hành động này");
+      setShowLoginDialog(true); // Hiển thị dialog nếu chưa đăng nhập
+      return;
+    }
     if (!content.trim()) return;
     createComment(
       { postId: post.id, content },
