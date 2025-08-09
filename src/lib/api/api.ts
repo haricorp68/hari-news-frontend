@@ -29,27 +29,34 @@ api.interceptors.request.use(
 // Response interceptor: xử lý lỗi toàn cục
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
-  (error) => {
+  (error: AxiosError) => {
     // Lấy config từ error
     const config = error.config || {};
-    // Nếu có disableToast thì bỏ qua toast
-    if (!config.disableToast && error.response && error.response.data) {
-      const errData = error.response.data;
-      // Có thể kiểm tra và xử lý tuỳ ý, ví dụ log, toast, redirect...
-      if (typeof window !== "undefined") {
-        // Hiển thị thông báo lỗi bằng toast của shadcn sonner
-        if (errData.message) {
-          const msg = Array.isArray(errData.message)
-            ? errData.message.join(", ")
-            : errData.message;
-          toast.error(msg);
-        }
-      }
-      // Có thể log lỗi ra console cho dev
-      if (process.env.NODE_ENV !== "production") {
-        console.error("API Error:", errData);
+    // Kiểm tra xem có phải lỗi chưa đăng nhập không (ví dụ: HTTP 401)
+    const isUnauthorizedError = error.response && error.response.status === 401;
+
+    // Nếu không phải là lỗi chưa đăng nhập VÀ không có disableToast thì mới hiển thị toast
+    if (
+      !config.disableToast &&
+      !isUnauthorizedError &&
+      error.response &&
+      error.response.data
+    ) {
+      const errData = error.response.data as { message?: string | string[] };
+      // Hiển thị thông báo lỗi bằng toast của shadcn sonner
+      if (typeof window !== "undefined" && errData.message) {
+        const msg = Array.isArray(errData.message)
+          ? errData.message.join(", ")
+          : errData.message;
+        toast.error(msg);
       }
     }
+
+    // Log lỗi ra console cho dev
+    if (process.env.NODE_ENV !== "production") {
+      console.error("API Error:", error.response?.data || error.message);
+    }
+
     return Promise.reject(error);
   }
 );
