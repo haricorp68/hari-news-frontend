@@ -365,20 +365,6 @@ function NewsContent() {
       {/* Mobile Filter Sheet */}
       <div className="lg:hidden">
         <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Filter className="w-4 h-4" />
-              Filters
-              {selectedCategories.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 px-1.5 py-0.5 text-xs"
-                >
-                  {selectedCategories.length}
-                </Badge>
-              )}
-            </Button>
-          </SheetTrigger>
           <SheetContent side="left" className="w-80 p-0">
             <SheetHeader className="px-6 py-4 border-b">
               <SheetTitle className="text-left">Filters</SheetTitle>
