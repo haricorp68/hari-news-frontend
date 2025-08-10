@@ -86,7 +86,7 @@ export function PostFeedItem({ post }: { post: UserFeedPost }) {
         </div>
       </CardHeader>
       <CardContent className="pt-2 pb-0">
-        <div className="mb-4 text-lg font-medium">{post.caption}</div>
+        <div className="mb-4">{post.caption}</div>
         {post.media && post.media.length > 0 && (
           <div className="mb-4">
             {post.media.length === 1 &&
